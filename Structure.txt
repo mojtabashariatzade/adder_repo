@@ -1,0 +1,117 @@
+adder_repo/
+├── core/
+│   ├── config.py              # Configuration settings
+│   ├── constants.py           # Constants used across the project
+│   ├── exceptions.py          # Custom exceptions
+│   ├── test_constants.py      # Tests for constants
+│   ├── Readme.txt             # Additional documentation
+│   └── __init__.py            # Package initializer
+├── data/
+│   ├── encryption.py          # Encryption-related utilities
+│   ├── file_manager.py        # File management utilities
+│   ├── session_manager.py     # Session management utilities
+│   └── __init__.py            # Package initializer
+├── error_handling/
+│   ├── error_handlers.py      # Error handling logic
+│   ├── error_manager.py       # Centralized error management
+│   ├── fallback.py            # Fallback mechanisms
+│   └── __init__.py            # Package initializer
+├── logging_/
+│   ├── formatters.py          # Logging formatters
+│   ├── handlers.py            # Logging handlers
+│   ├── logging_manager.py     # Centralized logging management
+│   └── __init__.py            # Package initializer
+├── models/
+│   ├── account.py             # Account model
+│   ├── stats.py               # Statistics model
+│   ├── user.py                # User model
+│   └── __init__.py            # Package initializer
+├── services/
+│   ├── account_manager.py     # Account management service
+│   ├── analytics.py           # Analytics service
+│   ├── group_manager.py       # Group management service
+│   ├── proxy_manager.py       # Proxy management service
+│   └── __init__.py            # Package initializer
+├── strategies/
+│   ├── base_strategy.py       # Base strategy implementation
+│   ├── parallel_strategies.py # Parallel execution strategies
+│   ├── sequential_strategy.py # Sequential execution strategies
+│   ├── strategy_selector.py   # Strategy selection logic
+│   └── __init__.py            # Package initializer
+├── telegram/
+│   └── __init__.py            # Package initializer
+├── tests/
+│   ├── test_core/
+│   │   ├── test_config.py     # Tests for configuration
+│   │   ├── test_constants.py  # Tests for constants
+│   │   ├── test_exceptions.py # Tests for exceptions
+│   │   └── __init__.py        # Package initializer
+│   ├── test_data/
+│   │   ├── test_encryption.py       # Tests for encryption
+│   │   ├── test_file_manager.py     # Tests for file manager
+│   │   ├── test_session_manager.py  # Tests for session manager
+│   │   └── __init__.py              # Package initializer
+│   ├── test_error_handling/
+│   │   ├── test_error_handlers.py # Tests for error handlers
+│   │   ├── test_error_manager.py  # Tests for error manager
+│   │   ├── test_fallback.py       # Tests for fallback mechanisms
+│   │   └── __init__.py            # Package initializer
+│   ├── test_logging_/
+│   │   ├── test_formatters.py     # Tests for logging formatters
+│   │   ├── test_handlers.py       # Tests for logging handlers
+│   │   ├── test_logging_manager.py# Tests for logging manager
+│   │   └── __init__.py            # Package initializer
+│   ├── test_models/
+│   │   ├── test_account.py        # Tests for account model
+│   │   ├── test_stats.py          # Tests for statistics model
+│   │   ├── test_user.py           # Tests for user model
+│   │   └── __init__.py            # Package initializer
+│   ├── test_services/
+│   │   ├── test_account_manager.py # Tests for account manager
+│   │   ├── test_analytics.py       # Tests for analytics service
+│   │   ├── test_group_manager.py   # Tests for group manager
+│   │   ├── test_proxy_manager.py   # Tests for proxy manager
+│   │   └── __init__.py             # Package initializer
+│   ├── test_strategies/
+│   │   ├── test_base_strategy.py       # Tests for base strategy
+│   │   ├── test_parallel_strategies.py # Tests for parallel strategies
+│   │   ├── test_sequential_strategy.py # Tests for sequential strategy
+│   │   ├── test_strategy_selector.py   # Tests for strategy selector
+│   │   └── __init__.py                # Package initializer
+│   ├── test_ui/
+│   │   ├── test_account_menu.py    # Tests for account menu
+│   │   ├── test_colors.py          # Tests for colors
+│   │   ├── test_display.py         # Tests for display utilities
+│   │   ├── test_menu_system.py     # Tests for menu system
+│   │   ├── test_operation_menu.py  # Tests for operation menu
+│   │   ├── test_settings_menu.py   # Tests for settings menu
+│   │   └── __init__.py             # Package initializer
+│   ├── test_utils/
+│   │   ├── test_app_context.py     # Tests for app context
+│   │   ├── test_helpers.py         # Tests for helper utilities
+│   │   ├── test_validators.py      # Tests for validators
+│   │   └── __init__.py             # Package initializer
+│   ├── test_framework.py           # Test framework setup
+│   ├── test_init.py               # Initialization tests
+│   └── __init__.py                # Package initializer
+├── ui/
+│   ├── account_menu.py            # Account menu UI
+│   ├── colors.py                  # Color utilities
+│   ├── display.py                 # Display utilities
+│   ├── menu_system.py             # Menu system implementation
+│   ├── operation_menu.py          # Operation menu UI
+│   ├── settings_menu.py           # Settings menu UI
+│   └── __init__.py                # Package initializer
+├── utils/
+│   ├── app_context.py             # Application context utilities
+│   ├── helpers.py                 # General helper functions
+│   ├── validators.py              # Validation utilities
+│   └── __init__.py                # Package initializer
+├── .gitignore                     # Git ignore rules
+├── main.py                        # Main entry point of the application
+├── README.md                      # Project documentation
+├── requirements.txt               # List of dependencies
+├── run_tests.py                   # Script to run tests
+├── run_tests.sh                   # Shell script to run tests
+├── setup.py                       # Setup script for packaging
+└── __init__.py                    # Root package initializer

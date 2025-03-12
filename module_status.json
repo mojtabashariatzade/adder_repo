@@ -1,0 +1,202 @@
+{
+    "modules": [
+        {
+            "name": "core/config.py",
+            "status": "completed",
+            "last_updated": null,
+            "description": "Central configuration system for loading and saving settings."
+        },
+        {
+            "name": "core/constants.py",
+            "status": "completed",
+            "last_updated": "2023-10-22T12:45:00Z",
+            "description": "Defines all global constants used in the application."
+        },
+        {
+            "name": "core/exceptions.py",
+            "status": "completed",
+            "last_updated": null,
+            "description": "Custom exceptions for handling specific error scenarios."
+        },
+        {
+            "name": "data/encryption.py",
+            "status": "completed",
+            "last_updated": null,
+            "description": "Encryption utilities for securing sensitive data."
+        },
+        {
+            "name": "data/file_manager.py",
+            "status": "completed",
+            "last_updated": null,
+            "description": "File management utilities for reading/writing configuration and data files."
+        },
+        {
+            "name": "data/session_manager.py",
+            "status": "not_started",
+            "last_updated": null,
+            "description": "Session management utilities for maintaining Telegram account states."
+        },
+        {
+            "name": "error_handling/error_handlers.py",
+            "status": "not_started",
+            "last_updated": null,
+            "description": "Custom error handlers for managing different types of errors."
+        },
+        {
+            "name": "error_handling/error_manager.py",
+            "status": "not_started",
+            "last_updated": null,
+            "description": "Centralized error management system for logging and tracking errors."
+        },
+        {
+            "name": "error_handling/fallback.py",
+            "status": "not_started",
+            "last_updated": null,
+            "description": "Fallback mechanisms for recovering from errors."
+        },
+        {
+            "name": "logging_/formatters.py",
+            "status": "not_started",
+            "last_updated": null,
+            "description": "Log formatters for supporting different log formats."
+        },
+        {
+            "name": "logging_/handlers.py",
+            "status": "not_started",
+            "last_updated": null,
+            "description": "Log handlers for directing logs to different outputs (file, console, etc.)."
+        },
+        {
+            "name": "logging_/logging_manager.py",
+            "status": "not_started",
+            "last_updated": null,
+            "description": "Centralized logging management for configuring and managing loggers."
+        },
+        {
+            "name": "models/account.py",
+            "status": "not_started",
+            "last_updated": null,
+            "description": "Models for representing Telegram accounts and their usage statistics."
+        },
+        {
+            "name": "models/stats.py",
+            "status": "not_started",
+            "last_updated": null,
+            "description": "Models for tracking performance metrics and statistics."
+        },
+        {
+            "name": "models/user.py",
+            "status": "not_started",
+            "last_updated": null,
+            "description": "Models for representing Telegram users and their details."
+        },
+        {
+            "name": "services/account_manager.py",
+            "status": "not_started",
+            "last_updated": null,
+            "description": "Account management service for adding, removing, and checking account statuses."
+        },
+        {
+            "name": "services/analytics.py",
+            "status": "not_started",
+            "last_updated": null,
+            "description": "Analytics service for collecting and analyzing performance data."
+        },
+        {
+            "name": "services/group_manager.py",
+            "status": "not_started",
+            "last_updated": null,
+            "description": "Group management service for handling group-related operations."
+        },
+        {
+            "name": "services/proxy_manager.py",
+            "status": "not_started",
+            "last_updated": null,
+            "description": "Proxy management service for adding, testing, and rotating proxies."
+        },
+        {
+            "name": "strategies/base_strategy.py",
+            "status": "not_started",
+            "last_updated": null,
+            "description": "Base class for defining common methods for operation strategies."
+        },
+        {
+            "name": "strategies/parallel_strategies.py",
+            "status": "not_started",
+            "last_updated": null,
+            "description": "Parallel execution strategies for using multiple accounts simultaneously."
+        },
+        {
+            "name": "strategies/sequential_strategy.py",
+            "status": "not_started",
+            "last_updated": null,
+            "description": "Sequential execution strategy for using one account at a time."
+        },
+        {
+            "name": "strategies/strategy_selector.py",
+            "status": "not_started",
+            "last_updated": null,
+            "description": "Logic for selecting appropriate strategies based on conditions."
+        },
+        {
+            "name": "ui/account_menu.py",
+            "status": "not_started",
+            "last_updated": null,
+            "description": "User interface for managing Telegram accounts."
+        },
+        {
+            "name": "ui/colors.py",
+            "status": "not_started",
+            "last_updated": null,
+            "description": "Utilities for managing console colors and styles."
+        },
+        {
+            "name": "ui/display.py",
+            "status": "not_started",
+            "last_updated": null,
+            "description": "Display utilities for rendering menus and information."
+        },
+        {
+            "name": "ui/menu_system.py",
+            "status": "not_started",
+            "last_updated": null,
+            "description": "Main menu system for navigating through application features."
+        },
+        {
+            "name": "ui/operation_menu.py",
+            "status": "not_started",
+            "last_updated": null,
+            "description": "Menu for configuring and executing member transfer operations."
+        },
+        {
+            "name": "ui/settings_menu.py",
+            "status": "not_started",
+            "last_updated": null,
+            "description": "Menu for managing application settings."
+        },
+        {
+            "name": "utils/app_context.py",
+            "status": "not_started",
+            "last_updated": null,
+            "description": "Application context management for dependency injection and singleton patterns."
+        },
+        {
+            "name": "utils/helpers.py",
+            "status": "not_started",
+            "last_updated": null,
+            "description": "Miscellaneous helper functions for data conversion, formatting, and calculations."
+        },
+        {
+            "name": "utils/validators.py",
+            "status": "not_started",
+            "last_updated": null,
+            "description": "Input validation utilities for ensuring data integrity."
+        },
+        {
+            "name": "main.py",
+            "status": "not_started",
+            "last_updated": null,
+            "description": "Main entry point of the application for initializing and managing the lifecycle."
+        }
+    ]
+}
