@@ -3,7 +3,6 @@
 
 """
 Test runner for Logging Formatters module.
-
 This script runs the tests for the various logging formatter classes.
 """
 
@@ -13,8 +12,9 @@ import unittest
 
 # Add the project root to the Python path
 current_dir = os.path.abspath(os.path.dirname(__file__))
-if current_dir not in sys.path:
-    sys.path.insert(0, current_dir)
+project_root = os.path.abspath(os.path.join(current_dir, '..'))
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
 
 def run_tests():
     """Run the logging formatters tests."""
