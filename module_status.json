@@ -55,7 +55,7 @@
             "name": "data/session_manager.py",
             "status": {
                 "completion": "completed",
-                "testing": "not_tested"
+                "testing": "tested"
             },
             "test_file": "tests/test_data/test_session_manager.py",
             "description": "Session management utilities for maintaining Telegram account states.",
@@ -124,8 +124,8 @@
         {
             "name": "models/account.py",
             "status": {
-                "completion": "not_started",
-                "testing": "not_tested"
+                "completion": "completed",
+                "testing": "tested"
             },
             "test_file": "tests/test_models/test_account.py",
             "description": "Models for representing Telegram accounts and their usage statistics.",

@@ -2,9 +2,9 @@
 # -*- coding: utf-8 -*-
 
 """
-Test runner for Session Manager module.
+Test runner for Account Model module.
 
-This script runs the tests for the SessionManager and Session classes.
+This script runs the tests for the Account, AccountMetrics, and AccountFactory classes.
 """
 
 import os
@@ -17,18 +17,19 @@ if current_dir not in sys.path:
     sys.path.insert(0, current_dir)
 
 def run_tests():
-    """Run the SessionManager tests."""
+    """Run the Account model tests."""
     # Create a test loader
     loader = unittest.TestLoader()
 
     # Load tests from the test module
     try:
-        from tests.test_data.test_session_manager import TestSession, TestSessionManager
+        from tests.test_models.test_account import TestAccountMetrics, TestAccount, TestAccountFactory
 
-        # Create a test suite with both test classes
+        # Create a test suite with all test classes
         suite = unittest.TestSuite()
-        suite.addTest(loader.loadTestsFromTestCase(TestSession))
-        suite.addTest(loader.loadTestsFromTestCase(TestSessionManager))
+        suite.addTest(loader.loadTestsFromTestCase(TestAccountMetrics))
+        suite.addTest(loader.loadTestsFromTestCase(TestAccount))
+        suite.addTest(loader.loadTestsFromTestCase(TestAccountFactory))
 
         # Run the tests
         runner = unittest.TextTestRunner(verbosity=2)
