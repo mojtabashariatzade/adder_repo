@@ -2,9 +2,9 @@
 # -*- coding: utf-8 -*-
 
 """
-Test runner for Account Model module.
+Test runner for Logging Formatters module.
 
-This script runs the tests for the Account, AccountMetrics, and AccountFactory classes.
+This script runs the tests for the various logging formatter classes.
 """
 
 import os
@@ -17,19 +17,31 @@ if current_dir not in sys.path:
     sys.path.insert(0, current_dir)
 
 def run_tests():
-    """Run the Account model tests."""
+    """Run the logging formatters tests."""
     # Create a test loader
     loader = unittest.TestLoader()
 
     # Load tests from the test module
     try:
-        from tests.test_models.test_account import TestAccountMetrics, TestAccount, TestAccountFactory
+        from tests.test_logging_.test_formatters import (
+            TestLogColors,
+            TestColorFormatter,
+            TestJSONFormatter,
+            TestDetailedFormatter,
+            TestCompactFormatter,
+            TestHTMLFormatter,
+            TestConfigurableFormatter
+        )
 
         # Create a test suite with all test classes
         suite = unittest.TestSuite()
-        suite.addTest(loader.loadTestsFromTestCase(TestAccountMetrics))
-        suite.addTest(loader.loadTestsFromTestCase(TestAccount))
-        suite.addTest(loader.loadTestsFromTestCase(TestAccountFactory))
+        suite.addTest(loader.loadTestsFromTestCase(TestLogColors))
+        suite.addTest(loader.loadTestsFromTestCase(TestColorFormatter))
+        suite.addTest(loader.loadTestsFromTestCase(TestJSONFormatter))
+        suite.addTest(loader.loadTestsFromTestCase(TestDetailedFormatter))
+        suite.addTest(loader.loadTestsFromTestCase(TestCompactFormatter))
+        suite.addTest(loader.loadTestsFromTestCase(TestHTMLFormatter))
+        suite.addTest(loader.loadTestsFromTestCase(TestConfigurableFormatter))
 
         # Run the tests
         runner = unittest.TextTestRunner(verbosity=2)

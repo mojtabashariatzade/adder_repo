@@ -94,8 +94,8 @@
         {
             "name": "logging_/formatters.py",
             "status": {
-                "completion": "not_started",
-                "testing": "not_tested"
+                "completion": "completed",
+                "testing": "tested"
             },
             "test_file": "tests/test_logging_/test_formatters.py",
             "description": "Log formatters for supporting different log formats.",
