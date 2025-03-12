@@ -2,6 +2,9 @@
 Logging package for Telegram Adder application.
 """
 
-from adder_repo.logging.log_manager import logger, setup_logger
-
-__all__ = ['logger', 'setup_logger']
+# Direct imports to make modules available
+try:
+    from .logging_manager import LoggingManager, get_logger, get_json_logger
+except ImportError:
+    # For development use - these may not be available yet
+    pass

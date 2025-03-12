@@ -75,7 +75,7 @@
         "issues": []
       },
       "logging_manager": {
-        "status": "not_tested",
+        "status": "tested",
         "test_file": "tests/test_logging_/test_logging_manager.py",
         "description": "Centralized logging management module",
         "issues": []
