@@ -26,24 +26,26 @@ def run_tests():
     try:
         from tests.test_logging_.test_handlers import (
             TestSafeRotatingFileHandler,
-            TestConsoleHandler,
-            TestJsonFileHandler,
-            TestRemoteHandler,
-            TestQueueHandler,
-            TestMultiplexHandler,
-            TestCallbackHandler,
+            TestMultiProcessSafeTimedRotatingFileHandler,
+            TestCompressedRotatingFileHandler,
+            TestCustomStreamHandler,
+            TestBufferingHandler,
+            TestHTTPHandler,
+            TestSocketHandler,
+            TestSysLogHandler,
             TestMemoryHandler
         )
 
         # Create a test suite with all test classes
         suite = unittest.TestSuite()
         suite.addTest(loader.loadTestsFromTestCase(TestSafeRotatingFileHandler))
-        suite.addTest(loader.loadTestsFromTestCase(TestConsoleHandler))
-        suite.addTest(loader.loadTestsFromTestCase(TestJsonFileHandler))
-        suite.addTest(loader.loadTestsFromTestCase(TestRemoteHandler))
-        suite.addTest(loader.loadTestsFromTestCase(TestQueueHandler))
-        suite.addTest(loader.loadTestsFromTestCase(TestMultiplexHandler))
-        suite.addTest(loader.loadTestsFromTestCase(TestCallbackHandler))
+        suite.addTest(loader.loadTestsFromTestCase(TestMultiProcessSafeTimedRotatingFileHandler))
+        suite.addTest(loader.loadTestsFromTestCase(TestCompressedRotatingFileHandler))
+        suite.addTest(loader.loadTestsFromTestCase(TestCustomStreamHandler))
+        suite.addTest(loader.loadTestsFromTestCase(TestBufferingHandler))
+        suite.addTest(loader.loadTestsFromTestCase(TestHTTPHandler))
+        suite.addTest(loader.loadTestsFromTestCase(TestSocketHandler))
+        suite.addTest(loader.loadTestsFromTestCase(TestSysLogHandler))
         suite.addTest(loader.loadTestsFromTestCase(TestMemoryHandler))
 
         # Run the tests

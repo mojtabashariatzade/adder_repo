@@ -105,7 +105,7 @@
             "name": "logging_/handlers.py",
             "status": {
                 "completion": "completed",
-                "testing": "not_tested"
+                "testing": "tested"
             },
             "test_file": "tests/test_logging_/test_handlers.py",
             "description": "Log handlers for directing logs to different outputs (file, console, etc.).",
