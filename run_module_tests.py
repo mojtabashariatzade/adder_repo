@@ -2,9 +2,9 @@
 # -*- coding: utf-8 -*-
 
 """
-Test runner for Logging Handlers module.
+Test runner for Error Manager module.
 
-This script runs the tests for the various logging handler classes.
+This script runs the tests for the error manager classes.
 """
 
 import os
@@ -18,35 +18,23 @@ if project_root not in sys.path:
     sys.path.insert(0, project_root)
 
 def run_tests():
-    """Run the logging handlers tests."""
+    """Run the error manager tests."""
     # Create a test loader
     loader = unittest.TestLoader()
 
     # Load tests from the test module
     try:
-        from tests.test_logging_.test_handlers import (
-            TestSafeRotatingFileHandler,
-            TestMultiProcessSafeTimedRotatingFileHandler,
-            TestCompressedRotatingFileHandler,
-            TestCustomStreamHandler,
-            TestBufferingHandler,
-            TestHTTPHandler,
-            TestSocketHandler,
-            TestSysLogHandler,
-            TestMemoryHandler
+        from tests.test_error_handling.test_error_manager import (
+            TestErrorManager,
+            TestHelperFunctions,
+            TestErrorManagerWithTelethon
         )
 
         # Create a test suite with all test classes
         suite = unittest.TestSuite()
-        suite.addTest(loader.loadTestsFromTestCase(TestSafeRotatingFileHandler))
-        suite.addTest(loader.loadTestsFromTestCase(TestMultiProcessSafeTimedRotatingFileHandler))
-        suite.addTest(loader.loadTestsFromTestCase(TestCompressedRotatingFileHandler))
-        suite.addTest(loader.loadTestsFromTestCase(TestCustomStreamHandler))
-        suite.addTest(loader.loadTestsFromTestCase(TestBufferingHandler))
-        suite.addTest(loader.loadTestsFromTestCase(TestHTTPHandler))
-        suite.addTest(loader.loadTestsFromTestCase(TestSocketHandler))
-        suite.addTest(loader.loadTestsFromTestCase(TestSysLogHandler))
-        suite.addTest(loader.loadTestsFromTestCase(TestMemoryHandler))
+        suite.addTest(loader.loadTestsFromTestCase(TestErrorManager))
+        suite.addTest(loader.loadTestsFromTestCase(TestHelperFunctions))
+        suite.addTest(loader.loadTestsFromTestCase(TestErrorManagerWithTelethon))
 
         # Run the tests
         runner = unittest.TextTestRunner(verbosity=2)

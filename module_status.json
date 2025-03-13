@@ -64,8 +64,8 @@
         {
             "name": "error_handling/error_handlers.py",
             "status": {
-                "completion": "not_started",
-                "testing": "not_tested"
+                "completion": "completed",
+                "testing": "tested"
             },
             "test_file": "tests/test_error_handling/test_error_handlers.py",
             "description": "Custom error handlers for managing different types of errors.",
@@ -74,8 +74,8 @@
         {
             "name": "error_handling/error_manager.py",
             "status": {
-                "completion": "not_started",
-                "testing": "not_tested"
+                "completion": "completed",
+                "testing": "tested"
             },
             "test_file": "tests/test_error_handling/test_error_manager.py",
             "description": "Centralized error management system for logging and tracking errors.",
