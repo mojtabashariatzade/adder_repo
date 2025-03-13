@@ -2,8 +2,9 @@
 # -*- coding: utf-8 -*-
 
 """
-Test runner for Logging Formatters module.
-This script runs the tests for the various logging formatter classes.
+Test runner for Logging Handlers module.
+
+This script runs the tests for the various logging handler classes.
 """
 
 import os
@@ -17,31 +18,33 @@ if project_root not in sys.path:
     sys.path.insert(0, project_root)
 
 def run_tests():
-    """Run the logging formatters tests."""
+    """Run the logging handlers tests."""
     # Create a test loader
     loader = unittest.TestLoader()
 
     # Load tests from the test module
     try:
-        from tests.test_logging_.test_formatters import (
-            TestLogColors,
-            TestColorFormatter,
-            TestJSONFormatter,
-            TestDetailedFormatter,
-            TestCompactFormatter,
-            TestHTMLFormatter,
-            TestConfigurableFormatter
+        from tests.test_logging_.test_handlers import (
+            TestSafeRotatingFileHandler,
+            TestConsoleHandler,
+            TestJsonFileHandler,
+            TestRemoteHandler,
+            TestQueueHandler,
+            TestMultiplexHandler,
+            TestCallbackHandler,
+            TestMemoryHandler
         )
 
         # Create a test suite with all test classes
         suite = unittest.TestSuite()
-        suite.addTest(loader.loadTestsFromTestCase(TestLogColors))
-        suite.addTest(loader.loadTestsFromTestCase(TestColorFormatter))
-        suite.addTest(loader.loadTestsFromTestCase(TestJSONFormatter))
-        suite.addTest(loader.loadTestsFromTestCase(TestDetailedFormatter))
-        suite.addTest(loader.loadTestsFromTestCase(TestCompactFormatter))
-        suite.addTest(loader.loadTestsFromTestCase(TestHTMLFormatter))
-        suite.addTest(loader.loadTestsFromTestCase(TestConfigurableFormatter))
+        suite.addTest(loader.loadTestsFromTestCase(TestSafeRotatingFileHandler))
+        suite.addTest(loader.loadTestsFromTestCase(TestConsoleHandler))
+        suite.addTest(loader.loadTestsFromTestCase(TestJsonFileHandler))
+        suite.addTest(loader.loadTestsFromTestCase(TestRemoteHandler))
+        suite.addTest(loader.loadTestsFromTestCase(TestQueueHandler))
+        suite.addTest(loader.loadTestsFromTestCase(TestMultiplexHandler))
+        suite.addTest(loader.loadTestsFromTestCase(TestCallbackHandler))
+        suite.addTest(loader.loadTestsFromTestCase(TestMemoryHandler))
 
         # Run the tests
         runner = unittest.TextTestRunner(verbosity=2)
