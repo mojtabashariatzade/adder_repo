@@ -1,154 +1,95 @@
+START: AI Claude.ai INSTRUCTION
 Project: Telegram Adder
 Objective:
-Develop a modular tool for managing Telegram accounts.
-Transfer members between groups with multi-account support.
-Implement daily limits, error handling, and logging.
+    Develop a modular tool for managing Telegram accounts.
+    Transfer members between groups with multi-account support.
+    Implement daily limits, error handling, and logging.
 Language:
-Python
+    Python
 Code Format:
-Pure code without comments or explanations unless explicitly requested.
+    Pure code without comments or explanations unless explicitly requested.
 Communication:
-Write code in English.
-Direct communication with me in Persian.
+    Write code in English.
+    Direct communication with me in Persian.
 General Guidelines:
-Follow the project structure provided in the documentation.
-Implement modules step-by-step as I request.
-Use Fernet encryption (AES-128-CBC with HMAC-SHA256) for sensitive data.
-Validate all inputs and configurations strictly.
-Ensure dynamic updates to settings during runtime.
-Handle errors with descriptive messages and categorize exceptions.
-Log all operations with sufficient context (timestamps, error codes, stack traces).
-Optimize performance using caching and avoid redundant computations.
-Encrypt sensitive data like API keys and passwords.
-Implement fallback mechanisms for critical operations (e.g., retry logic, alternative accounts).
-Provide clear user feedback in UI-related modules.
-Avoid hardcoding values; use constants or configuration files.
-Ensure cross-module consistency in naming conventions and coding styles.
-Minimize external dependencies and document them in requirements.txt.
-Add monitoring capabilities for performance metrics and error tracking.
+    Follow the project structure provided in the documentation.
+    Implement modules step-by-step as I request.
+    Use Fernet encryption (AES-128-CBC with HMAC-SHA256) for sensitive data.
+    Validate all inputs and configurations strictly.
+    Ensure dynamic updates to settings during runtime.
+    Handle errors with descriptive messages and categorize exceptions.
+    Log all operations with sufficient context (timestamps, error codes, stack traces).
+    Optimize performance using caching and avoid redundant computations.
+    Encrypt sensitive data like API keys and passwords.
+    Implement fallback mechanisms for critical operations (e.g., retry logic, alternative accounts).
+    Provide clear user feedback in UI-related modules.
+    Avoid hardcoding values; use constants or configuration files.
+    Ensure cross-module consistency in naming conventions and coding styles.
+    Minimize external dependencies and document them in requirements.txt.
+    Add monitoring capabilities for performance metrics and error tracking.
 Testing:
-All tests must show results briefly at the end for each error.
-Do not generate test modules unless explicitly requested.
-Implementation Notes:
-Break down complex methods into smaller reusable components.
-Preserve exception types for specific error handling in tests.
-Use Singleton pattern where applicable (e.g., for configuration management).
-Use pure code without comments for coding.
-If changes are needed in the code, only correct the necessary parts in the artifact and avoid rewriting the entire code.
-Wait for explicit requests to proceed to the next module or section.
-Avoid unnecessary English responses unless I request it.
+    All tests must show results briefly at the end for each error.
+    Do not generate test modules unless explicitly requested.
+    Implementation Notes:
+    Break down complex methods into smaller reusable components.
+    Preserve exception types for specific error handling in tests.
+    Use Singleton pattern where applicable (e.g., for configuration management).
+    Use pure code without comments for coding.
+    If changes are needed in the code, only correct the necessary parts in the artifact and avoid rewriting the entire code.
+    Wait for explicit requests to proceed to the next module or section.
+    Avoid unnecessary English responses unless I request it.
+    Ensure that modifications in one module during inter-module testing do not disrupt the isolated unit tests of other modules, preserving the integrity of individual module tests.
 1. Introduction:
-Project Name : Telegram Adder
-Purpose : A tool for managing Telegram accounts to transfer active members between groups.
+    Project Name : Telegram Adder
+Purpose :
+    A tool for managing Telegram accounts to transfer active members between groups.
 Key Features :
-Multi-account support.
-Daily limits for each account.
-Blocked or restricted account detection.
-Centralized logging.
-Interactive user interface.
+    Multi-account support.
+    Daily limits for each account.
+    Blocked or restricted account detection.
+    Centralized logging.
+    Interactive user interface.
 1.1. Project Background:
-Original version: Single, non-modular file.
-Issues:
-Difficult to read and maintain.
-Lack of proper organization.
-Monolithic structure limited reusability and testability.
+    Original version: Single, non-modular file.
+    Issues:
+    Difficult to read and maintain.
+    Lack of proper organization.
+    Monolithic structure limited reusability and testability.
 1.2. Objective of Modularization:
-Improve code readability for easier maintenance.
-Enhance scalability for adding new features.
-Increase reusability of code parts.
-Improve testability to identify and fix errors.
+    Improve code readability for easier maintenance.
+    Enhance scalability for adding new features.
+    Increase reusability of code parts.
+    Improve testability to identify and fix errors.
 1.3. Use of the Original Project:
-Inspiration from a non-modular project (pastproject.py).
+    Inspiration from a non-modular project (pastproject.py).
 Changes made:
-Separate account management.
-Centralized handling of Telegram API errors.
-Organized logging and information recording.
-Independent design of execution strategies (e.g., parallel or sequential).
+    Separate account management.
+    Centralized handling of Telegram API errors.
+    Organized logging and information recording.
+    Independent design of execution strategies (e.g., parallel or sequential).
 1.4. Key Features of the Project:
-Multi-Account Management :
-Ability to use multiple Telegram accounts.
-Daily Limits :
-Each account can add up to 20 members per day.
-Blocked or Restricted Account Detection :
-Automatically identify and manage blocked accounts.
-Centralized Logging :
-Record all operations and errors for review.
-Interactive User Interface :
-Manage accounts, select groups, and configure parameters via menus.
+    Multi-Account Management :
+        Ability to use multiple Telegram accounts.
+    Daily Limits :
+        Each account can add up to 20 members per day.
+    Blocked or Restricted Account Detection :
+        Automatically identify and manage blocked accounts.
+    Centralized Logging :
+        Record all operations and errors for review.
+    Interactive User Interface :
+        Manage accounts, select groups, and configure parameters via menus.
 Project Structure:
-Location : F:\ADDER_REPO
+    Location : F:\ADDER_REPO
 Files and Folders :
-Organized within this path on the local machine.
+    Organized within this path on the local machine.
+
+END: AI Claude.ai INSTRUCTION
+# -----------------------------------------------------------------------------------------------------------------------------------------
+
+
 # -----------------------------------------------------------------------------------------------------------------------------------------
 
 Project Structure:
-
-F:\ADDER_REPO
-├── core/
-│   ├── config.py              # Configuration settings
-│   ├── constants.py           # Constants used across the project
-│   ├── exceptions.py          # Custom exceptions
-│   ├── test_constants.py      # Tests for constants
-│   ├── Readme.txt             # Additional documentation
-│   └── __init__.py            # Package initializer
-├── data/
-│   ├── encryption.py          # Encryption-related utilities
-│   ├── file_manager.py        # File management utilities
-│   ├── session_manager.py     # Session management utilities
-│   └── __init__.py            # Package initializer
-├── error_handling/
-│   ├── error_handlers.py      # Error handling logic
-│   ├── error_manager.py       # Centralized error management
-│   ├── fallback.py            # Fallback mechanisms
-│   └── __init__.py            # Package initializer
-├── logging_/
-│   ├── formatters.py          # Logging formatters
-│   ├── handlers.py            # Logging handlers
-│   ├── logging_manager.py     # Centralized logging management
-│   └── __init__.py            # Package initializer
-├── models/
-│   ├── account.py             # Account model
-│   ├── stats.py               # Statistics model
-│   ├── user.py                # User model
-│   └── __init__.py            # Package initializer
-├── services/
-│   ├── account_manager.py     # Account management service
-│   ├── analytics.py           # Analytics service
-│   ├── group_manager.py       # Group management service
-│   ├── proxy_manager.py       # Proxy management service
-│   └── __init__.py            # Package initializer
-├── strategies/
-│   ├── base_strategy.py       # Base strategy implementation
-│   ├── parallel_strategies.py # Parallel execution strategies
-│   ├── sequential_strategy.py # Sequential execution strategies
-│   ├── strategy_selector.py   # Strategy selection logic
-│   └── __init__.py            # Package initializer
-├── telegram/
-│   └── __init__.py            # Package initializer
-├── ui/
-│   ├── account_menu.py        # Account menu UI
-│   ├── colors.py              # Color utilities
-│   ├── display.py             # Display utilities
-│   ├── menu_system.py         # Menu system implementation
-│   ├── operation_menu.py      # Operation menu UI
-│   ├── settings_menu.py       # Settings menu UI
-│   └── __init__.py            # Package initializer
-├── utils/
-│   ├── app_context.py         # Application context utilities
-│   ├── helpers.py             # General helper functions
-│   ├── validators.py          # Validation utilities
-│   └── __init__.py            # Package initializer
-├── .gitignore                 # Git ignore rules
-├── main.py                    # Main entry point of the application
-├── README.md                  # Project documentation
-├── requirements.txt           # List of dependencies
-├── run_tests.py               # Script to run tests
-├── run_tests.sh               # Shell script to run tests
-├── setup.py                   # Setup script for packaging
-└── __init__.py                # Package initializer
-
-# -----------------------------------------------------------------------------------------------------------------------------------------
-
 # This project structures are stored on the local drive, specifically in the directory `F:\ADDER_REPO`. All files and folders are currently located on the local machine and are organized within this path.
 Project_Test Structure:
 F:\ADDER_REPO
