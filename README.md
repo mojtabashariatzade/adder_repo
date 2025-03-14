@@ -1,58 +1,84 @@
-Telegram Adder
-A brief description of your project. Explain what the project does, its purpose, and any other relevant information.
-
-1.Table of Contents
-2.Introduction
-3.Project Structure
-4.Core Modules
-5.Data Management
-6.Error Handling
-7.Logging System
-8.Models
-9.Services
-10.Strategies
-11.User Interface
-12.Utilities
-13.Main Entry Point
-14.Development Roadmap
-15.Key Implementation Notes
-16.Testing and Monitoring
-17.Future Suggestions
-18.Design Principles
-19.Technologies and Libraries
-
-
-1. Introduction
-This project, named Telegram Adder , is a tool for managing Telegram accounts that allows users to transfer active members from one group to another. This tool works with multiple Telegram accounts and manages the daily limits of each account. The main goal of this project is to facilitate the process of transferring members between groups on Telegram, especially for users who need to manage large volumes of members.
-
-1.1. Project Background
-The original version of this tool was developed as a single, non-modular file. This approach made the code difficult to read and maintain. Additionally, the lack of proper organization and the focus on a monolithic structure limited the reusability of different parts of the code and reduced its testability.
-
-1.2. Objective of Modularization
-The primary objective of modularizing this project is to improve the code structure and create an organized, scalable system. By modularizing, we aim to:
-
-Improve code readability to make it easier for developers to understand and maintain.
-Enhance scalability so that new features can be added without affecting other parts of the code.
-Increase reusability so that different parts of the code can be used independently.
-Improve testability to easily identify and fix potential errors.
-1.3. Use of the Original Project
-This project draws inspiration from an original project that was written in a non-modular way. Initially, the core code consisted of a single file containing all functionalities and application logic. However, as the project's complexity grew and the need to manage multiple Telegram accounts arose, it was decided to divide the code into smaller, independent modules. This change resulted in:
-
-Separate account management .
-Centralized handling of Telegram API errors .
-More organized logging and information recording .
-Independent design of execution strategies (e.g., parallel or sequential execution).
-1.4. Key Features of the Project
-Multi-Account Management: Ability to use multiple Telegram accounts to increase member transfer capacity.
-Daily Limits: Each account can add a maximum of 20 members per day.
-Blocked or Restricted Account Detection: Accounts that have been blocked or restricted due to Telegram limitations are automatically identified and managed.
-Centralized Logging: Recording of all operations and errors for review and maintenance.
-Interactive User Interface: Ability to manage accounts, select groups, and configure parameters through menus.
-The original non-modular project file is named pastproject.py .
-
-
-#This project structures are stored on the local drive, specifically in the directory `F:\ADDER_REPO`. All files and folders are currently located on the local machine and are organized within this path.
-
+Project: Telegram Adder
+Objective:
+Develop a modular tool for managing Telegram accounts.
+Transfer members between groups with multi-account support.
+Implement daily limits, error handling, and logging.
+Language:
+Python
+Code Format:
+Pure code without comments or explanations unless explicitly requested.
+Communication:
+Write code in English.
+Direct communication with me in Persian.
+General Guidelines:
+Follow the project structure provided in the documentation.
+Implement modules step-by-step as I request.
+Use Fernet encryption (AES-128-CBC with HMAC-SHA256) for sensitive data.
+Validate all inputs and configurations strictly.
+Ensure dynamic updates to settings during runtime.
+Handle errors with descriptive messages and categorize exceptions.
+Log all operations with sufficient context (timestamps, error codes, stack traces).
+Optimize performance using caching and avoid redundant computations.
+Encrypt sensitive data like API keys and passwords.
+Implement fallback mechanisms for critical operations (e.g., retry logic, alternative accounts).
+Provide clear user feedback in UI-related modules.
+Avoid hardcoding values; use constants or configuration files.
+Ensure cross-module consistency in naming conventions and coding styles.
+Minimize external dependencies and document them in requirements.txt.
+Add monitoring capabilities for performance metrics and error tracking.
+Testing:
+All tests must show results briefly at the end for each error.
+Do not generate test modules unless explicitly requested.
+Implementation Notes:
+Break down complex methods into smaller reusable components.
+Preserve exception types for specific error handling in tests.
+Use Singleton pattern where applicable (e.g., for configuration management).
+Use pure code without comments for coding.
+If changes are needed in the code, only correct the necessary parts in the artifact and avoid rewriting the entire code.
+Wait for explicit requests to proceed to the next module or section.
+Avoid unnecessary English responses unless I request it.
+1. Introduction:
+Project Name : Telegram Adder
+Purpose : A tool for managing Telegram accounts to transfer active members between groups.
+Key Features :
+Multi-account support.
+Daily limits for each account.
+Blocked or restricted account detection.
+Centralized logging.
+Interactive user interface.
+1.1. Project Background:
+Original version: Single, non-modular file.
+Issues:
+Difficult to read and maintain.
+Lack of proper organization.
+Monolithic structure limited reusability and testability.
+1.2. Objective of Modularization:
+Improve code readability for easier maintenance.
+Enhance scalability for adding new features.
+Increase reusability of code parts.
+Improve testability to identify and fix errors.
+1.3. Use of the Original Project:
+Inspiration from a non-modular project (pastproject.py).
+Changes made:
+Separate account management.
+Centralized handling of Telegram API errors.
+Organized logging and information recording.
+Independent design of execution strategies (e.g., parallel or sequential).
+1.4. Key Features of the Project:
+Multi-Account Management :
+Ability to use multiple Telegram accounts.
+Daily Limits :
+Each account can add up to 20 members per day.
+Blocked or Restricted Account Detection :
+Automatically identify and manage blocked accounts.
+Centralized Logging :
+Record all operations and errors for review.
+Interactive User Interface :
+Manage accounts, select groups, and configure parameters via menus.
+Project Structure:
+Location : F:\ADDER_REPO
+Files and Folders :
+Organized within this path on the local machine.
 # -----------------------------------------------------------------------------------------------------------------------------------------
 
 Project Structure:
@@ -642,24 +668,6 @@ Provide migration scripts or guidelines for updating to newer versions.
 
 # -----------------------------------------------------------------------------------------------------------------------------------------
 
-
-NOTE:
-      1. All TESTS MUST SHOW MESSEGES AFTER TEST END TO SEE WHAT HAPPEND IN MODULE.
-      2. All tests must run by this kind of orders (AI MUST SUGGEST JUST THIS): python -m unittest tests.test_data.test_encryption
-      3. All technical descriptions, code comments, and documentation must be in English. Communication with me, including instructions,clarifications, and initial responses, MUST remain in Persian. Do not switch to English at the beginning of our conversation unless I explicitly ask for it.
-      4. Avoid Writing Comments in the Code Unless Specifically Asked
-         When generating code, refrain from including any comments or explanations within the code itself. Focus solely on producing concise and efficient code that minimizes token usage.
-      5.Do Not Generate Test Modules Until Explicitly Requested
-        Refrain from creating or including test modules or test cases in the output unless specifically instructed to do so.
-
-
-
-
-
-
-      Sure, here's an explanation in English about how to fix the test execution errors:
-
-```markdown
 ## Troubleshooting Test Execution Errors in Encryption Module
 
 ### Common Error Pattern
