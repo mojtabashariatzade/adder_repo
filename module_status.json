@@ -84,8 +84,8 @@
         {
             "name": "error_handling/fallback.py",
             "status": {
-                "completion": "not_started",
-                "testing": "not_tested"
+                "completion": "completed",
+                "testing": "tested"
             },
             "test_file": "tests/test_error_handling/test_fallback.py",
             "description": "Fallback mechanisms for recovering from errors.",
