@@ -134,7 +134,7 @@
         {
             "name": "models/stats.py",
             "status": {
-                "completion": "not_started",
+                "completion": "completed",
                 "testing": "not_tested"
             },
             "test_file": "tests/test_models/test_stats.py",
@@ -144,7 +144,7 @@
         {
             "name": "models/user.py",
             "status": {
-                "completion": "not_started",
+                "completion": "completed",
                 "testing": "not_tested"
             },
             "test_file": "tests/test_models/test_user.py",
