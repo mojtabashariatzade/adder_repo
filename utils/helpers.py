@@ -498,6 +498,25 @@ def get_system_info() -> Dict[str, str]:
         'timezone': datetime.datetime.now(datetime.timezone.utc).astimezone().tzinfo.tzname(None)
     }
 
+def get_platform_info() -> Dict[str, str]:
+    """
+    Get platform information.
+
+    Returns:
+        Dict[str, str]: Platform information including OS, Python version, and more
+    """
+    return {
+        'system': platform.system(),  # e.g., 'Windows', 'Linux', 'Darwin'
+        'release': platform.release(),  # e.g., '10', '18.04'
+        'version': platform.version(),  # Detailed version info
+        'architecture': platform.machine(),  # e.g., 'x86_64', 'AMD64'
+        'processor': platform.processor(),
+        'python_version': platform.python_version(),
+        'node': platform.node(),  # Hostname
+        'platform': platform.platform(),  # Full platform identifier
+        'python_implementation': platform.python_implementation(),  # e.g., 'CPython'
+    }
+
 def is_internet_available(test_url: str = "8.8.8.8", timeout: float = 3) -> bool:
     """
     Check if internet is available.
@@ -515,6 +534,82 @@ def is_internet_available(test_url: str = "8.8.8.8", timeout: float = 3) -> bool
         return True
     except (socket.timeout, socket.error):
         return False
+
+# Signal handling utilities
+def setup_signal_handlers(shutdown_handler: Callable[[], None] = None) -> None:
+    """
+    Set up signal handlers for the application.
+
+    This function configures how the application should respond to system signals
+    like SIGINT (Ctrl+C) and SIGTERM.
+
+    Args:
+        shutdown_handler (Callable[[], None], optional): Function to call when shutdown signal received
+    """
+    import signal
+    import sys
+
+    def signal_handler(sig, frame):
+        """Signal handler function for graceful shutdown."""
+        print("\nShutdown signal received...")
+
+        if shutdown_handler:
+            try:
+                shutdown_handler()
+            except Exception as e:
+                print(f"Error in shutdown handler: {e}")
+
+        print("Shutdown complete. Exiting...")
+        sys.exit(0)
+
+    # Register signal handlers
+    try:
+        signal.signal(signal.SIGINT, signal_handler)  # Handle Ctrl+C
+        signal.signal(signal.SIGTERM, signal_handler)  # Handle termination request
+
+        # On Windows, SIGBREAK is sent when Ctrl+Break is pressed
+        if platform.system() == 'Windows':
+            signal.signal(signal.SIGBREAK, signal_handler)
+
+        # On Unix systems, add more signal handlers
+        if platform.system() != 'Windows':
+            signal.signal(signal.SIGHUP, signal_handler)  # Handle terminal closed
+
+    except (AttributeError, ValueError) as e:
+        # Some signals might not be available on all platforms
+        print(f"Warning: Could not set all signal handlers: {e}")
+
+# Utility functions for terminal/console
+def clear_console() -> None:
+    """
+    Clear the console/terminal screen in a cross-platform way.
+
+    This function detects the operating system and uses the appropriate
+    command to clear the console screen.
+    """
+    # Check which OS we're on
+    if platform.system() == 'Windows':
+        # For Windows, use 'cls' command
+        os.system('cls')
+    else:
+        # For Unix/Linux/MacOS, use 'clear' command
+        os.system('clear')
+
+def get_terminal_size() -> Tuple[int, int]:
+    """
+    Get the current terminal/console size.
+
+    Returns:
+        Tuple[int, int]: Width and height of the terminal in characters (columns, rows)
+    """
+    try:
+        columns, rows = os.get_terminal_size()
+        return columns, rows
+    except (AttributeError, OSError):
+        # Fallback to default values if os.get_terminal_size() is not available
+        # or if called in a non-terminal environment
+        return 80, 24
+
 
 # Telegram-specific Utilities
 def is_valid_api_id(api_id: Any) -> bool:

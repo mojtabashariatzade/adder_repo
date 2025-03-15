@@ -77,6 +77,9 @@ except ImportError:
             super().__init__(error_message)
 
 
+# Type for validation results
+ValidationResult = Tuple[bool, Optional[str]]
+
 # Generic validation function
 def validate(value: Any, validators: List[Callable[[Any], ValidationResult]]) -> ValidationResult:
     """
@@ -95,9 +98,6 @@ def validate(value: Any, validators: List[Callable[[Any], ValidationResult]]) ->
             return False, error
 
     return True, None
-
-# Type for validation results
-ValidationResult = Tuple[bool, Optional[str]]
 
 # Telegram-specific validations
 def validate_phone(phone: str) -> ValidationResult:
@@ -340,7 +340,7 @@ def validate_limit(limit: Any, min_limit: int = 1, max_limit: int = 1000) -> Val
 
 def validate_config_value(key: str, value: Any, config_schema: Dict[str, Dict[str, Any]]) -> ValidationResult:
     """
-    Validate a configuration value against a schema.
+    Validate a configuration value against a schema with type and constraint information.
 
     Args:
         key (str): Configuration key
@@ -574,8 +574,8 @@ def validate_url(url: str) -> ValidationResult:
         return False, "URL cannot be empty"
 
     # Basic URL pattern
-    url_pattern = r'^(https?|ftp)://[^\s/$.?#].[^\s]*
-    if not re.match(url_pattern, url):
+    pattern = r'^(https?|ftp)://[^\s/$.?#].[^\s]*$'
+    if not re.match(pattern, url):
         return False, "Invalid URL format"
 
     # URL is valid
@@ -662,4 +662,51 @@ def validate_required_fields(data: Dict[str, Any], required_fields: List[str]) -
         missing_list = ', '.join(missing_fields)
         return False, f"Missing required fields: {missing_list}"
 
+    return True, None
+
+# System and environment validations
+def validate_environment() -> ValidationResult:
+    """
+    Validate that the environment has all necessary dependencies and permissions.
+
+    Checks for required Python modules, system permissions, and other
+    environment requirements.
+
+    Returns:
+        ValidationResult: (success, error_message)
+    """
+    # Check Python version
+    import sys
+    python_version = sys.version_info
+    if python_version.major < 3 or (python_version.major == 3 and python_version.minor < 7):
+        return False, f"Python 3.7 or higher is required. Current version: {python_version.major}.{python_version.minor}"
+
+    # Check for required modules
+    required_modules = [
+        ('telethon', 'Telethon'),
+        ('cryptography', 'cryptography'),
+        ('colorama', 'Colorama')
+    ]
+
+    missing_modules = []
+    for module_name, display_name in required_modules:
+        try:
+            __import__(module_name)
+        except ImportError:
+            missing_modules.append(display_name)
+
+    if missing_modules:
+        modules_list = ', '.join(missing_modules)
+        return False, f"Missing required Python modules: {modules_list}. Please install them using pip."
+
+    # Check for write permissions in current directory
+    try:
+        test_file = "write_permission_test.tmp"
+        with open(test_file, 'w') as f:
+            f.write('test')
+        os.remove(test_file)
+    except (IOError, OSError, PermissionError):
+        return False, "Application does not have write permission in the current directory"
+
+    # All checks passed
     return True, None
