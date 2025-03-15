@@ -324,7 +324,7 @@
         {
             "name": "main.py",
             "status": {
-                "completion": "not_started",
+                "completion": "completed",
                 "testing": "not_tested"
             },
             "test_file": null,
