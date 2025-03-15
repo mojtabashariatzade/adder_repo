@@ -154,7 +154,7 @@
         {
             "name": "services/account_manager.py",
             "status": {
-                "completion": "not_started",
+                "completion": "completed",
                 "testing": "not_tested"
             },
             "test_file": "tests/test_services/test_account_manager.py",
@@ -174,7 +174,7 @@
         {
             "name": "services/group_manager.py",
             "status": {
-                "completion": "not_started",
+                "completion": "completed",
                 "testing": "not_tested"
             },
             "test_file": "tests/test_services/test_group_manager.py",
