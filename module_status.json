@@ -164,7 +164,7 @@
         {
             "name": "services/analytics.py",
             "status": {
-                "completion": "not_started",
+                "completion": "completed",
                 "testing": "not_tested"
             },
             "test_file": "tests/test_services/test_analytics.py",
@@ -184,7 +184,7 @@
         {
             "name": "services/proxy_manager.py",
             "status": {
-                "completion": "not_started",
+                "completion": "completed",
                 "testing": "not_tested"
             },
             "test_file": "tests/test_services/test_proxy_manager.py",
