@@ -214,7 +214,7 @@
         {
             "name": "strategies/sequential_strategy.py",
             "status": {
-                "completion": "not_started",
+                "completion": "completed",
                 "testing": "not_tested"
             },
             "test_file": "tests/test_strategies/test_sequential_strategy.py",
