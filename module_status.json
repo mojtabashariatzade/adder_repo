@@ -234,7 +234,7 @@
         {
             "name": "ui/account_menu.py",
             "status": {
-                "completion": "not_started",
+                "completion": "completed",
                 "testing": "not_tested"
             },
             "test_file": "tests/test_ui/test_account_menu.py",
@@ -264,7 +264,7 @@
         {
             "name": "ui/menu_system.py",
             "status": {
-                "completion": "not_started",
+                "completion": "completed",
                 "testing": "not_tested"
             },
             "test_file": "tests/test_ui/test_menu_system.py",
