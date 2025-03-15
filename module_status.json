@@ -274,7 +274,7 @@
         {
             "name": "ui/operation_menu.py",
             "status": {
-                "completion": "not_started",
+                "completion": "completed",
                 "testing": "not_tested"
             },
             "test_file": "tests/test_ui/test_operation_menu.py",
