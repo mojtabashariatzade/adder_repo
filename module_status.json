@@ -194,7 +194,7 @@
         {
             "name": "strategies/base_strategy.py",
             "status": {
-                "completion": "not_started",
+                "completion": "completed",
                 "testing": "not_tested"
             },
             "test_file": "tests/test_strategies/test_base_strategy.py",
