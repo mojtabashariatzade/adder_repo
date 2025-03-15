@@ -224,7 +224,7 @@
         {
             "name": "strategies/strategy_selector.py",
             "status": {
-                "completion": "not_started",
+                "completion": "completed",
                 "testing": "not_tested"
             },
             "test_file": "tests/test_strategies/test_strategy_selector.py",
@@ -244,7 +244,7 @@
         {
             "name": "ui/colors.py",
             "status": {
-                "completion": "not_started",
+                "completion": "completed",
                 "testing": "not_tested"
             },
             "test_file": "tests/test_ui/test_colors.py",
@@ -254,7 +254,7 @@
         {
             "name": "ui/display.py",
             "status": {
-                "completion": "not_started",
+                "completion": "completed",
                 "testing": "not_tested"
             },
             "test_file": "tests/test_ui/test_display.py",
