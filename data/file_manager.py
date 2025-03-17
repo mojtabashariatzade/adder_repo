@@ -49,7 +49,7 @@ import hashlib
 # Import custom exceptions
 from core.exceptions import (
     FileReadError, FileWriteError, FileFormatError,
-    ConfigFileNotFoundError, EncryptionError, DecryptionError
+    EncryptionError, DecryptionError
 )
 
 # Import encryption utilities (optional, used in EncryptedFileManager)
@@ -160,7 +160,7 @@ class FileManager:
         except Exception as e:
             logger.error("Failed to create directory %s: %s", dir_path, e)
             raise FileWriteError(
-                str(dir_path), "Failed to create directory: %s" % e)
+                str(dir_path), "Failed to create directory: %s" % e) from e
 
     def ensure_parent_dir(self, path: Union[str, Path]) -> Path:
         """
@@ -197,14 +197,15 @@ class FileManager:
             with open(file_path, 'r', encoding=encoding) as file:
                 return file.read()
         except FileNotFoundError:
-            logger.error(f"File not found: {file_path}")
-            raise FileReadError(str(file_path), "File not found")
+            logger.error("File not found: %s", file_path)
+            raise FileReadError(str(file_path), "File not found") from None
         except UnicodeDecodeError as e:
-            logger.error(f"Unicode decode error for {file_path}: {e}")
-            raise FileReadError(str(file_path), f"Unicode decode error: {e}")
+            logger.error("Unicode decode error for %s: %s", file_path, e)
+            raise FileReadError(
+                str(file_path), "Unicode decode error: %s" % e) from e
         except Exception as e:
-            logger.error(f"Error reading file {file_path}: {e}")
-            raise FileReadError(str(file_path), str(e))
+            logger.error("Error reading file %s: %s", file_path, e)
+            raise FileReadError(str(file_path), str(e)) from e
 
     def read_binary(self, path: Union[str, Path]) -> bytes:
         """
@@ -224,11 +225,11 @@ class FileManager:
             with open(file_path, 'rb') as file:
                 return file.read()
         except FileNotFoundError:
-            logger.error(f"File not found: {file_path}")
-            raise FileReadError(str(file_path), "File not found")
+            logger.error("File not found: %s", file_path)
+            raise FileReadError(str(file_path), "File not found") from None
         except Exception as e:
-            logger.error(f"Error reading binary file {file_path}: {e}")
-            raise FileReadError(str(file_path), str(e))
+            logger.error("Error reading binary file %s: %s", file_path, str(e))
+            raise FileReadError(str(file_path), str(e)) from None
 
     def write_text(self, path: Union[str, Path], content: str,
                    encoding: str = 'utf-8', make_backup: bool = False) -> None:
@@ -256,10 +257,10 @@ class FileManager:
         try:
             # Use atomic write for safety
             self._atomic_write(file_path, content, mode='w', encoding=encoding)
-            logger.debug(f"Text file written: {file_path}")
+            logger.debug("Text file written: %s", file_path)
         except Exception as e:
-            logger.error(f"Error writing text file {file_path}: {e}")
-            raise FileWriteError(str(file_path), str(e))
+            logger.error("Error writing text file %s: %s", file_path, str(e))
+            raise FileWriteError(str(file_path), str(e)) from e
 
     def write_binary(self, path: Union[str, Path], content: bytes,
                      make_backup: bool = False) -> None:
@@ -286,10 +287,10 @@ class FileManager:
         try:
             # Use atomic write for safety
             self._atomic_write(file_path, content, mode='wb')
-            logger.debug(f"Binary file written: {file_path}")
+            logger.debug("Text file written: %s", file_path)
         except Exception as e:
-            logger.error(f"Error writing binary file {file_path}: {e}")
-            raise FileWriteError(str(file_path), str(e))
+            logger.error("Error writing text file %s: %s", file_path, str(e))
+            raise FileWriteError(str(file_path), str(e)) from e
 
     def _atomic_write(self, path: Path, content: Union[str, bytes],
                       mode: str, encoding: Optional[str] = None) -> None:
@@ -316,14 +317,15 @@ class FileManager:
             # Replace the original file with the temporary file
             # This is atomic on POSIX systems
             os.replace(temp_file, path)
-        except Exception as e:
+        except (IOError, OSError) as e:
             # Clean up the temporary file if an error occurred
             if temp_file.exists():
                 try:
-                    os.unlink(temp_file)
-                except:
-                    pass
-            raise e
+                    temp_file.unlink()
+                except (IOError, OSError) as cleanup_error:
+                    logger.error(
+                        "Error cleaning up temporary file %s: %s", temp_file, str(cleanup_error))
+            raise FileWriteError(str(path), str(e)) from e
 
     def make_backup(self, path: Union[str, Path], backup_suffix: Optional[str] = None) -> Path:
         """
