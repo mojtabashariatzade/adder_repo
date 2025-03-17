@@ -24,10 +24,14 @@ ACCOUNT_CHANGE_DELAY = 60  # Delay between switching accounts
 # Limits
 MAX_RETRY_COUNT = 5  # Maximum number of retry attempts
 MAX_MEMORY_RECORDS = 1000  # Maximum number of records to keep in memory
-MAX_FAILURES_BEFORE_BLOCK = 3  # Number of consecutive failures before considering account blocked
-MAX_MEMBERS_PER_DAY = 20  # Maximum number of members to extract or add per account per day
+# Number of consecutive failures before considering account blocked
+MAX_FAILURES_BEFORE_BLOCK = 3
+# Maximum number of members to extract or add per account per day
+MAX_MEMBERS_PER_DAY = 20
 
 # Account statuses
+
+
 class AccountStatus(Enum):
     """Enum for account status values."""
     ACTIVE = auto()

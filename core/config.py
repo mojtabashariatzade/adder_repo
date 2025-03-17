@@ -40,9 +40,9 @@ Usage:
 import os
 import json
 import logging
-from typing import Any, Dict, Optional, Union, Tuple, List
-from pathlib import Path
+from typing import Any, Dict, Optional, Tuple, List
 from datetime import datetime
+import threading
 
 # Assuming constants.py is already implemented
 from core.constants import CONFIG_FILE, SALT_FILE, ENCRYPTION_KEY_FILE
@@ -59,6 +59,8 @@ class Config:
     and providing access to configuration values throughout the application.
     """
     _instance = None
+    _lock = threading.RLock()
+    _initialized = False
 
     def __new__(cls):
         """
@@ -67,28 +69,31 @@ class Config:
         Returns:
             Config: The singleton Config instance
         """
-        if cls._instance is None:
-            cls._instance = super(Config, cls).__new__(cls)
-            cls._instance._initialized = False
+        with cls._lock:
+            if cls._instance is None:
+                cls._instance = super(Config, cls).__new__(cls)
         return cls._instance
 
     def __init__(self):
         """Initialize the Config object if not already initialized."""
-        if self._initialized:
-            return
+        with Config._lock:
+            if Config._initialized:
+                return
 
-        self._config_data = {}
-        self._config_file = CONFIG_FILE
-        self._salt_file = SALT_FILE
-        self._encryption_key_file = ENCRYPTION_KEY_FILE
-        self._set_defaults()
-        self._initialized = True
+            self._config_data = {}
+            self._config_file = CONFIG_FILE
+            self._salt_file = SALT_FILE
+            self._encryption_key_file = ENCRYPTION_KEY_FILE
+            self._set_defaults()
 
-        # Try to load existing config
-        try:
-            self.load()
-        except Exception as e:
-            logger.warning(f"Could not load configuration: {e}. Using defaults.")
+            Config._initialized = True
+
+            # Try to load existing config
+            try:
+                self.load()
+            except (FileNotFoundError, json.JSONDecodeError, PermissionError) as e:
+                logger.warning(
+                    "Could not load configuration: %s. Using defaults.", e)
 
     def _set_defaults(self):
         """Set default configuration values for first-time setup."""
@@ -106,9 +111,66 @@ class Config:
             # Limits
             'max_retry_count': 5,             # Maximum number of retry attempts
             'max_memory_records': 1000,       # Maximum number of records to keep in memory
-            'account_change_delay': 60,       # Delay between switching accounts (seconds)
-            'max_failures_before_block': 3,   # Number of consecutive failures before considering account blocked
-            'max_members_per_day': 20,        # Maximum number of members to extract or add per account per day
+            # Delay between switching accounts (seconds)
+            'account_change_delay': 60,
+            # Number of consecutive failures before considering account blocked
+            'max_failures_before_block': 3,
+            # Maximum number of members to extract or add per account per day
+            'max_members_per_day': 20,
+
+            # File paths
+            'log_file': 'telegram_adder.log',
+            'request_log_file': 'request_log.json',
+            'ai_data_file': 'ai_training_data.json',
+            'accounts_file': 'telegram_accounts.json',
+
+            # Proxy settings (extended)
+            'use_proxy': False,
+            'default_proxy_type': 'socks5',
+            'proxy_settings': {
+                'default': {
+                    'proxy_type': 'socks5',
+                    'addr': '',
+                    'port': 1080,
+                    'username': '',
+                    'password': '',
+                    'rdns': True
+                }
+            },
+            'proxy_rotation_enabled': False,
+            'proxy_rotation_interval': 3600,  # 1 hour in seconds
+
+            # Session settings
+            'session_prefix': 'tg_session',
+
+            # Security settings
+            'encryption_enabled': True,
+            'encryption_algorithm': 'fernet',
+            'encryption_required_for_sensitive_data': True,
+        }
+
+    def _set_defaults(self):
+        """Set default configuration values for first-time setup."""
+        self._config_data = {
+            # Application settings
+            'app_name': 'Telegram Account Manager',
+            'app_version': '1.0.0',
+            'debug_mode': False,
+            'last_config_update': datetime.now().isoformat(),
+
+            # Delay settings
+            'default_delay': 20,  # Default delay between requests in seconds
+            'max_delay': 300,     # Maximum delay between requests in seconds
+
+            # Limits
+            'max_retry_count': 5,             # Maximum number of retry attempts
+            'max_memory_records': 1000,       # Maximum number of records to keep in memory
+            # Delay between switching accounts (seconds)
+            'account_change_delay': 60,
+            # Number of consecutive failures before considering account blocked
+            'max_failures_before_block': 3,
+            # Maximum number of members to extract or add per account per day
+            'max_members_per_day': 20,
 
             # File paths
             'log_file': 'telegram_adder.log',
@@ -168,8 +230,8 @@ class Config:
 
         # Log the configuration change with previous and new values
         logger.debug(
-            f"Configuration updated: {key} = {value} (previous: {previous_value}), "
-            f"timestamp: {self._config_data['last_config_update']}"
+            "Configuration updated: %s = %s (previous: %s), timestamp: %s",
+            key, value, previous_value, self._config_data['last_config_update']
         )
 
     def update(self, config_dict: Dict[str, Any]) -> None:
@@ -192,13 +254,16 @@ class Config:
 
         # Log detailed changes
         logger.debug(
-            f"Configuration updated with multiple values: {list(config_dict.keys())}, "
-            f"timestamp: {self._config_data['last_config_update']}"
+            "Configuration updated with multiple values: %s, timestamp: %s",
+            list(config_dict.keys()), self._config_data['last_config_update']
         )
 
         # Log individual changes at trace level (if logger supports it)
         for key, change in changes.items():
-            logger.debug(f"Configuration change: {key} from {change['old']} to {change['new']}")
+            logger.debug(
+                "Configuration change: %s from %s to %s",
+                key, change['old'], change['new']
+            )
 
     def get_all(self) -> Dict[str, Any]:
         """
@@ -227,20 +292,24 @@ class Config:
         file_path = config_file or self._config_file
 
         if not os.path.exists(file_path):
-            logger.info(f"Configuration file {file_path} not found. Using defaults.")
+            logger.info(
+                "Configuration file %s not found. Using defaults.",
+                file_path
+            )
             return False
 
         try:
-            with open(file_path, 'r') as file:
+            with open(file_path, 'r', encoding='utf-8') as file:
                 loaded_config = json.load(file)
                 self.update(loaded_config)
-            logger.info(f"Configuration loaded from {file_path}")
-            return True
+                logger.info("Configuration loaded from %s", file_path)
+                return True
         except json.JSONDecodeError:
-            logger.error(f"Error decoding JSON from {file_path}")
+            logger.error("Error decoding JSON from %s", file_path)
             return False
-        except Exception as e:
-            logger.error(f"Error loading configuration from {file_path}: {e}")
+        except IOError as e:
+            logger.error("Error loading configuration from %s: %s",
+                         file_path, str(e))
             return False
 
     def save(self, config_file: Optional[str] = None) -> bool:
@@ -257,14 +326,16 @@ class Config:
 
         try:
             # Create directory if it doesn't exist
-            os.makedirs(os.path.dirname(os.path.abspath(file_path)), exist_ok=True)
+            os.makedirs(os.path.dirname(
+                os.path.abspath(file_path)), exist_ok=True)
 
-            with open(file_path, 'w') as file:
+            with open(file_path, 'w', encoding='utf-8') as file:
                 json.dump(self._config_data, file, indent=4)
-            logger.info(f"Configuration saved to {file_path}")
+            logger.info("Configuration saved to %s", file_path)
             return True
-        except Exception as e:
-            logger.error(f"Error saving configuration to {file_path}: {e}")
+        except IOError as e:
+            logger.error("Error saving configuration to %s: %s",
+                         file_path, str(e))
             return False
 
     def get_file_path(self, key: str) -> Optional[str]:
@@ -385,11 +456,19 @@ class Config:
                 if isinstance(expected_type, tuple):
                     if not any(isinstance(value, t) for t in expected_type):
                         issues.append(
-                            f"Invalid type for {setting}: expected one of {expected_type}, got {type(value)}"
+                            (
+                                f"Invalid type for {setting}: "
+                                f"expected one of {expected_type}, "
+                                f"got {type(value)}"
+                            )
                         )
                 elif not isinstance(value, expected_type):
                     issues.append(
-                        f"Invalid type for {setting}: expected {expected_type.__name__}, got {type(value).__name__}"
+                        (
+                            f"Invalid type for {setting}: "
+                            f"expected {expected_type.__name__}, "
+                            f"got {type(value).__name__}"
+                        )
                     )
 
         # Check value ranges
@@ -399,22 +478,27 @@ class Config:
 
         if 'max_delay' in self._config_data and (
            self._config_data['max_delay'] < 0 or self._config_data['max_delay'] > 86400):
-            issues.append("max_delay must be between 0 and 86400 seconds (24 hours)")
+            issues.append(
+                "max_delay must be between 0 and 86400 seconds (24 hours)")
 
         if 'max_members_per_day' in self._config_data and (
-           self._config_data['max_members_per_day'] < 1 or self._config_data['max_members_per_day'] > 100):
+            self._config_data['max_members_per_day'] < 1 or
+            self._config_data['max_members_per_day'] > 100
+        ):
             issues.append("max_members_per_day must be between 1 and 100")
 
         # Verify encryption files if encryption is enabled
         if self.get('encryption_enabled', True):
             if not self._verify_encryption_files():
-                issues.append("Encryption is enabled but required files are missing or invalid")
+                issues.append(
+                    "Encryption is enabled but required files are missing or invalid")
 
         # Check proxy configuration if enabled
         if self.get('use_proxy', False):
             proxy_settings = self.get('proxy_settings', {}).get('default', {})
             if not proxy_settings.get('addr'):
-                issues.append("Proxy is enabled but no proxy address is configured")
+                issues.append(
+                    "Proxy is enabled but no proxy address is configured")
             if not isinstance(proxy_settings.get('port'), int):
                 issues.append("Proxy port must be an integer")
 
@@ -432,18 +516,23 @@ class Config:
         # Check if encryption key file exists
         if self.get('encryption_required_for_sensitive_data', True):
             if not os.path.exists(self._encryption_key_file):
-                logger.warning(f"Encryption key file {self._encryption_key_file} not found")
+                logger.warning(
+                    "Encryption key file %s not found",
+                    self._encryption_key_file
+                )
                 return False
 
             # Read the file to check if it's a valid encryption key
             try:
                 with open(self._encryption_key_file, 'rb') as f:
                     key_data = f.read()
-                    if len(key_data) != 32 and len(key_data) != 44:  # Common lengths for Fernet keys
-                        logger.warning(f"Encryption key in {self._encryption_key_file} has invalid length")
+                    # Common lengths for Fernet keys
+                    if len(key_data) != 32 and len(key_data) != 44:
+                        logger.warning(
+                            "Encryption key in %s has invalid length", self._encryption_key_file)
                         return False
-            except Exception as e:
-                logger.error(f"Failed to read encryption key file: {e}")
+            except IOError as e:
+                logger.error("Failed to read encryption key file: %s", str(e))
                 return False
 
             # Check if salt file exists (if used)
@@ -452,10 +541,11 @@ class Config:
                     with open(self._salt_file, 'rb') as f:
                         salt_data = f.read()
                         if len(salt_data) < 8:  # Salt should be at least 8 bytes
-                            logger.warning(f"Salt in {self._salt_file} is too short")
+                            logger.warning(
+                                "Salt in %s is too short", self._salt_file)
                             return False
-                except Exception as e:
-                    logger.error(f"Failed to read salt file: {e}")
+                except IOError as e:
+                    logger.error("Failed to read salt file: %s", str(e))
                     return False
 
         return True
@@ -487,7 +577,8 @@ class Config:
         # Update last config change timestamp
         self._config_data['last_config_update'] = datetime.now().isoformat()
 
-        logger.info(f"Proxy '{proxy_name}' configured: {proxy_config['addr']}:{proxy_config['port']}")
+        logger.info("Proxy '%s' configured: %s:%d", proxy_name,
+                    proxy_config['addr'], proxy_config['port'])
 
     def remove_proxy_config(self, proxy_name: str) -> bool:
         """
@@ -516,7 +607,8 @@ class Config:
         # Update last config change timestamp
         self._config_data['last_config_update'] = datetime.now().isoformat()
 
-        logger.info(f"Proxy '{proxy_name}' removed: {removed_proxy['addr']}:{removed_proxy['port']}")
+        logger.info("Proxy '%s' removed: %s:%d", proxy_name,
+                    removed_proxy['addr'], removed_proxy['port'])
         return True
 
     def get_proxy_config(self, proxy_name: str = 'default') -> Optional[Dict[str, Any]]:

@@ -32,9 +32,9 @@ import os
 import base64
 import json
 import logging
-from pathlib import Path
 from abc import ABC, abstractmethod
-from typing import Optional, Union, Dict, Any, Tuple
+from typing import Optional, Dict, Any
+import getpass
 
 # Cryptography imports
 from cryptography.fernet import Fernet, InvalidToken
@@ -70,7 +70,7 @@ class EncryptionAlgorithm(ABC):
         Returns:
             str: The encrypted data
         """
-        pass
+        raise NotImplementedError("Subclasses must implement this method")
 
     @abstractmethod
     def decrypt(self, encrypted_data: str) -> str:
@@ -83,7 +83,7 @@ class EncryptionAlgorithm(ABC):
         Returns:
             str: The decrypted data
         """
-        pass
+        raise NotImplementedError("Subclasses must implement this method")
 
 
 class FernetEncryption(EncryptionAlgorithm):
@@ -117,8 +117,8 @@ class FernetEncryption(EncryptionAlgorithm):
             encrypted = self.cipher.encrypt(data.encode())
             return encrypted.decode()
         except Exception as e:
-            logger.error(f"Fernet encryption failed: {e}")
-            raise EncryptionError(f"Fernet encryption failed: {e}")
+            logger.error("Fernet encryption failed: %s", e)
+            raise EncryptionError(f"Fernet encryption failed: {e}") from e
 
     def decrypt(self, encrypted_data: str) -> str:
         """
@@ -136,12 +136,14 @@ class FernetEncryption(EncryptionAlgorithm):
         try:
             decrypted = self.cipher.decrypt(encrypted_data.encode())
             return decrypted.decode()
-        except InvalidToken:
-            logger.error("Decryption failed: Invalid token. The key may be incorrect.")
-            raise DecryptionError("Invalid token. The key may be incorrect.")
+        except InvalidToken as exc:
+            logger.error(
+                "Decryption failed: Invalid token. The key may be incorrect.")
+            raise DecryptionError(
+                "Invalid token. The key may be incorrect.") from exc
         except Exception as e:
-            logger.error(f"Fernet decryption failed: {e}")
-            raise DecryptionError(f"Decryption failed: {e}")
+            logger.error("Fernet decryption failed: %s", e)
+            raise DecryptionError(f"Decryption failed: {e}") from e
 
 
 class EncryptionKeyManager:
@@ -189,14 +191,15 @@ class EncryptionKeyManager:
         """
         salt_path = salt_file or self.salt_file
         try:
-            os.makedirs(os.path.dirname(os.path.abspath(salt_path)), exist_ok=True)
+            os.makedirs(os.path.dirname(
+                os.path.abspath(salt_path)), exist_ok=True)
             with open(salt_path, "wb") as file:
                 file.write(salt)
-            logger.debug(f"Salt saved to {salt_path}")
+            logger.debug("Salt saved to %s", salt_path)
             return salt_path
         except Exception as e:
-            logger.error(f"Failed to save salt to {salt_path}: {e}")
-            raise FileWriteError(salt_path, str(e))
+            logger.error("Failed to save salt to %s: %s", salt_path, e)
+            raise FileWriteError(salt_path, str(e)) from e
 
     def load_salt(self, salt_file: Optional[str] = None) -> bytes:
         """
@@ -218,19 +221,21 @@ class EncryptionKeyManager:
             with open(salt_path, "rb") as file:
                 salt = file.read()
             if len(salt) < 8:
-                logger.error(f"Salt in {salt_path} is too short (minimum 8 bytes required)")
-                raise EncryptionError(f"Salt in {salt_path} is too short (minimum 8 bytes required)")
-            logger.debug(f"Salt loaded from {salt_path}")
+                logger.error(
+                    "Salt in %s is too short (minimum 8 bytes required)", salt_path)
+                raise EncryptionError(
+                    f"Salt in {salt_path} is too short (minimum 8 bytes required)")
+            logger.debug("Salt loaded from %s", salt_path)
             return salt
-        except FileNotFoundError:
-            logger.error(f"Salt file not found: {salt_path}")
-            raise FileReadError(salt_path, "Salt file not found")
+        except FileNotFoundError as exc:
+            logger.error("Salt file not found: %s", salt_path)
+            raise FileReadError(salt_path, "Salt file not found") from exc
         except EncryptionError:
             # Re-raise EncryptionError without converting it
             raise
         except Exception as e:
-            logger.error(f"Failed to load salt from {salt_path}: {e}")
-            raise FileReadError(salt_path, str(e))
+            logger.error("Failed to load salt from %s: %s", salt_path, e)
+            raise FileReadError(salt_path, str(e)) from e
 
     def generate_key_from_password(self, password: str, salt: Optional[bytes] = None) -> bytes:
         """
@@ -257,9 +262,9 @@ class EncryptionKeyManager:
         return key
 
     def generate_key_file(self,
-                         key_file: str = ENCRYPTION_KEY_FILE,
-                         password: Optional[str] = None,
-                         salt: Optional[bytes] = None) -> str:
+                          key_file: str = ENCRYPTION_KEY_FILE,
+                          password: Optional[str] = None,
+                          salt: Optional[bytes] = None) -> str:
         """
         Generate and save an encryption key to a file.
 
@@ -277,7 +282,8 @@ class EncryptionKeyManager:
             FileWriteError: If writing to the file fails
         """
         try:
-            os.makedirs(os.path.dirname(os.path.abspath(key_file)), exist_ok=True)
+            os.makedirs(os.path.dirname(
+                os.path.abspath(key_file)), exist_ok=True)
 
             # Generate key - either random or from password
             if password:
@@ -292,11 +298,12 @@ class EncryptionKeyManager:
             with open(key_file, "wb") as file:
                 file.write(key)
 
-            logger.info(f"Encryption key saved to {key_file}")
+            logger.info("Encryption key saved to %s", key_file)
             return key_file
         except Exception as e:
-            logger.error(f"Failed to generate and save key to {key_file}: {e}")
-            raise FileWriteError(key_file, str(e))
+            logger.error(
+                "Failed to generate and save key to %s: %s", key_file, e)
+            raise FileWriteError(key_file, str(e)) from e
 
     def load_key(self, key_file: str = ENCRYPTION_KEY_FILE) -> bytes:
         """
@@ -318,20 +325,23 @@ class EncryptionKeyManager:
 
             # Validate key
             if len(key) != 32 and len(key) != 44:  # Common lengths for Fernet keys
-                logger.error(f"Invalid key length: {len(key)} bytes")
-                raise EncryptionError(f"Invalid encryption key in {key_file} (incorrect length)")
+                logger.error("Invalid key length: %d bytes", len(key))
+                raise EncryptionError(
+                    f"Invalid encryption key in {key_file} (incorrect length)")
 
-            logger.debug(f"Encryption key loaded from {key_file}")
+            logger.debug("Encryption key loaded from %s", key_file)
             return key
-        except FileNotFoundError:
-            logger.error(f"Encryption key file not found: {key_file}")
-            raise FileReadError(key_file, "Encryption key file not found")
+        except FileNotFoundError as exc:
+            logger.error("Encryption key file not found: %s", key_file)
+            raise FileReadError(
+                key_file, "Encryption key file not found") from exc
         except EncryptionError:
             # Re-raise EncryptionError without converting it
             raise
         except Exception as e:
-            logger.error(f"Failed to load encryption key from {key_file}: {e}")
-            raise FileReadError(key_file, str(e))
+            logger.error(
+                "Failed to load encryption key from %s: %s", key_file, e)
+            raise FileReadError(key_file, str(e)) from e
 
 
 class Encryptor:
@@ -367,7 +377,8 @@ class Encryptor:
             EncryptionError: If both password and key_file are None, or if
                 the algorithm is not supported
         """
-        self.key_manager = EncryptionKeyManager(salt_file=salt_file or SALT_FILE)
+        self.key_manager = EncryptionKeyManager(
+            salt_file=salt_file or SALT_FILE)
         self.algorithm = algorithm.lower()
 
         # Determine key source and initialize encryption algorithm
@@ -389,21 +400,25 @@ class Encryptor:
             try:
                 key = self.key_manager.load_key(key_file)
             except FileReadError as e:
-                logger.error(f"Failed to load encryption key: {e}")
-                raise EncryptionError(f"Failed to load encryption key: {e}")
+                logger.error("Failed to load encryption key: %s", e)
+                raise EncryptionError(
+                    f"Failed to load encryption key: {e}") from e
         else:
             # No encryption source provided
-            logger.error("Encryption initialization failed: No password or key file provided")
-            raise EncryptionError("Encryption initialization requires either a password or a key file")
+            logger.error(
+                "Encryption initialization failed: No password or key file provided")
+            raise EncryptionError(
+                "Encryption initialization requires either a password or a key file")
 
         # Initialize the encryption algorithm
         if self.algorithm == "fernet":
             self.cipher = FernetEncryption(key)
         else:
-            logger.error(f"Unsupported encryption algorithm: {algorithm}")
-            raise EncryptionError(f"Unsupported encryption algorithm: {algorithm}")
+            logger.error("Unsupported encryption algorithm: %s", algorithm)
+            raise EncryptionError(
+                f"Unsupported encryption algorithm: {algorithm}")
 
-        logger.debug(f"Encryptor initialized with {algorithm} algorithm")
+        logger.debug("Encryptor initialized with %s algorithm", algorithm)
 
     def encrypt(self, data: str) -> str:
         """
@@ -472,26 +487,26 @@ class Encryptor:
             with open(output_file, 'w', encoding='utf-8') as file:
                 file.write(encrypted_content)
 
-            logger.info(f"File encrypted: {input_file} -> {output_file}")
+            logger.info("File encrypted: %s -> %s", input_file, output_file)
 
             # Delete original if requested
             if delete_original:
                 os.remove(input_file)
-                logger.info(f"Original file deleted: {input_file}")
+                logger.info("Original file deleted: %s", input_file)
 
             return output_file
-        except FileNotFoundError:
-            logger.error(f"Input file not found: {input_file}")
-            raise FileReadError(input_file, "File not found")
+        except FileNotFoundError as exc:
+            logger.error("Input file not found: %s", input_file)
+            raise FileReadError(input_file, "File not found") from exc
         except PermissionError as e:
-            logger.error(f"Permission error: {e}")
-            raise FileWriteError(output_file, f"Permission error: {e}")
-        except EncryptionError as e:
+            logger.error("Permission error: %s", e)
+            raise FileWriteError(output_file, f"Permission error: {e}") from e
+        except EncryptionError:
             # Re-raise encryption errors
             raise
         except Exception as e:
-            logger.error(f"File encryption failed: {e}")
-            raise EncryptionError(f"File encryption failed: {e}")
+            logger.error("File encryption failed: %s", e)
+            raise EncryptionError(f"File encryption failed: {e}") from e
 
     def decrypt_file(self,
                      input_file: str,
@@ -534,26 +549,26 @@ class Encryptor:
             with open(output_file, 'w', encoding='utf-8') as file:
                 file.write(decrypted_content)
 
-            logger.info(f"File decrypted: {input_file} -> {output_file}")
+            logger.info("File decrypted: %s -> %s", input_file, output_file)
 
             # Delete encrypted file if requested
             if delete_encrypted:
                 os.remove(input_file)
-                logger.info(f"Encrypted file deleted: {input_file}")
+                logger.info("Encrypted file deleted: %s", input_file)
 
             return output_file
-        except FileNotFoundError:
-            logger.error(f"Encrypted file not found: {input_file}")
-            raise FileReadError(input_file, "File not found")
+        except FileNotFoundError as exc:
+            logger.error("Encrypted file not found: %s", input_file)
+            raise FileReadError(input_file, "File not found") from exc
         except PermissionError as e:
-            logger.error(f"Permission error: {e}")
-            raise FileWriteError(output_file, f"Permission error: {e}")
-        except DecryptionError as e:
+            logger.error("Permission error: %s", e)
+            raise FileWriteError(f"Permission error: {e}") from e
+        except DecryptionError:
             # Re-raise decryption errors
             raise
         except Exception as e:
-            logger.error(f"File decryption failed: {e}")
-            raise DecryptionError(f"File decryption failed: {e}")
+            logger.error("File decryption failed: %s", e)
+            raise DecryptionError(f"File decryption failed: {e}") from e
 
     def encrypt_dict(self, data: Dict[str, Any]) -> str:
         """
@@ -572,14 +587,15 @@ class Encryptor:
             json_data = json.dumps(data)
             return self.encrypt(json_data)
         except (TypeError, ValueError) as e:
-            logger.error(f"JSON serialization failed: {e}")
-            raise EncryptionError(f"Failed to serialize data to JSON: {e}")
+            logger.error("JSON serialization failed: %s", e)
+            raise EncryptionError(
+                f"Failed to serialize data to JSON: {e}") from e
         except EncryptionError:
             # Re-raise encryption errors
             raise
         except Exception as e:
-            logger.error(f"Dictionary encryption failed: {e}")
-            raise EncryptionError(f"Dictionary encryption failed: {e}")
+            logger.error("Dictionary encryption failed: %s", e)
+            raise EncryptionError(f"Dictionary encryption failed: {e}") from e
 
     def decrypt_dict(self, encrypted_data: str) -> Dict[str, Any]:
         """
@@ -598,14 +614,15 @@ class Encryptor:
             json_data = self.decrypt(encrypted_data)
             return json.loads(json_data)
         except (TypeError, ValueError, json.JSONDecodeError) as e:
-            logger.error(f"JSON deserialization failed: {e}")
-            raise DecryptionError(f"Failed to parse decrypted data as JSON: {e}")
+            logger.error("JSON deserialization failed: %s", e)
+            raise DecryptionError(
+                f"Failed to parse decrypted data as JSON: {e}") from e
         except DecryptionError:
             # Re-raise decryption errors
             raise
         except Exception as e:
-            logger.error(f"Dictionary decryption failed: {e}")
-            raise DecryptionError(f"Dictionary decryption failed: {e}")
+            logger.error("Dictionary decryption failed: %s", e)
+            raise DecryptionError(f"Dictionary decryption failed: {e}") from e
 
 
 # Helper function to securely get a password from user input
@@ -619,5 +636,4 @@ def get_password(prompt: str) -> str:
     Returns:
         str: The entered password
     """
-    import getpass
     return getpass.getpass(prompt)

@@ -52,12 +52,14 @@ except ImportError:
 # Setup logger
 logger = get_logger("Stats")
 
+
 class MetricType(Enum):
     COUNTER = auto()
     GAUGE = auto()
     TIMER = auto()
     HISTOGRAM = auto()
     DISTRIBUTION = auto()
+
 
 class OperationType(Enum):
     MEMBER_ADD = auto()
@@ -97,6 +99,7 @@ class OperationType(Enum):
         }
         return type_map.get(op_type_str.lower(), cls.OTHER)
 
+
 class OperationStats:
     def __init__(self, operation_type: OperationType):
         self.operation_type = operation_type
@@ -110,11 +113,13 @@ class OperationStats:
         self.error_counts = Counter()
         self.time_distribution = []
         self.recent_operations = deque(maxlen=100)
-        self.hourly_stats = defaultdict(lambda: {"total": 0, "success": 0, "failure": 0})
-        self.daily_stats = defaultdict(lambda: {"total": 0, "success": 0, "failure": 0})
+        self.hourly_stats = defaultdict(
+            lambda: {"total": 0, "success": 0, "failure": 0})
+        self.daily_stats = defaultdict(
+            lambda: {"total": 0, "success": 0, "failure": 0})
 
     def record_operation(self, success: bool, duration_ms: float, error_type: str = None,
-                      details: Dict[str, Any] = None):
+                         details: Dict[str, Any] = None):
         self.total_operations += 1
         self.last_operation_time = datetime.now()
 
@@ -222,7 +227,8 @@ class OperationStats:
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> 'OperationStats':
-        operation_type = OperationType.from_str(data.get("operation_type", "other"))
+        operation_type = OperationType.from_str(
+            data.get("operation_type", "other"))
         stats = cls(operation_type)
 
         stats.total_operations = data.get("total_operations", 0)
@@ -230,13 +236,16 @@ class OperationStats:
         stats.failed_operations = data.get("failed_operations", 0)
 
         if data.get("last_operation_time"):
-            stats.last_operation_time = datetime.fromisoformat(data["last_operation_time"])
+            stats.last_operation_time = datetime.fromisoformat(
+                data["last_operation_time"])
 
         if data.get("last_success_time"):
-            stats.last_success_time = datetime.fromisoformat(data["last_success_time"])
+            stats.last_success_time = datetime.fromisoformat(
+                data["last_success_time"])
 
         if data.get("last_failure_time"):
-            stats.last_failure_time = datetime.fromisoformat(data["last_failure_time"])
+            stats.last_failure_time = datetime.fromisoformat(
+                data["last_failure_time"])
 
         stats.last_error = data.get("last_error")
         stats.error_counts = Counter(data.get("common_errors", {}))
@@ -247,7 +256,8 @@ class OperationStats:
 
         # Reconstruct recent operations
         if "recent_operations" in data:
-            stats.recent_operations = deque(data["recent_operations"], maxlen=100)
+            stats.recent_operations = deque(
+                data["recent_operations"], maxlen=100)
 
         # Reconstruct hourly and daily stats
         if "hourly_stats" in data:
@@ -259,6 +269,7 @@ class OperationStats:
                 stats.daily_stats[day] = day_data
 
         return stats
+
 
 class PerformanceMetrics:
     def __init__(self, name: str):
@@ -276,7 +287,7 @@ class PerformanceMetrics:
         self.dimensions[key] = value
 
     def increment_counter(self, name: str, value: int = 1,
-                         dimensions: Dict[str, Any] = None) -> None:
+                          dimensions: Dict[str, Any] = None) -> None:
         self.counters[name] += value
 
         if dimensions:
@@ -285,7 +296,7 @@ class PerformanceMetrics:
             self.counters[dim_key] += value
 
     def set_gauge(self, name: str, value: float,
-                 dimensions: Dict[str, Any] = None) -> None:
+                  dimensions: Dict[str, Any] = None) -> None:
         self.gauges[name] = value
 
         if dimensions:
@@ -326,7 +337,7 @@ class PerformanceMetrics:
         return duration_ms
 
     def record_histogram(self, name: str, value: float,
-                        dimensions: Dict[str, Any] = None) -> None:
+                         dimensions: Dict[str, Any] = None) -> None:
         self.histograms[name].append(value)
 
         if dimensions:
@@ -463,6 +474,7 @@ class PerformanceMetrics:
 
         return metrics
 
+
 class ErrorStats:
     def __init__(self):
         self.total_errors = 0
@@ -475,7 +487,7 @@ class ErrorStats:
         self.daily_errors = defaultdict(Counter)
 
     def record_error(self, error_type: str, module: str = None,
-                   operation: str = None, details: Dict[str, Any] = None) -> None:
+                     operation: str = None, details: Dict[str, Any] = None) -> None:
         self.total_errors += 1
         timestamp = datetime.now()
 
@@ -527,7 +539,7 @@ class ErrorStats:
         return self.error_by_operation[operation].most_common(limit)
 
     def get_error_time_series(self, error_type: Optional[str] = None,
-                            by: str = 'hour', last_n: int = 24) -> Dict[str, Dict]:
+                              by: str = 'hour', last_n: int = 24) -> Dict[str, Dict]:
         if by.lower() == 'hour':
             data_source = self.hourly_errors
         else:
@@ -562,7 +574,8 @@ class ErrorStats:
         cutoff = now - timedelta(seconds=time_window)
 
         # Count errors within the time window
-        recent_errors = [ts for ts in self.error_timestamps[error_type] if ts >= cutoff]
+        recent_errors = [
+            ts for ts in self.error_timestamps[error_type] if ts >= cutoff]
 
         # Calculate frequency (errors per hour)
         return len(recent_errors) * 3600 / time_window
@@ -613,6 +626,7 @@ class ErrorStats:
 
         return stats
 
+
 class AccountStats:
     def __init__(self, account_id: str):
         self.account_id = account_id
@@ -636,8 +650,8 @@ class AccountStats:
         self.phone = phone
 
     def record_activity(self, operation_type: OperationType,
-                      success: bool, duration_ms: float = 0,
-                      error_type: str = None, details: Dict[str, Any] = None) -> None:
+                        success: bool, duration_ms: float = 0,
+                        error_type: str = None, details: Dict[str, Any] = None) -> None:
         timestamp = datetime.now()
         self.last_active = timestamp
 
@@ -706,10 +720,11 @@ class AccountStats:
 
         # Recalculate rate
         if week_entry["operations"] > 0:
-            week_entry["rate"] = (week_entry["successful"] / week_entry["operations"]) * 100
+            week_entry["rate"] = (
+                week_entry["successful"] / week_entry["operations"]) * 100
 
     def record_cooldown(self, start_time: datetime, end_time: datetime = None,
-                       reason: str = None) -> None:
+                        reason: str = None) -> None:
         if end_time is None:
             # Ongoing cooldown (to be updated later)
             end_time = datetime.max
@@ -724,17 +739,20 @@ class AccountStats:
         self.cooldown_periods.append(cooldown_record)
 
         if end_time != datetime.max:
-            self.total_cooldown_seconds += (end_time - start_time).total_seconds()
+            self.total_cooldown_seconds += (end_time -
+                                            start_time).total_seconds()
 
     def update_cooldown(self, index: int, end_time: datetime) -> None:
         if index < 0 or index >= len(self.cooldown_periods):
-            logger.warning(f"Invalid cooldown index for account {self.account_id}: {index}")
+            logger.warning(
+                f"Invalid cooldown index for account {self.account_id}: {index}")
             return
 
         cooldown_record = self.cooldown_periods[index]
 
         if cooldown_record["end"] is not None:
-            logger.warning(f"Cooldown for account {self.account_id} already has an end time")
+            logger.warning(
+                f"Cooldown for account {self.account_id} already has an end time")
             return
 
         start_time = datetime.fromisoformat(cooldown_record["start"])
@@ -839,8 +857,10 @@ class AccountStats:
             stats.last_active = datetime.fromisoformat(data["last_active"])
 
         stats.operations = defaultdict(int, data.get("operations", {}))
-        stats.successful_operations = defaultdict(int, data.get("successful_operations", {}))
-        stats.failed_operations = defaultdict(int, data.get("failed_operations", {}))
+        stats.successful_operations = defaultdict(
+            int, data.get("successful_operations", {}))
+        stats.failed_operations = defaultdict(
+            int, data.get("failed_operations", {}))
 
         stats.members_added = data.get("members_added", 0)
         stats.members_extracted = data.get("members_extracted", 0)
@@ -857,6 +877,7 @@ class AccountStats:
 
         return stats
 
+
 class MetricsCollector:
     _instance = None
     _lock = threading.RLock()
@@ -869,7 +890,7 @@ class MetricsCollector:
             return cls._instance
 
     def __init__(self, stats_dir: Optional[str] = None,
-                auto_save: bool = True, save_interval: int = 300):
+                 auto_save: bool = True, save_interval: int = 300):
         with self._lock:
             if self._initialized:
                 return
@@ -950,22 +971,28 @@ class MetricsCollector:
         """Load stats from disk."""
         try:
             # Load operation stats
-            op_stats_file = os.path.join(self.stats_dir, "operation_stats.json")
+            op_stats_file = os.path.join(
+                self.stats_dir, "operation_stats.json")
             if os.path.exists(op_stats_file):
-                op_stats_data = self.file_manager.read_json(op_stats_file, default={})
+                op_stats_data = self.file_manager.read_json(
+                    op_stats_file, default={})
                 for op_type, stats_data in op_stats_data.items():
-                    self.operation_stats[op_type] = OperationStats.from_dict(stats_data)
+                    self.operation_stats[op_type] = OperationStats.from_dict(
+                        stats_data)
 
             # Load performance metrics
-            perf_file = os.path.join(self.stats_dir, "performance_metrics.json")
+            perf_file = os.path.join(
+                self.stats_dir, "performance_metrics.json")
             if os.path.exists(perf_file):
                 perf_data = self.file_manager.read_json(perf_file, default={})
-                self.performance_metrics = PerformanceMetrics.from_dict(perf_data)
+                self.performance_metrics = PerformanceMetrics.from_dict(
+                    perf_data)
 
             # Load error stats
             error_file = os.path.join(self.stats_dir, "error_stats.json")
             if os.path.exists(error_file):
-                error_data = self.file_manager.read_json(error_file, default={})
+                error_data = self.file_manager.read_json(
+                    error_file, default={})
                 self.error_stats = ErrorStats.from_dict(error_data)
 
             # Load account stats
@@ -973,11 +1000,13 @@ class MetricsCollector:
             if os.path.exists(account_dir):
                 for account_file in os.listdir(account_dir):
                     if account_file.endswith(".json"):
-                        account_id = account_file[:-5]  # Remove .json extension
+                        # Remove .json extension
+                        account_id = account_file[:-5]
                         account_data = self.file_manager.read_json(
                             os.path.join(account_dir, account_file), default={}
                         )
-                        self.account_stats[account_id] = AccountStats.from_dict(account_data)
+                        self.account_stats[account_id] = AccountStats.from_dict(
+                            account_data)
 
             # Load time series data
             ts_dir = os.path.join(self.stats_dir, "time_series")
@@ -988,7 +1017,8 @@ class MetricsCollector:
                         ts_data = self.file_manager.read_json(
                             os.path.join(ts_dir, ts_file), default={}
                         )
-                        self.time_series[ts_name] = TimeSeriesData.from_dict(ts_data)
+                        self.time_series[ts_name] = TimeSeriesData.from_dict(
+                            ts_data)
 
             logger.info("Metrics loaded from disk")
         except Exception as e:
@@ -1049,13 +1079,14 @@ class MetricsCollector:
 
         with self._lock:
             if op_type_str not in self.operation_stats:
-                self.operation_stats[op_type_str] = OperationStats(operation_type)
+                self.operation_stats[op_type_str] = OperationStats(
+                    operation_type)
 
             return self.operation_stats[op_type_str]
 
     def record_operation(self, operation_type: OperationType, success: bool,
-                       duration_ms: float, error_type: str = None,
-                       details: Optional[Dict[str, Any]] = None) -> None:
+                         duration_ms: float, error_type: str = None,
+                         details: Optional[Dict[str, Any]] = None) -> None:
         """Record an operation result."""
         with self._lock:
             # Get or create stats for this operation type
@@ -1074,10 +1105,11 @@ class MetricsCollector:
                 )
 
     def record_error(self, error_type: str, module: str = None,
-                   operation: str = None, details: Optional[Dict[str, Any]] = None) -> None:
+                     operation: str = None, details: Optional[Dict[str, Any]] = None) -> None:
         """Record an error."""
         with self._lock:
-            self.error_stats.record_error(error_type, module, operation, details)
+            self.error_stats.record_error(
+                error_type, module, operation, details)
 
     def get_account_stats(self, account_id: str) -> AccountStats:
         """Get or create account stats for a specific account."""
@@ -1088,19 +1120,21 @@ class MetricsCollector:
             return self.account_stats[account_id]
 
     def record_account_activity(self, account_id: str, operation_type: OperationType,
-                              success: bool, duration_ms: float = 0,
-                              error_type: str = None,
-                              details: Optional[Dict[str, Any]] = None) -> None:
+                                success: bool, duration_ms: float = 0,
+                                error_type: str = None,
+                                details: Optional[Dict[str, Any]] = None) -> None:
         """Record account activity."""
         with self._lock:
             # Get or create account stats
             account_stats = self.get_account_stats(account_id)
 
             # Record the activity
-            account_stats.record_activity(operation_type, success, duration_ms, error_type, details)
+            account_stats.record_activity(
+                operation_type, success, duration_ms, error_type, details)
 
             # Also record in operation stats
-            self.record_operation(operation_type, success, duration_ms, error_type, details)
+            self.record_operation(operation_type, success,
+                                  duration_ms, error_type, details)
 
     def get_time_series(self, name: str, resolution: str = 'hour') -> TimeSeriesData:
         """Get or create a time series."""
@@ -1113,9 +1147,9 @@ class MetricsCollector:
             return self.time_series[key]
 
     def record_time_series_point(self, name: str, value: Union[int, float],
-                              resolution: str = 'hour',
-                              timestamp: Optional[datetime] = None,
-                              dimensions: Optional[Dict[str, Any]] = None) -> None:
+                                 resolution: str = 'hour',
+                                 timestamp: Optional[datetime] = None,
+                                 dimensions: Optional[Dict[str, Any]] = None) -> None:
         """Record a time series data point."""
         with self._lock:
             time_series = self.get_time_series(name, resolution)
@@ -1139,7 +1173,8 @@ class MetricsCollector:
 
             for timer_name, timer_values in self.performance_metrics.timers.items():
                 if len(timer_values) > 0:
-                    timer_stats[timer_name] = self.performance_metrics.get_timer_stats(timer_name)
+                    timer_stats[timer_name] = self.performance_metrics.get_timer_stats(
+                        timer_name)
 
             return {
                 "counters": dict(self.performance_metrics.counters),
@@ -1194,7 +1229,8 @@ class MetricsCollector:
                 return json.dumps(report_data, indent=2)
             elif report_format == 'csv':
                 # This is a simplified CSV format focusing on operation stats
-                lines = ["operation_type,total,success,failed,success_rate,avg_duration"]
+                lines = [
+                    "operation_type,total,success,failed,success_rate,avg_duration"]
 
                 for op_type, stats in report_data["operation_summary"].items():
                     line = f"{op_type},{stats['total']},{stats['success']},{stats['failed']},{stats['success_rate']:.2f},{stats['avg_duration']:.2f}"
@@ -1219,13 +1255,14 @@ class MetricsCollector:
         """Clean up resources."""
         self._stop_auto_save_thread()
 
+
 class MetricsExporter:
     def __init__(self, metrics_collector: Optional[MetricsCollector] = None):
         self.metrics_collector = metrics_collector or MetricsCollector()
         self.file_manager = JsonFileManager()
 
     def export_operation_stats(self, file_path: str, operation_type: Optional[OperationType] = None,
-                             format: str = 'json') -> bool:
+                               format: str = 'json') -> bool:
         """Export operation statistics to a file."""
         try:
             data = {}
@@ -1293,7 +1330,7 @@ class MetricsExporter:
             return False
 
     def export_account_stats(self, file_path: str, account_id: Optional[str] = None,
-                          format: str = 'json') -> bool:
+                             format: str = 'json') -> bool:
         """Export account statistics to a file."""
         try:
             data = {}
@@ -1332,8 +1369,10 @@ class MetricsExporter:
                         row = base_row.copy()
                         row["operation_type"] = op_type
                         row["total"] = count
-                        row["successful"] = acc_data.get("successful_operations", {}).get(op_type, 0)
-                        row["failed"] = acc_data.get("failed_operations", {}).get(op_type, 0)
+                        row["successful"] = acc_data.get(
+                            "successful_operations", {}).get(op_type, 0)
+                        row["failed"] = acc_data.get(
+                            "failed_operations", {}).get(op_type, 0)
                         csv_data.append(row)
 
                 self._write_csv(file_path, csv_data)
@@ -1346,7 +1385,7 @@ class MetricsExporter:
             return False
 
     def export_time_series(self, file_path: str, name: str, resolution: str = 'hour',
-                         format: str = 'json') -> bool:
+                           format: str = 'json') -> bool:
         """Export time series data to a file."""
         try:
             key = f"{name}_{resolution}"
@@ -1366,7 +1405,8 @@ class MetricsExporter:
 
                 for time_key, dim_data in data.get("data_points", {}).items():
                     for dim_key, point_data in dim_data.items():
-                        dimensions = data.get("dimensions", {}).get(dim_key, {})
+                        dimensions = data.get(
+                            "dimensions", {}).get(dim_key, {})
 
                         row = {
                             "timestamp": time_key,
@@ -1402,7 +1442,8 @@ class MetricsExporter:
 
             # Export operation stats
             for format in formats:
-                file_path = os.path.join(directory, f"operation_stats.{format}")
+                file_path = os.path.join(
+                    directory, f"operation_stats.{format}")
                 if not self.export_operation_stats(file_path, format=format):
                     success = False
 
@@ -1422,12 +1463,14 @@ class MetricsExporter:
             for key, time_series in self.metrics_collector.time_series.items():
                 name, resolution = key.rsplit('_', 1)
                 for format in formats:
-                    file_path = os.path.join(directory, f"time_series_{name}_{resolution}.{format}")
+                    file_path = os.path.join(
+                        directory, f"time_series_{name}_{resolution}.{format}")
                     if not self.export_time_series(file_path, name, resolution, format=format):
                         success = False
 
             # Export summary report
-            summary_report = self.metrics_collector.generate_report(report_format='json')
+            summary_report = self.metrics_collector.generate_report(
+                report_format='json')
             summary_path = os.path.join(directory, "summary_report.json")
             with open(summary_path, 'w') as f:
                 f.write(summary_report)
@@ -1502,8 +1545,41 @@ def get_metrics_collector(stats_dir: Optional[str] = None) -> MetricsCollector:
     """
     return MetricsCollector(stats_dir=stats_dir)
 
+
+class TimeSeriesData:
+    """
+    Stores time-based metrics with flexible resolution for trend analysis.
+
+    Allows recording and aggregating values over time with various resolutions
+    (minute, hour, day, week, month) and supports multi-dimensional data.
+    """
+
+    def __init__(self, name: str, resolution: str = 'hour', max_points: int = 1000):
+        """
+        Initialize time series data collection.
+
+        Args:
+            name (str): Name of this time series
+            resolution (str): Time bucket resolution ('minute', 'hour', 'day', 'week', 'month')
+            max_points (int): Maximum number of time points to store
+        """
+        self.name = name
+        self.resolution = resolution
+        self.max_points = max_points
+        self.data_points = {}  # Maps time bucket to dimension data
+        self.dimensions = {}   # Maps dimension keys to dimension dictionaries
+        self.metadata = {}     # Additional metadata about this time series
+
     def add_point(self, value: Union[int, float], timestamp: Optional[datetime] = None,
-                dimensions: Optional[Dict[str, Any]] = None) -> None:
+                  dimensions: Optional[Dict[str, Any]] = None) -> None:
+        """
+        Add a data point to the time series.
+
+        Args:
+            value (Union[int, float]): The value to record
+            timestamp (datetime, optional): When this value occurred. Defaults to now.
+            dimensions (Dict[str, Any], optional): Dimension values for this point
+        """
         if timestamp is None:
             timestamp = datetime.now()
 
@@ -1526,7 +1602,8 @@ def get_metrics_collector(stats_dir: Optional[str] = None) -> MetricsCollector:
         # Create dimension key if dimensions provided
         dim_key = "_default"
         if dimensions:
-            dim_key = ":".join(f"{k}={v}" for k, v in sorted(dimensions.items()))
+            dim_key = ":".join(
+                f"{k}={v}" for k, v in sorted(dimensions.items()))
             # Store the dimension definition
             self.dimensions[dim_key] = dimensions
 
@@ -1555,6 +1632,7 @@ def get_metrics_collector(stats_dir: Optional[str] = None) -> MetricsCollector:
         self._prune_if_needed()
 
     def _prune_if_needed(self) -> None:
+        """Remove oldest data points if we exceed the maximum number of points."""
         if len(self.data_points) <= self.max_points:
             return
 
@@ -1566,14 +1644,26 @@ def get_metrics_collector(stats_dir: Optional[str] = None) -> MetricsCollector:
             del self.data_points[key]
 
     def get_points(self, start_time: Optional[datetime] = None,
-                 end_time: Optional[datetime] = None,
-                 dimensions: Optional[Dict[str, Any]] = None) -> Dict[str, Dict[str, Any]]:
+                   end_time: Optional[datetime] = None,
+                   dimensions: Optional[Dict[str, Any]] = None) -> Dict[str, Dict[str, Any]]:
+        """
+        Get time series data points within a time range.
+
+        Args:
+            start_time (datetime, optional): Start of time range
+            end_time (datetime, optional): End of time range
+            dimensions (Dict[str, Any], optional): Filter by these dimensions
+
+        Returns:
+            Dict[str, Dict[str, Any]]: Time points with their statistics
+        """
         result = {}
 
         # Calculate dimension key
         dim_key = "_default"
         if dimensions:
-            dim_key = ":".join(f"{k}={v}" for k, v in sorted(dimensions.items()))
+            dim_key = ":".join(
+                f"{k}={v}" for k, v in sorted(dimensions.items()))
 
         # Filter by time range
         for time_key, dim_data in sorted(self.data_points.items()):
@@ -1602,8 +1692,19 @@ def get_metrics_collector(stats_dir: Optional[str] = None) -> MetricsCollector:
         return result
 
     def get_aggregates(self, start_time: Optional[datetime] = None,
-                     end_time: Optional[datetime] = None,
-                     dimensions: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+                       end_time: Optional[datetime] = None,
+                       dimensions: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+        """
+        Get aggregated statistics for the time series.
+
+        Args:
+            start_time (datetime, optional): Start of time range
+            end_time (datetime, optional): End of time range
+            dimensions (Dict[str, Any], optional): Filter by these dimensions
+
+        Returns:
+            Dict[str, Any]: Aggregated statistics
+        """
         points = self.get_points(start_time, end_time, dimensions)
 
         if not points:
@@ -1630,6 +1731,12 @@ def get_metrics_collector(stats_dir: Optional[str] = None) -> MetricsCollector:
         }
 
     def to_dict(self) -> Dict[str, Any]:
+        """
+        Convert time series data to a dictionary for serialization.
+
+        Returns:
+            Dict[str, Any]: Dictionary representation of time series data
+        """
         return {
             "name": self.name,
             "resolution": self.resolution,
@@ -1641,6 +1748,15 @@ def get_metrics_collector(stats_dir: Optional[str] = None) -> MetricsCollector:
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> 'TimeSeriesData':
+        """
+        Create a TimeSeriesData instance from a dictionary.
+
+        Args:
+            data (Dict[str, Any]): Dictionary data
+
+        Returns:
+            TimeSeriesData: New instance with loaded data
+        """
         name = data.get("name", "unknown")
         resolution = data.get("resolution", "hour")
         max_points = data.get("max_points", 1000)

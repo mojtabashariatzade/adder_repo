@@ -40,7 +40,7 @@ import shutil
 import tempfile
 import logging
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union, BinaryIO, TextIO, Callable, TypeVar, Generic
+from typing import Any, Dict, List, Optional, Union, Callable, TypeVar
 from datetime import datetime
 import time
 import threading
@@ -48,7 +48,7 @@ import hashlib
 
 # Import custom exceptions
 from core.exceptions import (
-    FileError, FileReadError, FileWriteError, FileFormatError,
+    FileReadError, FileWriteError, FileFormatError,
     ConfigFileNotFoundError, EncryptionError, DecryptionError
 )
 
@@ -64,6 +64,7 @@ logger = logging.getLogger(__name__)
 
 # Type variable for generic functions
 T = TypeVar('T')
+
 
 class FileManager:
     """
@@ -82,7 +83,8 @@ class FileManager:
                 If None, uses the current working directory.
         """
         self.base_dir = base_dir or os.getcwd()
-        logger.debug(f"FileManager initialized with base directory: {self.base_dir}")
+        logger.debug(
+            "FileManager initialized with base directory: %s", self.base_dir)
 
     def _resolve_path(self, path: Union[str, Path]) -> Path:
         """
@@ -156,8 +158,9 @@ class FileManager:
             dir_path.mkdir(parents=True, exist_ok=True)
             return dir_path
         except Exception as e:
-            logger.error(f"Failed to create directory {dir_path}: {e}")
-            raise FileWriteError(str(dir_path), f"Failed to create directory: {e}")
+            logger.error("Failed to create directory %s: %s", dir_path, e)
+            raise FileWriteError(
+                str(dir_path), "Failed to create directory: %s" % e)
 
     def ensure_parent_dir(self, path: Union[str, Path]) -> Path:
         """
@@ -228,7 +231,7 @@ class FileManager:
             raise FileReadError(str(file_path), str(e))
 
     def write_text(self, path: Union[str, Path], content: str,
-                  encoding: str = 'utf-8', make_backup: bool = False) -> None:
+                   encoding: str = 'utf-8', make_backup: bool = False) -> None:
         """
         Write text to a file.
 
@@ -259,7 +262,7 @@ class FileManager:
             raise FileWriteError(str(file_path), str(e))
 
     def write_binary(self, path: Union[str, Path], content: bytes,
-                    make_backup: bool = False) -> None:
+                     make_backup: bool = False) -> None:
         """
         Write binary data to a file.
 
@@ -289,7 +292,7 @@ class FileManager:
             raise FileWriteError(str(file_path), str(e))
 
     def _atomic_write(self, path: Path, content: Union[str, bytes],
-                     mode: str, encoding: Optional[str] = None) -> None:
+                      mode: str, encoding: Optional[str] = None) -> None:
         """
         Write to a file atomically using a temporary file.
 
@@ -354,7 +357,8 @@ class FileManager:
             return backup_path
         except Exception as e:
             logger.error(f"Error creating backup of {file_path}: {e}")
-            raise FileWriteError(str(backup_path), f"Error creating backup: {e}")
+            raise FileWriteError(
+                str(backup_path), f"Error creating backup: {e}")
 
     def delete(self, path: Union[str, Path], missing_ok: bool = False) -> bool:
         """
@@ -391,7 +395,7 @@ class FileManager:
             raise FileWriteError(str(file_path), f"Error deleting file: {e}")
 
     def copy(self, src: Union[str, Path], dst: Union[str, Path],
-            overwrite: bool = False) -> Path:
+             overwrite: bool = False) -> Path:
         """
         Copy a file or directory.
 
@@ -440,7 +444,7 @@ class FileManager:
             raise FileWriteError(str(dst_path), f"Error copying: {e}")
 
     def move(self, src: Union[str, Path], dst: Union[str, Path],
-            overwrite: bool = False) -> Path:
+             overwrite: bool = False) -> Path:
         """
         Move a file or directory.
 
@@ -564,7 +568,8 @@ class FileManager:
             }
         except Exception as e:
             logger.error(f"Error getting file info for {file_path}: {e}")
-            raise FileReadError(str(file_path), f"Error getting file info: {e}")
+            raise FileReadError(
+                str(file_path), f"Error getting file info: {e}")
 
     def calculate_file_hash(self, path: Union[str, Path], algorithm: str = 'sha256') -> str:
         """
@@ -609,7 +614,7 @@ class FileManager:
             raise FileReadError(str(file_path), f"Error calculating hash: {e}")
 
     def get_temp_file(self, suffix: Optional[str] = None, prefix: Optional[str] = None,
-                     dir: Optional[Union[str, Path]] = None) -> tuple[Path, Callable[[], None]]:
+                      dir: Optional[Union[str, Path]] = None) -> tuple[Path, Callable[[], None]]:
         """
         Create a temporary file.
 
@@ -629,7 +634,8 @@ class FileManager:
             dir_str = None
 
         try:
-            fd, temp_path = tempfile.mkstemp(suffix=suffix, prefix=prefix, dir=dir_str)
+            fd, temp_path = tempfile.mkstemp(
+                suffix=suffix, prefix=prefix, dir=dir_str)
             os.close(fd)  # Close the file descriptor
 
             # Create a cleanup function
@@ -644,10 +650,11 @@ class FileManager:
             return Path(temp_path), cleanup
         except Exception as e:
             logger.error(f"Error creating temporary file: {e}")
-            raise FileWriteError("temp file", f"Error creating temporary file: {e}")
+            raise FileWriteError(
+                "temp file", f"Error creating temporary file: {e}")
 
     def get_temp_dir(self, suffix: Optional[str] = None, prefix: Optional[str] = None,
-                    dir: Optional[Union[str, Path]] = None) -> tuple[Path, Callable[[], None]]:
+                     dir: Optional[Union[str, Path]] = None) -> tuple[Path, Callable[[], None]]:
         """
         Create a temporary directory.
 
@@ -667,7 +674,8 @@ class FileManager:
             dir_str = None
 
         try:
-            temp_dir = tempfile.mkdtemp(suffix=suffix, prefix=prefix, dir=dir_str)
+            temp_dir = tempfile.mkdtemp(
+                suffix=suffix, prefix=prefix, dir=dir_str)
 
             # Create a cleanup function
             def cleanup():
@@ -681,7 +689,8 @@ class FileManager:
             return Path(temp_dir), cleanup
         except Exception as e:
             logger.error(f"Error creating temporary directory: {e}")
-            raise FileWriteError("temp directory", f"Error creating temporary directory: {e}")
+            raise FileWriteError(
+                "temp directory", f"Error creating temporary directory: {e}")
 
 
 class JsonFileManager(FileManager):
@@ -721,7 +730,8 @@ class JsonFileManager(FileManager):
 
         if not file_path.exists():
             if default is not None:
-                logger.debug(f"JSON file not found, returning default: {file_path}")
+                logger.debug(
+                    f"JSON file not found, returning default: {file_path}")
                 return default
             logger.error(f"JSON file not found: {file_path}")
             raise FileReadError(str(file_path), "File not found")
@@ -734,7 +744,7 @@ class JsonFileManager(FileManager):
             raise FileFormatError(str(file_path), f"Invalid JSON: {e}")
 
     def write_json(self, path: Union[str, Path], data: Dict[str, Any],
-                  make_backup: bool = False) -> None:
+                   make_backup: bool = False) -> None:
         """
         Write data to a JSON file.
 
@@ -751,7 +761,8 @@ class JsonFileManager(FileManager):
 
         try:
             # Convert to JSON string
-            json_content = json.dumps(data, indent=self.indent, ensure_ascii=False)
+            json_content = json.dumps(
+                data, indent=self.indent, ensure_ascii=False)
             # Write to file
             self.write_text(file_path, json_content, make_backup=make_backup)
             logger.debug(f"JSON written to {file_path}")
@@ -800,7 +811,7 @@ class JsonFileManager(FileManager):
         return False, issues
 
     def merge_json(self, target_path: Union[str, Path], source_path: Union[str, Path],
-                  overwrite: bool = True) -> Dict[str, Any]:
+                   overwrite: bool = True) -> Dict[str, Any]:
         """
         Merge a source JSON file into a target JSON file.
 
@@ -864,7 +875,8 @@ class EncryptedFileManager(FileManager):
 
         if not isinstance(encryptor, Encryptor):
             logger.error(f"Invalid encryptor type: {type(encryptor)}")
-            raise TypeError("encryptor must be an instance of data.encryption.Encryptor")
+            raise TypeError(
+                "encryptor must be an instance of data.encryption.Encryptor")
 
         self.encryptor = encryptor
 
@@ -893,7 +905,7 @@ class EncryptedFileManager(FileManager):
             raise DecryptionError(f"Error decrypting {path}: {e}")
 
     def write_encrypted(self, path: Union[str, Path], content: str,
-                       make_backup: bool = False) -> None:
+                        make_backup: bool = False) -> None:
         """
         Encrypt and write content to a file.
 
@@ -915,10 +927,11 @@ class EncryptedFileManager(FileManager):
             logger.debug(f"Encrypted content written to {path}")
         except Exception as e:
             logger.error(f"Error encrypting or writing to {path}: {e}")
-            raise EncryptionError(f"Error encrypting or writing to {path}: {e}")
+            raise EncryptionError(
+                f"Error encrypting or writing to {path}: {e}")
 
     def read_encrypted_json(self, path: Union[str, Path],
-                           default: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+                            default: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """
         Read and decrypt an encrypted JSON file.
 
@@ -938,7 +951,8 @@ class EncryptedFileManager(FileManager):
 
         if not file_path.exists():
             if default is not None:
-                logger.debug(f"Encrypted JSON file not found, returning default: {file_path}")
+                logger.debug(
+                    f"Encrypted JSON file not found, returning default: {file_path}")
                 return default
             logger.error(f"Encrypted JSON file not found: {file_path}")
             raise FileReadError(str(file_path), "File not found")
@@ -950,14 +964,15 @@ class EncryptedFileManager(FileManager):
             # Parse JSON
             return json.loads(decrypted_content)
         except json.JSONDecodeError as e:
-            logger.error(f"Invalid JSON in decrypted content of {file_path}: {e}")
+            logger.error(
+                f"Invalid JSON in decrypted content of {file_path}: {e}")
             raise FileFormatError(
                 str(file_path),
                 f"Invalid JSON in decrypted content: {e}"
             )
 
     def write_encrypted_json(self, path: Union[str, Path], data: Dict[str, Any],
-                            indent: int = 4, make_backup: bool = False) -> None:
+                             indent: int = 4, make_backup: bool = False) -> None:
         """
         Encrypt and write JSON data to a file.
 
@@ -1014,8 +1029,8 @@ class SafeFileWriter:
 
     @classmethod
     def safe_write(cls, path: Union[str, Path], content: Union[str, bytes],
-                  mode: str = 'w', encoding: Optional[str] = 'utf-8',
-                  make_backup: bool = False) -> None:
+                   mode: str = 'w', encoding: Optional[str] = 'utf-8',
+                   make_backup: bool = False) -> None:
         """
         Write to a file safely with locking.
 
@@ -1035,7 +1050,8 @@ class SafeFileWriter:
         with lock:
             try:
                 # Create parent directory if it doesn't exist
-                os.makedirs(os.path.dirname(os.path.abspath(path_str)), exist_ok=True)
+                os.makedirs(os.path.dirname(
+                    os.path.abspath(path_str)), exist_ok=True)
 
                 # Make backup if requested
                 if make_backup and os.path.exists(path_str):
@@ -1044,7 +1060,8 @@ class SafeFileWriter:
 
                 # Write to a temporary file
                 temp_path = f"{path_str}.tmp.{int(time.time())}"
-                kwargs = {'encoding': encoding} if 'b' not in mode and encoding else {}
+                kwargs = {
+                    'encoding': encoding} if 'b' not in mode and encoding else {}
 
                 with open(temp_path, mode, **kwargs) as f:
                     f.write(content)
