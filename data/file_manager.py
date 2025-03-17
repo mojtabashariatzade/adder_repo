@@ -346,7 +346,7 @@ class FileManager:
         file_path = self._resolve_path(path)
 
         if not file_path.exists():
-            logger.error(f"Cannot backup non-existent file: {file_path}")
+            logger.error("Cannot backup non-existent file: %s", file_path)
             raise FileReadError(str(file_path), "File not found")
 
         # Default suffix is a timestamp
@@ -355,12 +355,12 @@ class FileManager:
 
         try:
             shutil.copy2(file_path, backup_path)
-            logger.debug(f"Backup created: {backup_path}")
+            logger.debug("Backup created: %s", backup_path)
             return backup_path
         except Exception as e:
-            logger.error(f"Error creating backup of {file_path}: {e}")
+            logger.error("Error creating backup of %s: %s", file_path, e)
             raise FileWriteError(
-                str(backup_path), f"Error creating backup: {e}")
+                backup_path, "Error creating backup: %s" % e) from e
 
     def delete(self, path: Union[str, Path], missing_ok: bool = False) -> bool:
         """
@@ -382,8 +382,9 @@ class FileManager:
         if not file_path.exists():
             if missing_ok:
                 return False
-            logger.error(f"Cannot delete non-existent file: {file_path}")
-            raise FileReadError(str(file_path), "File not found")
+            logger.error("Error creating backup of %s: %s", file_path, e)
+            raise FileWriteError(
+                backup_path, "Error creating backup: %s" % e) from e
 
         try:
             if file_path.is_dir():
