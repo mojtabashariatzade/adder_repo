@@ -382,9 +382,8 @@ class FileManager:
         if not file_path.exists():
             if missing_ok:
                 return False
-            logger.error("Error creating backup of %s: %s", file_path, e)
-            raise FileWriteError(
-                backup_path, "Error creating backup: %s" % e) from e
+            logger.error(f"Cannot delete non-existent file: {file_path}")
+            raise FileReadError(str(file_path), "File not found")
 
         try:
             if file_path.is_dir():
