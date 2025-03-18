@@ -645,7 +645,7 @@ class FileManager:
                     hasher.update(chunk)
             return hasher.hexdigest()
         except Exception as e:
-            logger.error("Error calculating hash for {file_path}: %s", e)
+            logger.error(f"Error calculating hash for {file_path}: {e}")
             raise FileReadError(str(file_path), f"Error calculating hash: {e}")
 
     def get_temp_file(
@@ -685,10 +685,10 @@ class FileManager:
                 except:
                     pass
 
-            logger.debug("Temporary file created: %s", temp_path)
+            logger.debug(f"Temporary file created: {temp_path}")
             return Path(temp_path), cleanup
         except Exception as e:
-            logger.error("Error creating temporary file: %s", e)
+            logger.error(f"Error creating temporary file: {e}")
             raise FileWriteError(
                 "temp file", f"Error creating temporary file: {e}")
 
@@ -728,10 +728,10 @@ class FileManager:
                 except:
                     pass
 
-            logger.debug("Temporary directory created: %s", temp_dir)
+            logger.debug(f"Temporary directory created: {temp_dir}")
             return Path(temp_dir), cleanup
         except Exception as e:
-            logger.error("Error creating temporary directory: %s", e)
+            logger.error(f"Error creating temporary directory: {e}")
             raise FileWriteError(
                 "temp directory", f"Error creating temporary directory: {e}"
             )
@@ -779,14 +779,14 @@ class JsonFileManager(FileManager):
                 logger.debug(
                     f"JSON file not found, returning default: {file_path}")
                 return default
-            logger.error("JSON file not found: %s", file_path)
+            logger.error(f"JSON file not found: {file_path}")
             raise FileReadError(str(file_path), "File not found")
 
         try:
             content = self.read_text(file_path)
             return json.loads(content)
         except json.JSONDecodeError as e:
-            logger.error("Invalid JSON in %s: {e}", file_path)
+            logger.error(f"Invalid JSON in {file_path}: {e}")
             raise FileFormatError(str(file_path), f"Invalid JSON: {e}")
 
     def write_json(
@@ -812,10 +812,10 @@ class JsonFileManager(FileManager):
                 data, indent=self.indent, ensure_ascii=False)
             # Write to file
             self.write_text(file_path, json_content, make_backup=make_backup)
-            logger.debug("JSON written to %s", file_path)
+            logger.debug(f"JSON written to {file_path}")
         except TypeError as e:
-            logger.error("Data is not JSON-serializable: %s", e)
-            raise TypeError("Data is not JSON-serializable: %s" % (e))
+            logger.error(f"Data is not JSON-serializable: {e}")
+            raise TypeError(f"Data is not JSON-serializable: {e}")
 
     def validate_json(
         self, path: Union[str, Path], schema: Dict[str, Any]
@@ -852,10 +852,10 @@ class JsonFileManager(FileManager):
             return True, issues
         except ValidationError as e:
             issues.append(f"Validation error: {e.message}")
-            logger.warning("JSON validation failed for %s: {e.message}", path)
+            logger.warning(f"JSON validation failed for {path}: {e.message}")
         except SchemaError as e:
             issues.append(f"Schema error: {e.message}")
-            logger.error("Invalid schema: %s", e.message)
+            logger.error(f"Invalid schema: {e.message}")
 
         return False, issues
 
@@ -896,7 +896,7 @@ class JsonFileManager(FileManager):
         # Write the merged data back to the target file
         self.write_json(target_path, target_data, make_backup=True)
 
-        logger.debug("Merged %s into {target_path}", source_path)
+        logger.debug(f"Merged {source_path} into {target_path}")
         return target_data
 
 
@@ -927,7 +927,7 @@ class EncryptedFileManager(FileManager):
             raise ImportError("data.encryption.Encryptor is not available")
 
         if not isinstance(encryptor, Encryptor):
-            logger.error("Invalid encryptor type: %s", type(encryptor))
+            logger.error(f"Invalid encryptor type: {type(encryptor)}")
             raise TypeError(
                 "encryptor must be an instance of data.encryption.Encryptor"
             )
@@ -955,8 +955,8 @@ class EncryptedFileManager(FileManager):
             # Decrypt the content
             return self.encryptor.decrypt(encrypted_content)
         except Exception as e:
-            logger.error("Error decrypting %s: {e}", path)
-            raise DecryptionError("Error decrypting %s: {e}" % (path))
+            logger.error(f"Error decrypting {path}: {e}")
+            raise DecryptionError(f"Error decrypting {path}: {e}")
 
     def write_encrypted(
         self, path: Union[str, Path], content: str, make_backup: bool = False
@@ -979,9 +979,9 @@ class EncryptedFileManager(FileManager):
 
             # Write to file
             self.write_text(path, encrypted_content, make_backup=make_backup)
-            logger.debug("Encrypted content written to %s", path)
+            logger.debug(f"Encrypted content written to {path}")
         except Exception as e:
-            logger.error("Error encrypting or writing to %s: {e}", path)
+            logger.error(f"Error encrypting or writing to {path}: {e}")
             raise EncryptionError(
                 f"Error encrypting or writing to {path}: {e}")
 
@@ -1011,7 +1011,7 @@ class EncryptedFileManager(FileManager):
                     f"Encrypted JSON file not found, returning default: {file_path}"
                 )
                 return default
-            logger.error("Encrypted JSON file not found: %s", file_path)
+            logger.error(f"Encrypted JSON file not found: {file_path}")
             raise FileReadError(str(file_path), "File not found")
 
         try:
@@ -1054,10 +1054,10 @@ class EncryptedFileManager(FileManager):
 
             # Encrypt and write
             self.write_encrypted(path, json_content, make_backup=make_backup)
-            logger.debug("Encrypted JSON written to %s", path)
+            logger.debug(f"Encrypted JSON written to {path}")
         except TypeError as e:
-            logger.error("Data is not JSON-serializable: %s", e)
-            raise TypeError("Data is not JSON-serializable: %s" % (e))
+            logger.error(f"Data is not JSON-serializable: {e}")
+            raise TypeError(f"Data is not JSON-serializable: {e}")
 
 
 class SafeFileWriter:
@@ -1139,9 +1139,9 @@ class SafeFileWriter:
                 # Replace the original file with the temporary file
                 os.replace(temp_path, path_str)
 
-                logger.debug("File written safely: %s", path_str)
+                logger.debug(f"File written safely: {path_str}")
             except Exception as e:
-                logger.error("Error writing file %s: {e}", path_str)
+                logger.error(f"Error writing file {path_str}: {e}")
                 # Clean up temporary file if it exists
                 if os.path.exists(temp_path):
                     try:
@@ -1176,5 +1176,5 @@ def get_file_manager(
     elif manager_type.lower() == "encrypted":
         return EncryptedFileManager(*args, **kwargs)
     else:
-        logger.error("Unsupported file manager type: %s", manager_type)
-        raise ValueError("Unsupported file manager type: %s" % (manager_type))
+        logger.error(f"Unsupported file manager type: {manager_type}")
+        raise ValueError(f"Unsupported file manager type: {manager_type}")
