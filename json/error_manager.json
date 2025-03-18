@@ -1,0 +1,1742 @@
+[
+    {
+        "resource": "/f:/adder_repo/error_handling/error_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "E0611:no-name-in-module",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/error/no-name-in-module.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 8,
+        "message": "No name 'ConnectionError' in module 'core.exceptions'",
+        "source": "Pylint",
+        "startLineNumber": 10,
+        "startColumn": 1,
+        "endLineNumber": 18,
+        "endColumn": 2
+    },
+    {
+        "resource": "/f:/adder_repo/error_handling/error_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "E0611:no-name-in-module",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/error/no-name-in-module.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 8,
+        "message": "No name 'TimeoutError' in module 'core.exceptions'",
+        "source": "Pylint",
+        "startLineNumber": 10,
+        "startColumn": 1,
+        "endLineNumber": 18,
+        "endColumn": 2
+    },
+    {
+        "resource": "/f:/adder_repo/error_handling/error_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "E0203:access-member-before-definition",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/error/access-member-before-definition.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 8,
+        "message": "Access to member '_initialized' before its definition line 54",
+        "source": "Pylint",
+        "startLineNumber": 40,
+        "startColumn": 12,
+        "endLineNumber": 40,
+        "endColumn": 29
+    },
+    {
+        "resource": "/f:/adder_repo/error_handling/error_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "E0102:function-redefined",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/error/function-redefined.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 8,
+        "message": "function already defined line 20",
+        "source": "Pylint",
+        "startLineNumber": 309,
+        "startColumn": 1,
+        "endLineNumber": 309,
+        "endColumn": 17
+    },
+    {
+        "resource": "/f:/adder_repo/error_handling/error_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "W0611:unused-import",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/warning/unused-import.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 4,
+        "message": "Unused Tuple imported from typing",
+        "source": "Pylint",
+        "startLineNumber": 7,
+        "startColumn": 1,
+        "endLineNumber": 7,
+        "endColumn": 75
+    },
+    {
+        "resource": "/f:/adder_repo/error_handling/error_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "W0611:unused-import",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/warning/unused-import.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 4,
+        "message": "Unused Path imported from pathlib",
+        "source": "Pylint",
+        "startLineNumber": 8,
+        "startColumn": 1,
+        "endLineNumber": 8,
+        "endColumn": 25
+    },
+    {
+        "resource": "/f:/adder_repo/error_handling/error_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "W0622:redefined-builtin",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/warning/redefined-builtin.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 4,
+        "message": "Redefining built-in 'ConnectionError'",
+        "source": "Pylint",
+        "startLineNumber": 10,
+        "startColumn": 1,
+        "endLineNumber": 18,
+        "endColumn": 2
+    },
+    {
+        "resource": "/f:/adder_repo/error_handling/error_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "W0622:redefined-builtin",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/warning/redefined-builtin.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 4,
+        "message": "Redefining built-in 'TimeoutError'",
+        "source": "Pylint",
+        "startLineNumber": 10,
+        "startColumn": 1,
+        "endLineNumber": 18,
+        "endColumn": 2
+    },
+    {
+        "resource": "/f:/adder_repo/error_handling/error_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "W0611:unused-import",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/warning/unused-import.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 4,
+        "message": "Unused TelegramAdderError imported from core.exceptions",
+        "source": "Pylint",
+        "startLineNumber": 10,
+        "startColumn": 1,
+        "endLineNumber": 18,
+        "endColumn": 2
+    },
+    {
+        "resource": "/f:/adder_repo/error_handling/error_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "W0611:unused-import",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/warning/unused-import.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 4,
+        "message": "Unused AccountError imported from core.exceptions",
+        "source": "Pylint",
+        "startLineNumber": 10,
+        "startColumn": 1,
+        "endLineNumber": 18,
+        "endColumn": 2
+    },
+    {
+        "resource": "/f:/adder_repo/error_handling/error_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "W0611:unused-import",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/warning/unused-import.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 4,
+        "message": "Unused AccountNotFoundError imported from core.exceptions",
+        "source": "Pylint",
+        "startLineNumber": 10,
+        "startColumn": 1,
+        "endLineNumber": 18,
+        "endColumn": 2
+    },
+    {
+        "resource": "/f:/adder_repo/error_handling/error_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "W0611:unused-import",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/warning/unused-import.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 4,
+        "message": "Unused AccountLimitReachedError imported from core.exceptions",
+        "source": "Pylint",
+        "startLineNumber": 10,
+        "startColumn": 1,
+        "endLineNumber": 18,
+        "endColumn": 2
+    },
+    {
+        "resource": "/f:/adder_repo/error_handling/error_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "W0611:unused-import",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/warning/unused-import.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 4,
+        "message": "Unused AccountBlockedError imported from core.exceptions",
+        "source": "Pylint",
+        "startLineNumber": 10,
+        "startColumn": 1,
+        "endLineNumber": 18,
+        "endColumn": 2
+    },
+    {
+        "resource": "/f:/adder_repo/error_handling/error_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "W0611:unused-import",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/warning/unused-import.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 4,
+        "message": "Unused AccountInCooldownError imported from core.exceptions",
+        "source": "Pylint",
+        "startLineNumber": 10,
+        "startColumn": 1,
+        "endLineNumber": 18,
+        "endColumn": 2
+    },
+    {
+        "resource": "/f:/adder_repo/error_handling/error_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "W0611:unused-import",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/warning/unused-import.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 4,
+        "message": "Unused APIError imported from core.exceptions",
+        "source": "Pylint",
+        "startLineNumber": 10,
+        "startColumn": 1,
+        "endLineNumber": 18,
+        "endColumn": 2
+    },
+    {
+        "resource": "/f:/adder_repo/error_handling/error_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "W0611:unused-import",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/warning/unused-import.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 4,
+        "message": "Unused ApiIdInvalidError imported from core.exceptions",
+        "source": "Pylint",
+        "startLineNumber": 10,
+        "startColumn": 1,
+        "endLineNumber": 18,
+        "endColumn": 2
+    },
+    {
+        "resource": "/f:/adder_repo/error_handling/error_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "W0611:unused-import",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/warning/unused-import.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 4,
+        "message": "Unused ApiHashInvalidError imported from core.exceptions",
+        "source": "Pylint",
+        "startLineNumber": 10,
+        "startColumn": 1,
+        "endLineNumber": 18,
+        "endColumn": 2
+    },
+    {
+        "resource": "/f:/adder_repo/error_handling/error_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "W0611:unused-import",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/warning/unused-import.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 4,
+        "message": "Unused GroupNotFoundError imported from core.exceptions",
+        "source": "Pylint",
+        "startLineNumber": 10,
+        "startColumn": 1,
+        "endLineNumber": 18,
+        "endColumn": 2
+    },
+    {
+        "resource": "/f:/adder_repo/error_handling/error_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "W0611:unused-import",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/warning/unused-import.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 4,
+        "message": "Unused NotGroupAdminError imported from core.exceptions",
+        "source": "Pylint",
+        "startLineNumber": 10,
+        "startColumn": 1,
+        "endLineNumber": 18,
+        "endColumn": 2
+    },
+    {
+        "resource": "/f:/adder_repo/error_handling/error_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "W0611:unused-import",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/warning/unused-import.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 4,
+        "message": "Unused MemberExtractionError imported from core.exceptions",
+        "source": "Pylint",
+        "startLineNumber": 10,
+        "startColumn": 1,
+        "endLineNumber": 18,
+        "endColumn": 2
+    },
+    {
+        "resource": "/f:/adder_repo/error_handling/error_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "W0611:unused-import",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/warning/unused-import.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 4,
+        "message": "Unused MemberAdditionError imported from core.exceptions",
+        "source": "Pylint",
+        "startLineNumber": 10,
+        "startColumn": 1,
+        "endLineNumber": 18,
+        "endColumn": 2
+    },
+    {
+        "resource": "/f:/adder_repo/error_handling/error_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "W0611:unused-import",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/warning/unused-import.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 4,
+        "message": "Unused NetworkError imported from core.exceptions",
+        "source": "Pylint",
+        "startLineNumber": 10,
+        "startColumn": 1,
+        "endLineNumber": 18,
+        "endColumn": 2
+    },
+    {
+        "resource": "/f:/adder_repo/error_handling/error_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "W0611:unused-import",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/warning/unused-import.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 4,
+        "message": "Unused ConnectionError imported from core.exceptions",
+        "source": "Pylint",
+        "startLineNumber": 10,
+        "startColumn": 1,
+        "endLineNumber": 18,
+        "endColumn": 2
+    },
+    {
+        "resource": "/f:/adder_repo/error_handling/error_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "W0611:unused-import",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/warning/unused-import.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 4,
+        "message": "Unused ProxyError imported from core.exceptions",
+        "source": "Pylint",
+        "startLineNumber": 10,
+        "startColumn": 1,
+        "endLineNumber": 18,
+        "endColumn": 2
+    },
+    {
+        "resource": "/f:/adder_repo/error_handling/error_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "W0611:unused-import",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/warning/unused-import.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 4,
+        "message": "Unused TimeoutError imported from core.exceptions",
+        "source": "Pylint",
+        "startLineNumber": 10,
+        "startColumn": 1,
+        "endLineNumber": 18,
+        "endColumn": 2
+    },
+    {
+        "resource": "/f:/adder_repo/error_handling/error_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "W0611:unused-import",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/warning/unused-import.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 4,
+        "message": "Unused OperationError imported from core.exceptions",
+        "source": "Pylint",
+        "startLineNumber": 10,
+        "startColumn": 1,
+        "endLineNumber": 18,
+        "endColumn": 2
+    },
+    {
+        "resource": "/f:/adder_repo/error_handling/error_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "W0611:unused-import",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/warning/unused-import.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 4,
+        "message": "Unused handle_error imported from error_handling.error_handlers",
+        "source": "Pylint",
+        "startLineNumber": 20,
+        "startColumn": 1,
+        "endLineNumber": 24,
+        "endColumn": 2
+    },
+    {
+        "resource": "/f:/adder_repo/error_handling/error_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "W0611:unused-import",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/warning/unused-import.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 4,
+        "message": "Unused AccountErrorHandler imported from error_handling.error_handlers",
+        "source": "Pylint",
+        "startLineNumber": 20,
+        "startColumn": 1,
+        "endLineNumber": 24,
+        "endColumn": 2
+    },
+    {
+        "resource": "/f:/adder_repo/error_handling/error_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "W0611:unused-import",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/warning/unused-import.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 4,
+        "message": "Unused TelegramErrorHandler imported from error_handling.error_handlers",
+        "source": "Pylint",
+        "startLineNumber": 20,
+        "startColumn": 1,
+        "endLineNumber": 24,
+        "endColumn": 2
+    },
+    {
+        "resource": "/f:/adder_repo/error_handling/error_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "W0611:unused-import",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/warning/unused-import.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 4,
+        "message": "Unused GroupErrorHandler imported from error_handling.error_handlers",
+        "source": "Pylint",
+        "startLineNumber": 20,
+        "startColumn": 1,
+        "endLineNumber": 24,
+        "endColumn": 2
+    },
+    {
+        "resource": "/f:/adder_repo/error_handling/error_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "W0611:unused-import",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/warning/unused-import.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 4,
+        "message": "Unused SessionErrorHandler imported from error_handling.error_handlers",
+        "source": "Pylint",
+        "startLineNumber": 20,
+        "startColumn": 1,
+        "endLineNumber": 24,
+        "endColumn": 2
+    },
+    {
+        "resource": "/f:/adder_repo/error_handling/error_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "W0611:unused-import",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/warning/unused-import.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 4,
+        "message": "Unused CompositeErrorHandler imported from error_handling.error_handlers",
+        "source": "Pylint",
+        "startLineNumber": 20,
+        "startColumn": 1,
+        "endLineNumber": 24,
+        "endColumn": 2
+    },
+    {
+        "resource": "/f:/adder_repo/error_handling/error_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "W0611:unused-import",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/warning/unused-import.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 4,
+        "message": "Unused execute_with_error_handling imported from error_handling.error_handlers",
+        "source": "Pylint",
+        "startLineNumber": 20,
+        "startColumn": 1,
+        "endLineNumber": 24,
+        "endColumn": 2
+    },
+    {
+        "resource": "/f:/adder_repo/error_handling/error_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "W1203:logging-fstring-interpolation",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/warning/logging-fstring-interpolation.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 4,
+        "message": "Use lazy % formatting in logging functions",
+        "source": "Pylint",
+        "startLineNumber": 73,
+        "startColumn": 9,
+        "endLineNumber": 73,
+        "endColumn": 90
+    },
+    {
+        "resource": "/f:/adder_repo/error_handling/error_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "W1203:logging-fstring-interpolation",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/warning/logging-fstring-interpolation.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 4,
+        "message": "Use lazy % formatting in logging functions",
+        "source": "Pylint",
+        "startLineNumber": 77,
+        "startColumn": 9,
+        "endLineNumber": 77,
+        "endColumn": 63
+    },
+    {
+        "resource": "/f:/adder_repo/error_handling/error_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "W0613:unused-argument",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/warning/unused-argument.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 4,
+        "message": "Unused argument 'exception'",
+        "source": "Pylint",
+        "startLineNumber": 83,
+        "startColumn": 44,
+        "endLineNumber": 83,
+        "endColumn": 53
+    },
+    {
+        "resource": "/f:/adder_repo/error_handling/error_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "W0613:unused-argument",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/warning/unused-argument.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 4,
+        "message": "Unused argument 'exception'",
+        "source": "Pylint",
+        "startLineNumber": 86,
+        "startColumn": 41,
+        "endLineNumber": 86,
+        "endColumn": 50
+    },
+    {
+        "resource": "/f:/adder_repo/error_handling/error_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "W0613:unused-argument",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/warning/unused-argument.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 4,
+        "message": "Unused argument 'exception'",
+        "source": "Pylint",
+        "startLineNumber": 89,
+        "startColumn": 40,
+        "endLineNumber": 89,
+        "endColumn": 49
+    },
+    {
+        "resource": "/f:/adder_repo/error_handling/error_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "W0613:unused-argument",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/warning/unused-argument.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 4,
+        "message": "Unused argument 'exception'",
+        "source": "Pylint",
+        "startLineNumber": 92,
+        "startColumn": 42,
+        "endLineNumber": 92,
+        "endColumn": 51
+    },
+    {
+        "resource": "/f:/adder_repo/error_handling/error_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "W0613:unused-argument",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/warning/unused-argument.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 4,
+        "message": "Unused argument 'exception'",
+        "source": "Pylint",
+        "startLineNumber": 95,
+        "startColumn": 50,
+        "endLineNumber": 95,
+        "endColumn": 59
+    },
+    {
+        "resource": "/f:/adder_repo/error_handling/error_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "W0613:unused-argument",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/warning/unused-argument.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 4,
+        "message": "Unused argument 'exception'",
+        "source": "Pylint",
+        "startLineNumber": 98,
+        "startColumn": 44,
+        "endLineNumber": 98,
+        "endColumn": 53
+    },
+    {
+        "resource": "/f:/adder_repo/error_handling/error_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "W1203:logging-fstring-interpolation",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/warning/logging-fstring-interpolation.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 4,
+        "message": "Use lazy % formatting in logging functions",
+        "source": "Pylint",
+        "startLineNumber": 110,
+        "startColumn": 17,
+        "endLineNumber": 110,
+        "endColumn": 90
+    },
+    {
+        "resource": "/f:/adder_repo/error_handling/error_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "W0718:broad-exception-caught",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/warning/broad-exception-caught.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 4,
+        "message": "Catching too general exception Exception",
+        "source": "Pylint",
+        "startLineNumber": 112,
+        "startColumn": 20,
+        "endLineNumber": 112,
+        "endColumn": 29
+    },
+    {
+        "resource": "/f:/adder_repo/error_handling/error_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "W1203:logging-fstring-interpolation",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/warning/logging-fstring-interpolation.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 4,
+        "message": "Use lazy % formatting in logging functions",
+        "source": "Pylint",
+        "startLineNumber": 113,
+        "startColumn": 17,
+        "endLineNumber": 113,
+        "endColumn": 82
+    },
+    {
+        "resource": "/f:/adder_repo/error_handling/error_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "W0718:broad-exception-caught",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/warning/broad-exception-caught.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 4,
+        "message": "Catching too general exception Exception",
+        "source": "Pylint",
+        "startLineNumber": 139,
+        "startColumn": 16,
+        "endLineNumber": 139,
+        "endColumn": 25
+    },
+    {
+        "resource": "/f:/adder_repo/error_handling/error_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "W1203:logging-fstring-interpolation",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/warning/logging-fstring-interpolation.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 4,
+        "message": "Use lazy % formatting in logging functions",
+        "source": "Pylint",
+        "startLineNumber": 140,
+        "startColumn": 13,
+        "endLineNumber": 140,
+        "endColumn": 63
+    },
+    {
+        "resource": "/f:/adder_repo/error_handling/error_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "W1514:unspecified-encoding",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/warning/unspecified-encoding.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 4,
+        "message": "Using open without explicitly specifying an encoding",
+        "source": "Pylint",
+        "startLineNumber": 188,
+        "startColumn": 22,
+        "endLineNumber": 188,
+        "endColumn": 41
+    },
+    {
+        "resource": "/f:/adder_repo/error_handling/error_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "W0718:broad-exception-caught",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/warning/broad-exception-caught.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 4,
+        "message": "Catching too general exception Exception",
+        "source": "Pylint",
+        "startLineNumber": 190,
+        "startColumn": 20,
+        "endLineNumber": 190,
+        "endColumn": 29
+    },
+    {
+        "resource": "/f:/adder_repo/error_handling/error_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "W1203:logging-fstring-interpolation",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/warning/logging-fstring-interpolation.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 4,
+        "message": "Use lazy % formatting in logging functions",
+        "source": "Pylint",
+        "startLineNumber": 191,
+        "startColumn": 17,
+        "endLineNumber": 191,
+        "endColumn": 78
+    },
+    {
+        "resource": "/f:/adder_repo/error_handling/error_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "W1514:unspecified-encoding",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/warning/unspecified-encoding.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 4,
+        "message": "Using open without explicitly specifying an encoding",
+        "source": "Pylint",
+        "startLineNumber": 197,
+        "startColumn": 18,
+        "endLineNumber": 197,
+        "endColumn": 37
+    },
+    {
+        "resource": "/f:/adder_repo/error_handling/error_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "W0718:broad-exception-caught",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/warning/broad-exception-caught.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 4,
+        "message": "Catching too general exception Exception",
+        "source": "Pylint",
+        "startLineNumber": 199,
+        "startColumn": 16,
+        "endLineNumber": 199,
+        "endColumn": 25
+    },
+    {
+        "resource": "/f:/adder_repo/error_handling/error_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "W1203:logging-fstring-interpolation",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/warning/logging-fstring-interpolation.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 4,
+        "message": "Use lazy % formatting in logging functions",
+        "source": "Pylint",
+        "startLineNumber": 200,
+        "startColumn": 13,
+        "endLineNumber": 200,
+        "endColumn": 73
+    },
+    {
+        "resource": "/f:/adder_repo/error_handling/error_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "W1203:logging-fstring-interpolation",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/warning/logging-fstring-interpolation.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 4,
+        "message": "Use lazy % formatting in logging functions",
+        "source": "Pylint",
+        "startLineNumber": 216,
+        "startColumn": 17,
+        "endLineNumber": 216,
+        "endColumn": 73
+    },
+    {
+        "resource": "/f:/adder_repo/error_handling/error_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "W0718:broad-exception-caught",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/warning/broad-exception-caught.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 4,
+        "message": "Catching too general exception Exception",
+        "source": "Pylint",
+        "startLineNumber": 217,
+        "startColumn": 20,
+        "endLineNumber": 217,
+        "endColumn": 29
+    },
+    {
+        "resource": "/f:/adder_repo/error_handling/error_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "W1203:logging-fstring-interpolation",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/warning/logging-fstring-interpolation.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 4,
+        "message": "Use lazy % formatting in logging functions",
+        "source": "Pylint",
+        "startLineNumber": 218,
+        "startColumn": 17,
+        "endLineNumber": 218,
+        "endColumn": 84
+    },
+    {
+        "resource": "/f:/adder_repo/error_handling/error_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "W0612:unused-variable",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/warning/unused-variable.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 4,
+        "message": "Unused variable 'stats'",
+        "source": "Pylint",
+        "startLineNumber": 227,
+        "startColumn": 9,
+        "endLineNumber": 227,
+        "endColumn": 14
+    },
+    {
+        "resource": "/f:/adder_repo/error_handling/error_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "W0718:broad-exception-caught",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/warning/broad-exception-caught.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 4,
+        "message": "Catching too general exception Exception",
+        "source": "Pylint",
+        "startLineNumber": 280,
+        "startColumn": 20,
+        "endLineNumber": 280,
+        "endColumn": 29
+    },
+    {
+        "resource": "/f:/adder_repo/error_handling/error_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "W1203:logging-fstring-interpolation",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/warning/logging-fstring-interpolation.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 4,
+        "message": "Use lazy % formatting in logging functions",
+        "source": "Pylint",
+        "startLineNumber": 290,
+        "startColumn": 21,
+        "endLineNumber": 290,
+        "endColumn": 72
+    },
+    {
+        "resource": "/f:/adder_repo/error_handling/error_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "W1203:logging-fstring-interpolation",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/warning/logging-fstring-interpolation.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 4,
+        "message": "Use lazy % formatting in logging functions",
+        "source": "Pylint",
+        "startLineNumber": 295,
+        "startColumn": 21,
+        "endLineNumber": 295,
+        "endColumn": 110
+    },
+    {
+        "resource": "/f:/adder_repo/error_handling/error_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "W1203:logging-fstring-interpolation",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/warning/logging-fstring-interpolation.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 4,
+        "message": "Use lazy % formatting in logging functions",
+        "source": "Pylint",
+        "startLineNumber": 298,
+        "startColumn": 21,
+        "endLineNumber": 298,
+        "endColumn": 79
+    },
+    {
+        "resource": "/f:/adder_repo/error_handling/error_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "W1309:f-string-without-interpolation",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/warning/f-string-without-interpolation.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 4,
+        "message": "Using an f-string that does not have any interpolated variables",
+        "source": "Pylint",
+        "startLineNumber": 298,
+        "startColumn": 33,
+        "endLineNumber": 298,
+        "endColumn": 78
+    },
+    {
+        "resource": "/f:/adder_repo/error_handling/error_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "C0114:missing-module-docstring",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/convention/missing-module-docstring.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 2,
+        "message": "Missing module docstring",
+        "source": "Pylint",
+        "startLineNumber": 1,
+        "startColumn": 1,
+        "endLineNumber": 1,
+        "endColumn": 1
+    },
+    {
+        "resource": "/f:/adder_repo/error_handling/error_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "C0115:missing-class-docstring",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/convention/missing-class-docstring.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 2,
+        "message": "Missing class docstring",
+        "source": "Pylint",
+        "startLineNumber": 28,
+        "startColumn": 1,
+        "endLineNumber": 28,
+        "endColumn": 19
+    },
+    {
+        "resource": "/f:/adder_repo/error_handling/error_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "C0301:line-too-long",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/convention/line-too-long.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 2,
+        "message": "Line too long (109/100)",
+        "source": "Pylint",
+        "startLineNumber": 62,
+        "startColumn": 1,
+        "endLineNumber": 62,
+        "endColumn": 1
+    },
+    {
+        "resource": "/f:/adder_repo/error_handling/error_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "C0301:line-too-long",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/convention/line-too-long.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 2,
+        "message": "Line too long (104/100)",
+        "source": "Pylint",
+        "startLineNumber": 63,
+        "startColumn": 1,
+        "endLineNumber": 63,
+        "endColumn": 1
+    },
+    {
+        "resource": "/f:/adder_repo/error_handling/error_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "C0301:line-too-long",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/convention/line-too-long.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 2,
+        "message": "Line too long (118/100)",
+        "source": "Pylint",
+        "startLineNumber": 65,
+        "startColumn": 1,
+        "endLineNumber": 65,
+        "endColumn": 1
+    },
+    {
+        "resource": "/f:/adder_repo/error_handling/error_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "C0301:line-too-long",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/convention/line-too-long.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 2,
+        "message": "Line too long (107/100)",
+        "source": "Pylint",
+        "startLineNumber": 66,
+        "startColumn": 1,
+        "endLineNumber": 66,
+        "endColumn": 1
+    },
+    {
+        "resource": "/f:/adder_repo/error_handling/error_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "C0301:line-too-long",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/convention/line-too-long.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 2,
+        "message": "Line too long (107/100)",
+        "source": "Pylint",
+        "startLineNumber": 68,
+        "startColumn": 1,
+        "endLineNumber": 68,
+        "endColumn": 1
+    },
+    {
+        "resource": "/f:/adder_repo/error_handling/error_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "C0116:missing-function-docstring",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/convention/missing-function-docstring.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 2,
+        "message": "Missing function or method docstring",
+        "source": "Pylint",
+        "startLineNumber": 68,
+        "startColumn": 5,
+        "endLineNumber": 68,
+        "endColumn": 25
+    },
+    {
+        "resource": "/f:/adder_repo/error_handling/error_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "C0301:line-too-long",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/convention/line-too-long.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 2,
+        "message": "Line too long (103/100)",
+        "source": "Pylint",
+        "startLineNumber": 75,
+        "startColumn": 1,
+        "endLineNumber": 75,
+        "endColumn": 1
+    },
+    {
+        "resource": "/f:/adder_repo/error_handling/error_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "C0116:missing-function-docstring",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/convention/missing-function-docstring.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 2,
+        "message": "Missing function or method docstring",
+        "source": "Pylint",
+        "startLineNumber": 75,
+        "startColumn": 5,
+        "endLineNumber": 75,
+        "endColumn": 27
+    },
+    {
+        "resource": "/f:/adder_repo/error_handling/error_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "C0116:missing-function-docstring",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/convention/missing-function-docstring.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 2,
+        "message": "Missing function or method docstring",
+        "source": "Pylint",
+        "startLineNumber": 101,
+        "startColumn": 5,
+        "endLineNumber": 101,
+        "endColumn": 26
+    },
+    {
+        "resource": "/f:/adder_repo/error_handling/error_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "C0301:line-too-long",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/convention/line-too-long.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 2,
+        "message": "Line too long (103/100)",
+        "source": "Pylint",
+        "startLineNumber": 117,
+        "startColumn": 1,
+        "endLineNumber": 117,
+        "endColumn": 1
+    },
+    {
+        "resource": "/f:/adder_repo/error_handling/error_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "C0116:missing-function-docstring",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/convention/missing-function-docstring.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 2,
+        "message": "Missing function or method docstring",
+        "source": "Pylint",
+        "startLineNumber": 117,
+        "startColumn": 5,
+        "endLineNumber": 117,
+        "endColumn": 15
+    },
+    {
+        "resource": "/f:/adder_repo/error_handling/error_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "C0301:line-too-long",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/convention/line-too-long.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 2,
+        "message": "Line too long (117/100)",
+        "source": "Pylint",
+        "startLineNumber": 153,
+        "startColumn": 1,
+        "endLineNumber": 153,
+        "endColumn": 1
+    },
+    {
+        "resource": "/f:/adder_repo/error_handling/error_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "C0301:line-too-long",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/convention/line-too-long.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 2,
+        "message": "Line too long (106/100)",
+        "source": "Pylint",
+        "startLineNumber": 169,
+        "startColumn": 1,
+        "endLineNumber": 169,
+        "endColumn": 1
+    },
+    {
+        "resource": "/f:/adder_repo/error_handling/error_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "C0301:line-too-long",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/convention/line-too-long.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 2,
+        "message": "Line too long (117/100)",
+        "source": "Pylint",
+        "startLineNumber": 206,
+        "startColumn": 1,
+        "endLineNumber": 206,
+        "endColumn": 1
+    },
+    {
+        "resource": "/f:/adder_repo/error_handling/error_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "C0116:missing-function-docstring",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/convention/missing-function-docstring.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 2,
+        "message": "Missing function or method docstring",
+        "source": "Pylint",
+        "startLineNumber": 220,
+        "startColumn": 5,
+        "endLineNumber": 220,
+        "endColumn": 26
+    },
+    {
+        "resource": "/f:/adder_repo/error_handling/error_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "C0116:missing-function-docstring",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/convention/missing-function-docstring.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 2,
+        "message": "Missing function or method docstring",
+        "source": "Pylint",
+        "startLineNumber": 223,
+        "startColumn": 5,
+        "endLineNumber": 223,
+        "endColumn": 28
+    },
+    {
+        "resource": "/f:/adder_repo/error_handling/error_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "C0116:missing-function-docstring",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/convention/missing-function-docstring.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 2,
+        "message": "Missing function or method docstring",
+        "source": "Pylint",
+        "startLineNumber": 226,
+        "startColumn": 5,
+        "endLineNumber": 226,
+        "endColumn": 24
+    },
+    {
+        "resource": "/f:/adder_repo/error_handling/error_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "C0301:line-too-long",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/convention/line-too-long.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 2,
+        "message": "Line too long (107/100)",
+        "source": "Pylint",
+        "startLineNumber": 264,
+        "startColumn": 1,
+        "endLineNumber": 264,
+        "endColumn": 1
+    },
+    {
+        "resource": "/f:/adder_repo/error_handling/error_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "C0116:missing-function-docstring",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/convention/missing-function-docstring.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 2,
+        "message": "Missing function or method docstring",
+        "source": "Pylint",
+        "startLineNumber": 267,
+        "startColumn": 5,
+        "endLineNumber": 267,
+        "endColumn": 36
+    },
+    {
+        "resource": "/f:/adder_repo/error_handling/error_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "C0301:line-too-long",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/convention/line-too-long.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 2,
+        "message": "Line too long (109/100)",
+        "source": "Pylint",
+        "startLineNumber": 295,
+        "startColumn": 1,
+        "endLineNumber": 295,
+        "endColumn": 1
+    },
+    {
+        "resource": "/f:/adder_repo/error_handling/error_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "C0116:missing-function-docstring",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/convention/missing-function-docstring.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 2,
+        "message": "Missing function or method docstring",
+        "source": "Pylint",
+        "startLineNumber": 306,
+        "startColumn": 1,
+        "endLineNumber": 306,
+        "endColumn": 22
+    },
+    {
+        "resource": "/f:/adder_repo/error_handling/error_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "C0116:missing-function-docstring",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/convention/missing-function-docstring.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 2,
+        "message": "Missing function or method docstring",
+        "source": "Pylint",
+        "startLineNumber": 309,
+        "startColumn": 1,
+        "endLineNumber": 309,
+        "endColumn": 17
+    },
+    {
+        "resource": "/f:/adder_repo/error_handling/error_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "C0116:missing-function-docstring",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/convention/missing-function-docstring.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 2,
+        "message": "Missing function or method docstring",
+        "source": "Pylint",
+        "startLineNumber": 312,
+        "startColumn": 1,
+        "endLineNumber": 312,
+        "endColumn": 19
+    },
+    {
+        "resource": "/f:/adder_repo/error_handling/error_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "C0304:missing-final-newline",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/convention/missing-final-newline.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 2,
+        "message": "Final newline missing",
+        "source": "Pylint",
+        "startLineNumber": 313,
+        "startColumn": 1,
+        "endLineNumber": 313,
+        "endColumn": 1
+    }
+]

@@ -14,6 +14,7 @@ from core.exceptions import (
 
 logger = logging.getLogger(__name__)
 
+
 class BaseErrorHandler:
     def __init__(self, retry_count: int = 3, retry_delay: int = 5, fallback_handler: Optional['BaseErrorHandler'] = None):
         self.retry_count = retry_count
@@ -55,7 +56,8 @@ class BaseErrorHandler:
 
         if not response["handled"] and self.fallback_handler:
             try:
-                fallback_response = self.fallback_handler.handle_error(exception, context)
+                fallback_response = self.fallback_handler.handle_error(
+                    exception, context)
                 response.update(fallback_response)
             except Exception as e:
                 logger.error(f"Error in fallback handler: {e}")
@@ -89,10 +91,11 @@ class BaseErrorHandler:
 
         action_str = ", ".join(action) if action else "no action"
 
-        logger.info(f"Error {status}: {type(exception).__name__} - Action: {action_str}")
+        logger.info(
+            f"Error {status}: {type(exception).__name__} - Action: {action_str}")
 
     def execute_with_retry(self, func: Callable, *args, retry_count: Optional[int] = None,
-                         retry_delay: Optional[int] = None, context: Optional[Dict[str, Any]] = None, **kwargs) -> Any:
+                           retry_delay: Optional[int] = None, context: Optional[Dict[str, Any]] = None, **kwargs) -> Any:
         retries = retry_count if retry_count is not None else self.retry_count
         delay = retry_delay if retry_delay is not None else self.retry_delay
         current_try = 0
@@ -116,7 +119,8 @@ class BaseErrorHandler:
 
                 if error_response.get("retry", True):
                     cooldown_time = error_response.get("cooldown_time", delay)
-                    logger.info(f"Retrying in {cooldown_time} seconds (attempt {current_try}/{retries})")
+                    logger.info(
+                        f"Retrying in {cooldown_time} seconds (attempt {current_try}/{retries})")
                     time.sleep(cooldown_time)
                 else:
                     logger.info(f"Not retrying due to error handler decision")
@@ -124,6 +128,7 @@ class BaseErrorHandler:
 
         if last_exception:
             raise last_exception
+
 
 class AccountErrorHandler(BaseErrorHandler):
     def handle_AccountNotFoundError(self, exception: AccountNotFoundError, context: Dict[str, Any]) -> Dict[str, Any]:
@@ -170,6 +175,7 @@ class AccountErrorHandler(BaseErrorHandler):
             "switch_account": True,
             "should_abort": False
         }
+
 
 class TelegramErrorHandler(BaseErrorHandler):
     def handle_FloodWaitError(self, exception: FloodWaitError, context: Dict[str, Any]) -> Dict[str, Any]:
@@ -246,6 +252,7 @@ class TelegramErrorHandler(BaseErrorHandler):
             "should_abort": False
         }
 
+
 class GroupErrorHandler(BaseErrorHandler):
     def handle_GroupNotFoundError(self, exception: GroupNotFoundError, context: Dict[str, Any]) -> Dict[str, Any]:
         return {
@@ -280,6 +287,7 @@ class GroupErrorHandler(BaseErrorHandler):
             "should_abort": False
         }
 
+
 class SessionErrorHandler(BaseErrorHandler):
     def handle_SessionExpiredError(self, exception: SessionExpiredError, context: Dict[str, Any]) -> Dict[str, Any]:
         return {
@@ -288,6 +296,7 @@ class SessionErrorHandler(BaseErrorHandler):
             "switch_account": True,
             "should_abort": False
         }
+
 
 class CompositeErrorHandler(BaseErrorHandler):
     def __init__(self, handlers: Optional[List[BaseErrorHandler]] = None):
@@ -331,6 +340,7 @@ class CompositeErrorHandler(BaseErrorHandler):
         self.log_error_response(exception, context, response)
         return response
 
+
 def create_default_error_handler() -> CompositeErrorHandler:
     account_handler = AccountErrorHandler()
     telegram_handler = TelegramErrorHandler()
@@ -346,13 +356,16 @@ def create_default_error_handler() -> CompositeErrorHandler:
 
     return composite_handler
 
+
 default_error_handler = create_default_error_handler()
+
 
 def handle_error(exception: Exception, context: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
     return default_error_handler.handle_error(exception, context)
 
+
 def execute_with_error_handling(func: Callable, *args, retry_count: int = 3,
-                              retry_delay: int = 5, context: Optional[Dict[str, Any]] = None, **kwargs) -> Any:
+                                retry_delay: int = 5, context: Optional[Dict[str, Any]] = None, **kwargs) -> Any:
     handler = default_error_handler
     return handler.execute_with_retry(func, *args, retry_count=retry_count,
-                                    retry_delay=retry_delay, context=context, **kwargs)
+                                      retry_delay=retry_delay, context=context, **kwargs)
