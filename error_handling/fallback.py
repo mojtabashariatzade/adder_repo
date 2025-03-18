@@ -31,6 +31,7 @@ logger = get_logger("Fallback")
 
 T = TypeVar('T')
 
+
 class FallbackStrategy(Enum):
     RETRY = auto()
     SWITCH_ACCOUNT = auto()
@@ -39,11 +40,13 @@ class FallbackStrategy(Enum):
     ABORT = auto()
     CHECKPOINT = auto()
 
+
 class RecoveryState(Enum):
     NONE = auto()
     RUNNING = auto()
     RECOVERED = auto()
     FAILED = auto()
+
 
 class FallbackManager:
     def __init__(self,
@@ -138,16 +141,19 @@ class FallbackManager:
         else:
             return FallbackStrategy.ABORT
 
+
 def retry_operation(func: Callable[..., T],
-                   operation_id: str,
-                   fallback_manager: Optional[FallbackManager] = None,
-                   max_retries: int = MAX_RETRY_COUNT,
-                   base_delay: float = DEFAULT_DELAY,
-                   error_callback: Optional[Callable[[Exception, int], None]] = None,
-                   *args, **kwargs) -> T:
+                    operation_id: str,
+                    fallback_manager: Optional[FallbackManager] = None,
+                    max_retries: int = MAX_RETRY_COUNT,
+                    base_delay: float = DEFAULT_DELAY,
+                    error_callback: Optional[Callable[[
+                        Exception, int], None]] = None,
+                    *args, **kwargs) -> T:
 
     if fallback_manager is None:
-        fallback_manager = FallbackManager(max_retries=max_retries, base_delay=base_delay)
+        fallback_manager = FallbackManager(
+            max_retries=max_retries, base_delay=base_delay)
 
     fallback_manager.reset_retry_count(operation_id)
     last_error = None
@@ -163,7 +169,8 @@ def retry_operation(func: Callable[..., T],
             retry_count = fallback_manager.increment_retry_count(operation_id)
 
             # Log the error
-            logger.warning(f"Operation {operation_id} failed (attempt {retry_count}/{max_retries}): {str(e)}")
+            logger.warning(
+                f"Operation {operation_id} failed (attempt {retry_count}/{max_retries}): {str(e)}")
 
             # Call error callback if provided
             if error_callback:
@@ -179,7 +186,8 @@ def retry_operation(func: Callable[..., T],
             delay = fallback_manager.calculate_delay(operation_id, e)
 
             if strategy == FallbackStrategy.RETRY or strategy == FallbackStrategy.WAIT_AND_RETRY:
-                logger.info(f"Retrying operation {operation_id} in {delay:.2f} seconds...")
+                logger.info(
+                    f"Retrying operation {operation_id} in {delay:.2f} seconds...")
                 time.sleep(delay)
             else:
                 # For other strategies, we need to let the caller handle it
@@ -190,13 +198,15 @@ def retry_operation(func: Callable[..., T],
         raise last_error
 
     # Should never get here
-    raise RuntimeError(f"Unexpected error in retry_operation for {operation_id}")
+    raise RuntimeError(
+        f"Unexpected error in retry_operation for {operation_id}")
+
 
 def with_recovery(func: Callable[..., T],
-                 operation_id: str,
-                 get_state_func: Callable[..., Dict[str, Any]],
-                 fallback_manager: Optional[FallbackManager] = None,
-                 *args, **kwargs) -> T:
+                  operation_id: str,
+                  get_state_func: Callable[..., Dict[str, Any]],
+                  fallback_manager: Optional[FallbackManager] = None,
+                  *args, **kwargs) -> T:
 
     if fallback_manager is None:
         fallback_manager = FallbackManager()
@@ -205,7 +215,8 @@ def with_recovery(func: Callable[..., T],
     if fallback_manager.has_recovery_point(operation_id):
         recovery_data = fallback_manager.get_recovery_point(operation_id)
         if recovery_data:
-            logger.info(f"Resuming operation {operation_id} from recovery point")
+            logger.info(
+                f"Resuming operation {operation_id} from recovery point")
             # Update kwargs with recovery data
             kwargs.update(recovery_data)
 
@@ -231,21 +242,25 @@ def with_recovery(func: Callable[..., T],
             # Try to capture the state even after failure
             current_state = get_state_func(*args, **kwargs)
             fallback_manager.save_recovery_point(operation_id, current_state)
-            fallback_manager.mark_recovery_complete(operation_id, success=False)
+            fallback_manager.mark_recovery_complete(
+                operation_id, success=False)
         except Exception as state_error:
-            logger.error(f"Failed to capture state for recovery: {str(state_error)}")
+            logger.error(
+                f"Failed to capture state for recovery: {str(state_error)}")
 
         # Re-raise the original exception
         raise
 
+
 class RetryContext:
     def __init__(self,
-                operation_id: str,
-                max_retries: int = MAX_RETRY_COUNT,
-                base_delay: float = DEFAULT_DELAY,
-                max_delay: float = MAX_DELAY):
+                 operation_id: str,
+                 max_retries: int = MAX_RETRY_COUNT,
+                 base_delay: float = DEFAULT_DELAY,
+                 max_delay: float = MAX_DELAY):
         self.operation_id = operation_id
-        self.fallback_manager = FallbackManager(max_retries, base_delay, max_delay)
+        self.fallback_manager = FallbackManager(
+            max_retries, base_delay, max_delay)
         self.current_attempt = 0
         self.error = None
         self.strategy = None
@@ -256,13 +271,17 @@ class RetryContext:
     def __exit__(self, exc_type, exc_val, exc_tb):
         if exc_type is not None:
             self.error = exc_val
-            self.current_attempt = self.fallback_manager.increment_retry_count(self.operation_id)
-            self.strategy = self.fallback_manager.get_fallback_strategy(exc_val)
+            self.current_attempt = self.fallback_manager.increment_retry_count(
+                self.operation_id)
+            self.strategy = self.fallback_manager.get_fallback_strategy(
+                exc_val)
 
             # Determine if we should suppress the exception and retry
             if self.should_retry():
-                delay = self.fallback_manager.calculate_delay(self.operation_id, exc_val)
-                logger.info(f"Retrying operation {self.operation_id} in {delay:.2f} seconds...")
+                delay = self.fallback_manager.calculate_delay(
+                    self.operation_id, exc_val)
+                logger.info(
+                    f"Retrying operation {self.operation_id} in {delay:.2f} seconds...")
                 time.sleep(delay)
                 return True  # Suppress the exception
 
@@ -272,7 +291,7 @@ class RetryContext:
         # Check if we have retries left and the strategy is retry-compatible
         can_retry = self.fallback_manager.can_retry(self.operation_id)
         is_retry_strategy = (self.strategy == FallbackStrategy.RETRY or
-                           self.strategy == FallbackStrategy.WAIT_AND_RETRY)
+                             self.strategy == FallbackStrategy.WAIT_AND_RETRY)
         return can_retry and is_retry_strategy
 
     def reset(self):
@@ -289,12 +308,13 @@ class RetryContext:
     def retry_count(self):
         return self.fallback_manager.get_retry_count(self.operation_id)
 
+
 class OperationCheckpoint:
     def __init__(self,
-                operation_id: str,
-                checkpoint_interval: int = 10,
-                save_func: Optional[Callable[[Dict[str, Any]], None]] = None,
-                load_func: Optional[Callable[[], Dict[str, Any]]] = None):
+                 operation_id: str,
+                 checkpoint_interval: int = 10,
+                 save_func: Optional[Callable[[Dict[str, Any]], None]] = None,
+                 load_func: Optional[Callable[[], Dict[str, Any]]] = None):
         self.operation_id = operation_id
         self.checkpoint_interval = checkpoint_interval
         self.save_func = save_func
@@ -332,6 +352,7 @@ class OperationCheckpoint:
         self.fallback_manager.clear_recovery_point(self.operation_id)
         self.item_count = 0
 
+
 def switch_account_fallback(retry_func, account_provider, error, *args, **kwargs):
     """Use with error handlers to automatically switch accounts on certain errors"""
     logger.info("Switching account due to error: %s", str(error))
@@ -354,12 +375,14 @@ def switch_account_fallback(retry_func, account_provider, error, *args, **kwargs
         logger.error(f"Account switch fallback failed: {str(e)}")
         raise
 
+
 def emergency_shutdown(operation_id: str,
-                     state: Dict[str, Any],
-                     error: Exception,
-                     cleanup_func: Optional[Callable[[], None]] = None):
+                       state: Dict[str, Any],
+                       error: Exception,
+                       cleanup_func: Optional[Callable[[], None]] = None):
     """Perform emergency shutdown when unrecoverable errors occur"""
-    logger.critical(f"EMERGENCY SHUTDOWN for operation {operation_id}: {str(error)}")
+    logger.critical(
+        f"EMERGENCY SHUTDOWN for operation {operation_id}: {str(error)}")
 
     # Create a fallback manager to store the state
     fallback_manager = FallbackManager()
@@ -373,13 +396,16 @@ def emergency_shutdown(operation_id: str,
         if cleanup_func:
             cleanup_func()
 
-        logger.info(f"Emergency shutdown completed for {operation_id}. Recovery data saved.")
+        logger.info(
+            f"Emergency shutdown completed for {operation_id}. Recovery data saved.")
     except Exception as e:
         logger.critical(f"Failed to complete emergency shutdown: {str(e)}")
+
 
 def get_fallback_manager():
     """Get singleton instance of FallbackManager"""
     return FallbackManager()
+
 
 def retry_with_fallback_strategies(func, operation_id, fallback_strategies, *args, **kwargs):
     """Retry an operation with multiple fallback strategies in sequence"""
@@ -408,7 +434,8 @@ def retry_with_fallback_strategies(func, operation_id, fallback_strategies, *arg
                 checkpoint = OperationCheckpoint(operation_id)
                 state = checkpoint.load_last_checkpoint()
                 if state:
-                    logger.info(f"Restoring from checkpoint for {operation_id}")
+                    logger.info(
+                        f"Restoring from checkpoint for {operation_id}")
                     # Update kwargs with checkpoint state
                     kwargs.update(state)
                     return func(*args, **kwargs)

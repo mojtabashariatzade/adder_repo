@@ -1,0 +1,805 @@
+[
+    {
+        "resource": "/f:/adder_repo/data/file_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "W1514:unspecified-encoding",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/warning/unspecified-encoding.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 4,
+        "message": "Using open without explicitly specifying an encoding",
+        "source": "Pylint",
+        "startLineNumber": 330,
+        "startColumn": 18,
+        "endLineNumber": 330,
+        "endColumn": 49
+    },
+    {
+        "resource": "/f:/adder_repo/data/file_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "W0707:raise-missing-from",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/warning/raise-missing-from.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 4,
+        "message": "Consider explicitly re-raising using 'except AttributeError as exc' and 'raise ValueError('Unsupported hash algorithm: %s' % algorithm) from exc'",
+        "source": "Pylint",
+        "startLineNumber": 639,
+        "startColumn": 13,
+        "endLineNumber": 639,
+        "endColumn": 75
+    },
+    {
+        "resource": "/f:/adder_repo/data/file_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "W0707:raise-missing-from",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/warning/raise-missing-from.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 4,
+        "message": "Consider explicitly re-raising using 'raise FileReadError(str(file_path), f'Error calculating hash: {e}') from e'",
+        "source": "Pylint",
+        "startLineNumber": 649,
+        "startColumn": 13,
+        "endLineNumber": 649,
+        "endColumn": 80
+    },
+    {
+        "resource": "/f:/adder_repo/data/file_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "W0622:redefined-builtin",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/warning/redefined-builtin.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 4,
+        "message": "Redefining built-in 'dir'",
+        "source": "Pylint",
+        "startLineNumber": 655,
+        "startColumn": 9,
+        "endLineNumber": 655,
+        "endColumn": 40
+    },
+    {
+        "resource": "/f:/adder_repo/data/file_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "W0702:bare-except",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/warning/bare-except.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 4,
+        "message": "No exception type(s) specified",
+        "source": "Pylint",
+        "startLineNumber": 685,
+        "startColumn": 17,
+        "endLineNumber": 686,
+        "endColumn": 25
+    },
+    {
+        "resource": "/f:/adder_repo/data/file_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "W0707:raise-missing-from",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/warning/raise-missing-from.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 4,
+        "message": "Consider explicitly re-raising using 'raise FileWriteError('temp file', f'Error creating temporary file: {e}') from e'",
+        "source": "Pylint",
+        "startLineNumber": 692,
+        "startColumn": 13,
+        "endLineNumber": 693,
+        "endColumn": 68
+    },
+    {
+        "resource": "/f:/adder_repo/data/file_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "W0622:redefined-builtin",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/warning/redefined-builtin.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 4,
+        "message": "Redefining built-in 'dir'",
+        "source": "Pylint",
+        "startLineNumber": 699,
+        "startColumn": 9,
+        "endLineNumber": 699,
+        "endColumn": 40
+    },
+    {
+        "resource": "/f:/adder_repo/data/file_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "W0702:bare-except",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/warning/bare-except.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 4,
+        "message": "No exception type(s) specified",
+        "source": "Pylint",
+        "startLineNumber": 728,
+        "startColumn": 17,
+        "endLineNumber": 729,
+        "endColumn": 25
+    },
+    {
+        "resource": "/f:/adder_repo/data/file_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "W0707:raise-missing-from",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/warning/raise-missing-from.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 4,
+        "message": "Consider explicitly re-raising using 'raise FileWriteError('temp directory', f'Error creating temporary directory: {e}') from e'",
+        "source": "Pylint",
+        "startLineNumber": 735,
+        "startColumn": 13,
+        "endLineNumber": 737,
+        "endColumn": 14
+    },
+    {
+        "resource": "/f:/adder_repo/data/file_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "W1203:logging-fstring-interpolation",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/warning/logging-fstring-interpolation.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 4,
+        "message": "Use lazy % formatting in logging functions",
+        "source": "Pylint",
+        "startLineNumber": 779,
+        "startColumn": 17,
+        "endLineNumber": 780,
+        "endColumn": 76
+    },
+    {
+        "resource": "/f:/adder_repo/data/file_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "W0707:raise-missing-from",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/warning/raise-missing-from.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 4,
+        "message": "Consider explicitly re-raising using 'raise FileFormatError(str(file_path), f'Invalid JSON: {e}') from e'",
+        "source": "Pylint",
+        "startLineNumber": 790,
+        "startColumn": 13,
+        "endLineNumber": 790,
+        "endColumn": 72
+    },
+    {
+        "resource": "/f:/adder_repo/data/file_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "W0707:raise-missing-from",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/warning/raise-missing-from.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 4,
+        "message": "Consider explicitly re-raising using 'raise TypeError('Data is not JSON-serializable: %s' % e) from e'",
+        "source": "Pylint",
+        "startLineNumber": 818,
+        "startColumn": 13,
+        "endLineNumber": 818,
+        "endColumn": 71
+    },
+    {
+        "resource": "/f:/adder_repo/data/file_manager.py",
+        "owner": "python",
+        "code": {
+            "value": "reportMissingModuleSource",
+            "target": {
+                "$mid": 1,
+                "path": "/microsoft/pyright/blob/main/docs/configuration.md",
+                "scheme": "https",
+                "authority": "github.com",
+                "fragment": "reportMissingModuleSource"
+            }
+        },
+        "severity": 4,
+        "message": "Import \"jsonschema\" could not be resolved from source",
+        "source": "Pylance",
+        "startLineNumber": 839,
+        "startColumn": 20,
+        "endLineNumber": 839,
+        "endColumn": 30
+    },
+    {
+        "resource": "/f:/adder_repo/data/file_manager.py",
+        "owner": "python",
+        "code": {
+            "value": "reportMissingModuleSource",
+            "target": {
+                "$mid": 1,
+                "path": "/microsoft/pyright/blob/main/docs/configuration.md",
+                "scheme": "https",
+                "authority": "github.com",
+                "fragment": "reportMissingModuleSource"
+            }
+        },
+        "severity": 4,
+        "message": "Import \"jsonschema\" could not be resolved from source",
+        "source": "Pylance",
+        "startLineNumber": 840,
+        "startColumn": 18,
+        "endLineNumber": 840,
+        "endColumn": 28
+    },
+    {
+        "resource": "/f:/adder_repo/data/file_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "W0707:raise-missing-from",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/warning/raise-missing-from.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 4,
+        "message": "Consider explicitly re-raising using 'except ImportError as exc' and 'raise ImportError('jsonschema package is required for validation') from exc'",
+        "source": "Pylint",
+        "startLineNumber": 843,
+        "startColumn": 13,
+        "endLineNumber": 843,
+        "endColumn": 79
+    },
+    {
+        "resource": "/f:/adder_repo/data/file_manager.py",
+        "owner": "python",
+        "code": {
+            "value": "reportInvalidTypeForm",
+            "target": {
+                "$mid": 1,
+                "path": "/microsoft/pyright/blob/main/docs/configuration.md",
+                "scheme": "https",
+                "authority": "github.com",
+                "fragment": "reportInvalidTypeForm"
+            }
+        },
+        "severity": 4,
+        "message": "Variable not allowed in type expression",
+        "source": "Pylance",
+        "startLineNumber": 910,
+        "startColumn": 36,
+        "endLineNumber": 910,
+        "endColumn": 45
+    },
+    {
+        "resource": "/f:/adder_repo/data/file_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "W0612:unused-variable",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/warning/unused-variable.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 4,
+        "message": "Unused variable 'e'",
+        "source": "Pylint",
+        "startLineNumber": 957,
+        "startColumn": 9,
+        "endLineNumber": 959,
+        "endColumn": 71
+    },
+    {
+        "resource": "/f:/adder_repo/data/file_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "W0707:raise-missing-from",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/warning/raise-missing-from.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 4,
+        "message": "Consider explicitly re-raising using 'raise DecryptionError('Error decrypting %s: {e}' % path) from e'",
+        "source": "Pylint",
+        "startLineNumber": 959,
+        "startColumn": 13,
+        "endLineNumber": 959,
+        "endColumn": 71
+    },
+    {
+        "resource": "/f:/adder_repo/data/file_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "W0707:raise-missing-from",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/warning/raise-missing-from.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 4,
+        "message": "Consider explicitly re-raising using 'raise EncryptionError(f'Error encrypting or writing to {path}: {e}') from e'",
+        "source": "Pylint",
+        "startLineNumber": 985,
+        "startColumn": 13,
+        "endLineNumber": 986,
+        "endColumn": 63
+    },
+    {
+        "resource": "/f:/adder_repo/data/file_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "W1203:logging-fstring-interpolation",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/warning/logging-fstring-interpolation.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 4,
+        "message": "Use lazy % formatting in logging functions",
+        "source": "Pylint",
+        "startLineNumber": 1010,
+        "startColumn": 17,
+        "endLineNumber": 1012,
+        "endColumn": 18
+    },
+    {
+        "resource": "/f:/adder_repo/data/file_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "W1203:logging-fstring-interpolation",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/warning/logging-fstring-interpolation.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 4,
+        "message": "Use lazy % formatting in logging functions",
+        "source": "Pylint",
+        "startLineNumber": 1024,
+        "startColumn": 13,
+        "endLineNumber": 1025,
+        "endColumn": 74
+    },
+    {
+        "resource": "/f:/adder_repo/data/file_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "W0707:raise-missing-from",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/warning/raise-missing-from.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 4,
+        "message": "Consider explicitly re-raising using 'raise FileFormatError(str(file_path), f'Invalid JSON in decrypted content: {e}') from e'",
+        "source": "Pylint",
+        "startLineNumber": 1026,
+        "startColumn": 13,
+        "endLineNumber": 1028,
+        "endColumn": 14
+    },
+    {
+        "resource": "/f:/adder_repo/data/file_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "W0707:raise-missing-from",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/warning/raise-missing-from.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 4,
+        "message": "Consider explicitly re-raising using 'raise TypeError('Data is not JSON-serializable: %s' % e) from e'",
+        "source": "Pylint",
+        "startLineNumber": 1060,
+        "startColumn": 13,
+        "endLineNumber": 1060,
+        "endColumn": 71
+    },
+    {
+        "resource": "/f:/adder_repo/data/file_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "W0702:bare-except",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/warning/bare-except.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 4,
+        "message": "No exception type(s) specified",
+        "source": "Pylint",
+        "startLineNumber": 1149,
+        "startColumn": 21,
+        "endLineNumber": 1150,
+        "endColumn": 29
+    },
+    {
+        "resource": "/f:/adder_repo/data/file_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "W0707:raise-missing-from",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/warning/raise-missing-from.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 4,
+        "message": "Consider explicitly re-raising using 'raise FileWriteError(path_str, str(e)) from e'",
+        "source": "Pylint",
+        "startLineNumber": 1151,
+        "startColumn": 17,
+        "endLineNumber": 1151,
+        "endColumn": 55
+    },
+    {
+        "resource": "/f:/adder_repo/data/file_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "W1113:keyword-arg-before-vararg",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/warning/keyword-arg-before-vararg.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 4,
+        "message": "Keyword argument before variable positional arguments list in the definition of get_file_manager function",
+        "source": "Pylint",
+        "startLineNumber": 1155,
+        "startColumn": 1,
+        "endLineNumber": 1155,
+        "endColumn": 21
+    },
+    {
+        "resource": "/f:/adder_repo/data/file_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "C0302:too-many-lines",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/convention/too-many-lines.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 2,
+        "message": "Too many lines in module (1180/1000)",
+        "source": "Pylint",
+        "startLineNumber": 1,
+        "startColumn": 1,
+        "endLineNumber": 1,
+        "endColumn": 1
+    },
+    {
+        "resource": "/f:/adder_repo/data/file_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "C0209:consider-using-f-string",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/convention/consider-using-f-string.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 2,
+        "message": "Formatting a regular string which could be an f-string",
+        "source": "Pylint",
+        "startLineNumber": 166,
+        "startColumn": 32,
+        "endLineNumber": 166,
+        "endColumn": 64
+    },
+    {
+        "resource": "/f:/adder_repo/data/file_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "C0209:consider-using-f-string",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/convention/consider-using-f-string.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 2,
+        "message": "Formatting a regular string which could be an f-string",
+        "source": "Pylint",
+        "startLineNumber": 209,
+        "startColumn": 33,
+        "endLineNumber": 209,
+        "endColumn": 59
+    },
+    {
+        "resource": "/f:/adder_repo/data/file_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "C0209:consider-using-f-string",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/convention/consider-using-f-string.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 2,
+        "message": "Formatting a regular string which could be an f-string",
+        "source": "Pylint",
+        "startLineNumber": 386,
+        "startColumn": 30,
+        "endLineNumber": 386,
+        "endColumn": 57
+    },
+    {
+        "resource": "/f:/adder_repo/data/file_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "C0209:consider-using-f-string",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/convention/consider-using-f-string.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 2,
+        "message": "Formatting a regular string which could be an f-string",
+        "source": "Pylint",
+        "startLineNumber": 421,
+        "startColumn": 33,
+        "endLineNumber": 421,
+        "endColumn": 58
+    },
+    {
+        "resource": "/f:/adder_repo/data/file_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "C0209:consider-using-f-string",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/convention/consider-using-f-string.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 2,
+        "message": "Formatting a regular string which could be an f-string",
+        "source": "Pylint",
+        "startLineNumber": 520,
+        "startColumn": 49,
+        "endLineNumber": 520,
+        "endColumn": 67
+    },
+    {
+        "resource": "/f:/adder_repo/data/file_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "C0209:consider-using-f-string",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/convention/consider-using-f-string.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 2,
+        "message": "Formatting a regular string which could be an f-string",
+        "source": "Pylint",
+        "startLineNumber": 555,
+        "startColumn": 32,
+        "endLineNumber": 555,
+        "endColumn": 61
+    },
+    {
+        "resource": "/f:/adder_repo/data/file_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "C0209:consider-using-f-string",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/convention/consider-using-f-string.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 2,
+        "message": "Formatting a regular string which could be an f-string",
+        "source": "Pylint",
+        "startLineNumber": 605,
+        "startColumn": 33,
+        "endLineNumber": 605,
+        "endColumn": 62
+    },
+    {
+        "resource": "/f:/adder_repo/data/file_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "C0209:consider-using-f-string",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/convention/consider-using-f-string.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 2,
+        "message": "Formatting a regular string which could be an f-string",
+        "source": "Pylint",
+        "startLineNumber": 639,
+        "startColumn": 30,
+        "endLineNumber": 639,
+        "endColumn": 62
+    },
+    {
+        "resource": "/f:/adder_repo/data/file_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "C0209:consider-using-f-string",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/convention/consider-using-f-string.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 2,
+        "message": "Formatting a regular string which could be an f-string",
+        "source": "Pylint",
+        "startLineNumber": 818,
+        "startColumn": 29,
+        "endLineNumber": 818,
+        "endColumn": 64
+    },
+    {
+        "resource": "/f:/adder_repo/data/file_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "C0415:import-outside-toplevel",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/convention/import-outside-toplevel.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 2,
+        "message": "Import outside toplevel (jsonschema)",
+        "source": "Pylint",
+        "startLineNumber": 839,
+        "startColumn": 13,
+        "endLineNumber": 839,
+        "endColumn": 30
+    },
+    {
+        "resource": "/f:/adder_repo/data/file_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "C0415:import-outside-toplevel",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/convention/import-outside-toplevel.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 2,
+        "message": "Import outside toplevel (jsonschema.ValidationError, jsonschema.SchemaError)",
+        "source": "Pylint",
+        "startLineNumber": 840,
+        "startColumn": 13,
+        "endLineNumber": 840,
+        "endColumn": 64
+    },
+    {
+        "resource": "/f:/adder_repo/data/file_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "C0209:consider-using-f-string",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/convention/consider-using-f-string.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 2,
+        "message": "Formatting a regular string which could be an f-string",
+        "source": "Pylint",
+        "startLineNumber": 1060,
+        "startColumn": 29,
+        "endLineNumber": 1060,
+        "endColumn": 64
+    },
+    {
+        "resource": "/f:/adder_repo/data/file_manager.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "C0209:consider-using-f-string",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/convention/consider-using-f-string.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 2,
+        "message": "Formatting a regular string which could be an f-string",
+        "source": "Pylint",
+        "startLineNumber": 1180,
+        "startColumn": 26,
+        "endLineNumber": 1180,
+        "endColumn": 61
+    }
+]

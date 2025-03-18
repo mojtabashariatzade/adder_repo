@@ -41,15 +41,13 @@ Usage:
 """
 
 import os
-import json
 import glob
 import logging
 import uuid
 import time
 import shutil
 from datetime import datetime
-from typing import Dict, List, Optional, Any, Tuple, Union
-from pathlib import Path
+from typing import Dict, List, Optional, Any, Union
 import threading
 from enum import Enum, auto
 
@@ -63,14 +61,14 @@ except ImportError:
             self.base_dir = base_dir or os.getcwd()
 
     class JsonFileManager(FileManager):
-        def read_json(self, path, default=None):
+        def read_json(self, default=None):
             return default
 
         def write_json(self, path, data, make_backup=False):
             pass
 
 try:
-    from logging_.logging_manager import LoggingManager, get_logger
+    from logging_.logging_manager import get_logger
 except ImportError:
     # For development, provide mock logger
     class LoggingManager:
@@ -82,7 +80,7 @@ except ImportError:
 
 # Import custom exceptions from core
 try:
-    from core.exceptions import FileReadError, FileWriteError, FileFormatError
+    from core.exceptions import FileWriteError
 except ImportError:
     # Define minimal exceptions for development
     class FileReadError(Exception):
@@ -146,11 +144,11 @@ class Session:
     """
 
     def __init__(self,
-                session_id: Optional[str] = None,
-                session_type: Optional[str] = None,
-                auto_save: bool = True,
-                auto_save_interval: int = 60,  # seconds
-                max_history_size: int = 100):
+                 session_id: Optional[str] = None,
+                 session_type: Optional[str] = None,
+                 auto_save: bool = True,
+                 auto_save_interval: int = 60,  # seconds
+                 max_history_size: int = 100):
         """
         Initialize a new session.
 
@@ -325,7 +323,7 @@ class Session:
         self.event_log.append(event)
 
     def log_error(self, error_message: str, error_type: Optional[str] = None,
-                 exception: Optional[Exception] = None, context: Optional[Dict[str, Any]] = None) -> None:
+                  exception: Optional[Exception] = None, context: Optional[Dict[str, Any]] = None) -> None:
         """
         Log an error encountered during the session.
 
@@ -348,7 +346,8 @@ class Session:
             error_entry["context"] = context
 
         self.errors.append(error_entry)
-        self.log_event(f"Error: {error_message}", {"error_type": error_entry["type"]})
+        self.log_event(f"Error: {error_message}", {
+                       "error_type": error_entry["type"]})
 
         # Debug log to verify error is being added correctly
         error_log_str = f"Added error to session: {error_message}, type={error_entry['type']}"
@@ -589,9 +588,9 @@ class SessionManager:
             return cls._instance
 
     def __init__(self, sessions_dir: Optional[str] = None,
-                file_manager: Optional[JsonFileManager] = None,
-                auto_cleanup: bool = True,
-                max_active_sessions: int = 50):
+                 file_manager: Optional[JsonFileManager] = None,
+                 auto_cleanup: bool = True,
+                 max_active_sessions: int = 50):
         """
         Initialize the SessionManager.
 
@@ -609,8 +608,10 @@ class SessionManager:
             if self._initialized:
                 return
 
-            self.sessions_dir = sessions_dir or os.path.join(os.getcwd(), "sessions")
-            self.file_manager = file_manager or JsonFileManager(base_dir=self.sessions_dir)
+            self.sessions_dir = sessions_dir or os.path.join(
+                os.getcwd(), "sessions")
+            self.file_manager = file_manager or JsonFileManager(
+                base_dir=self.sessions_dir)
 
             # Create sessions directory if it doesn't exist
             os.makedirs(self.sessions_dir, exist_ok=True)
@@ -642,8 +643,8 @@ class SessionManager:
         return os.path.join(self.sessions_dir, f"session_{session_id}.json")
 
     def create_session(self, session_type: Optional[str] = None,
-                     session_id: Optional[str] = None,
-                     auto_save: bool = True) -> Session:
+                       session_id: Optional[str] = None,
+                       auto_save: bool = True) -> Session:
         """
         Create a new session.
 
@@ -680,7 +681,8 @@ class SessionManager:
         # Save the session
         self.save_session(session)
 
-        logger.info(f"Created new {session_type or 'generic'} session with ID: {session.session_id}")
+        logger.info(
+            f"Created new {session_type or 'generic'} session with ID: {session.session_id}")
         return session
 
     def save_session(self, session: Session) -> bool:
@@ -698,8 +700,10 @@ class SessionManager:
 
         try:
             # Use the file manager to safely write the session data
-            self.file_manager.write_json(session_path, session_data, make_backup=True)
-            logger.debug(f"Saved session {session.session_id} to {session_path}")
+            self.file_manager.write_json(
+                session_path, session_data, make_backup=True)
+            logger.debug(
+                f"Saved session {session.session_id} to {session_path}")
             return True
         except Exception as e:
             logger.error(f"Error saving session {session.session_id}: {e}")
@@ -724,7 +728,8 @@ class SessionManager:
         try:
             session_data = self.file_manager.read_json(session_path)
             if not session_data:
-                logger.warning(f"Session file empty or not found: {session_path}")
+                logger.warning(
+                    f"Session file empty or not found: {session_path}")
                 return None
 
             session = Session.from_dict(session_data)
@@ -746,7 +751,7 @@ class SessionManager:
             return None
 
     def import_session(self, file_path: str, new_id: Optional[str] = None,
-                     overwrite: bool = False) -> Optional[str]:
+                       overwrite: bool = False) -> Optional[str]:
         """
         Import a session from an external file.
 
@@ -766,7 +771,8 @@ class SessionManager:
         try:
             # Check if session already exists (and we're not overwriting)
             if new_id and new_id in self.active_sessions and not overwrite:
-                logger.warning(f"Session {new_id} already exists and overwrite=False")
+                logger.warning(
+                    f"Session {new_id} already exists and overwrite=False")
                 return None
 
             # Read the source file
@@ -780,7 +786,8 @@ class SessionManager:
             if new_id:
                 session_data["session_id"] = new_id
                 # Update any references to the original ID
-                logger.debug(f"Changing session ID from {original_id} to {new_id}")
+                logger.debug(
+                    f"Changing session ID from {original_id} to {new_id}")
 
             # Create a session object from the data
             session = Session.from_dict(session_data)
@@ -795,17 +802,19 @@ class SessionManager:
             # Save the session to our sessions directory
             if not self.save_session(session):
                 raise FileWriteError(self._get_session_path(session.session_id),
-                                    "Failed to save imported session")
+                                     "Failed to save imported session")
 
             # Update session metadata
             session.log_event(f"Session imported from {file_path}")
             if new_id and original_id != new_id:
-                session.log_event(f"Session ID changed from {original_id} to {new_id}")
+                session.log_event(
+                    f"Session ID changed from {original_id} to {new_id}")
 
             # Save again with updated metadata
             self.save_session(session)
 
-            logger.info(f"Imported session from {file_path} with ID: {session.session_id}")
+            logger.info(
+                f"Imported session from {file_path} with ID: {session.session_id}")
             return session.session_id
         except Exception as e:
             logger.error(f"Error importing session from {file_path}: {e}")
@@ -837,14 +846,15 @@ class SessionManager:
                 logger.info(f"Deleted session {session_id}")
                 return True
             else:
-                logger.warning(f"Session file not found for deletion: {session_path}")
+                logger.warning(
+                    f"Session file not found for deletion: {session_path}")
                 return False
         except Exception as e:
             logger.error(f"Error deleting session {session_id}: {e}")
             return False
 
     def list_sessions(self, session_type: Optional[str] = None,
-                    status: Optional[Union[SessionStatus, str]] = None) -> List[Dict[str, Any]]:
+                      status: Optional[Union[SessionStatus, str]] = None) -> List[Dict[str, Any]]:
         """
         List available sessions.
 
@@ -858,10 +868,12 @@ class SessionManager:
         # Convert status to string if it's an enum
         status_str = None
         if status is not None:
-            status_str = status if isinstance(status, str) else SessionStatus.to_str(status)
+            status_str = status if isinstance(
+                status, str) else SessionStatus.to_str(status)
 
         sessions = []
-        session_files = glob.glob(os.path.join(self.sessions_dir, "session_*.json"))
+        session_files = glob.glob(os.path.join(
+            self.sessions_dir, "session_*.json"))
 
         for session_file in session_files:
             try:
@@ -887,12 +899,14 @@ class SessionManager:
 
                 sessions.append(session_meta)
             except Exception as e:
-                logger.warning(f"Error reading session file {session_file}: {e}")
+                logger.warning(
+                    f"Error reading session file {session_file}: {e}")
 
         # Sort by updated_at (most recent first)
         sessions.sort(key=lambda s: s.get("updated_at", ""), reverse=True)
 
-        logger.debug(f"Listed {len(sessions)} sessions matching criteria (type={session_type}, status={status_str})")
+        logger.debug(
+            f"Listed {len(sessions)} sessions matching criteria (type={session_type}, status={status_str})")
         return sessions
 
     def find_incomplete_sessions(self) -> List[str]:
@@ -905,7 +919,8 @@ class SessionManager:
         incomplete_statuses = ["running", "paused", "interrupted"]
         incomplete_sessions = []
 
-        session_files = glob.glob(os.path.join(self.sessions_dir, "session_*.json"))
+        session_files = glob.glob(os.path.join(
+            self.sessions_dir, "session_*.json"))
 
         for session_file in session_files:
             try:
@@ -915,12 +930,13 @@ class SessionManager:
                 if status.lower() in incomplete_statuses:
                     incomplete_sessions.append(session_data.get("session_id"))
             except Exception as e:
-                logger.warning(f"Error checking session file {session_file}: {e}")
+                logger.warning(
+                    f"Error checking session file {session_file}: {e}")
 
         return incomplete_sessions
 
     def get_session(self, session_id: str, create_if_missing: bool = False,
-                   session_type: Optional[str] = None) -> Optional[Session]:
+                    session_type: Optional[str] = None) -> Optional[Session]:
         """
         Get a session by ID, loading it if necessary.
 
@@ -943,7 +959,8 @@ class SessionManager:
 
         # Create if requested and not found
         if session is None and create_if_missing:
-            session = self.create_session(session_type=session_type, session_id=session_id)
+            session = self.create_session(
+                session_type=session_type, session_id=session_id)
 
         # Update last accessed time if we found or created a session
         if session is not None:
@@ -992,7 +1009,8 @@ class SessionManager:
         )
 
         # Remove oldest sessions until below limit
-        sessions_to_remove = len(self.active_sessions) - self.max_active_sessions
+        sessions_to_remove = len(self.active_sessions) - \
+            self.max_active_sessions
         for session_id, _ in sorted_sessions[:sessions_to_remove]:
             if session_id in self.active_sessions:
                 # Clean up session resources
@@ -1005,8 +1023,8 @@ class SessionManager:
         logger.debug(f"Trimmed {sessions_to_remove} sessions from memory")
 
     def archive_completed_sessions(self, older_than_days: int = 30,
-                                 archive_dir: Optional[str] = None,
-                                 compress: bool = True) -> int:
+                                   archive_dir: Optional[str] = None,
+                                   compress: bool = True) -> int:
         """
         Archive old completed sessions.
 
@@ -1037,7 +1055,8 @@ class SessionManager:
             cutoff_time = 0
 
         archived_count = 0
-        session_files = glob.glob(os.path.join(self.sessions_dir, "session_*.json"))
+        session_files = glob.glob(os.path.join(
+            self.sessions_dir, "session_*.json"))
 
         for session_file in session_files:
             try:
@@ -1054,7 +1073,8 @@ class SessionManager:
                     continue
 
                 try:
-                    updated_time = datetime.fromisoformat(updated_str).timestamp()
+                    updated_time = datetime.fromisoformat(
+                        updated_str).timestamp()
                 except ValueError:
                     continue
 
@@ -1063,7 +1083,8 @@ class SessionManager:
 
                 # Archive the session
                 session_id = session_data.get("session_id")
-                archive_path = os.path.join(archive_dir, os.path.basename(session_file))
+                archive_path = os.path.join(
+                    archive_dir, os.path.basename(session_file))
 
                 # Remove from active sessions if present
                 if session_id in self.active_sessions:
@@ -1077,7 +1098,8 @@ class SessionManager:
                     import zipfile
                     zip_path = f"{archive_path}.zip"
                     with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zip_file:
-                        zip_file.write(session_file, os.path.basename(session_file))
+                        zip_file.write(
+                            session_file, os.path.basename(session_file))
                     os.remove(session_file)
                     archive_path = zip_path
                 else:
@@ -1085,9 +1107,11 @@ class SessionManager:
 
                 archived_count += 1
 
-                logger.debug(f"Archived session {session_id} to {archive_path}")
+                logger.debug(
+                    f"Archived session {session_id} to {archive_path}")
             except Exception as e:
-                logger.warning(f"Error archiving session file {session_file}: {e}")
+                logger.warning(
+                    f"Error archiving session file {session_file}: {e}")
 
         logger.info(f"Archived {archived_count} sessions to {archive_dir}")
         return archived_count
@@ -1123,7 +1147,8 @@ class SessionManager:
         # Calculate duration
         try:
             start_time = datetime.fromisoformat(session.created_at)
-            end_time = datetime.fromisoformat(session.completed_at or session.updated_at)
+            end_time = datetime.fromisoformat(
+                session.completed_at or session.updated_at)
             duration_sec = (end_time - start_time).total_seconds()
 
             # Format duration
