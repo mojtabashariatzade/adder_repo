@@ -85,7 +85,91 @@ Files and Folders :
 
 END: AI Claude.ai INSTRUCTION
 # -----------------------------------------------------------------------------------------------------------------------------------------
-
+F:\adder_repo
+|   .env.encrypted
+|   .gitignore
+|   main.py
+|   module_status.json
+|   README.md
+|   requirements.txt
+|   run_tests.sh
+|   setup.py
+|   test_stats_runner
+|   __init__.py
+|
++---core
+|   |   config.py
+|   |   constants.py
+|   |   exceptions.py
+|   |   __init__.py
+|
++---data
+|   |   base_file_manager.py
+|   |   encrypted_file_manager.py
+|   |   encryption.py
+|   |   file_factory.py
+|   |   file_manager.py
+|   |   json_file_manager.py
+|   |   session_manager.py
+|   |   __init__.py
+|
++---error_handling
+|   |   error_handlers.py
+|   |   error_manager.py
+|   |   fallback.py
+|   |   __init__.py
+|
++---json
+|       error_handlers.json
+|       error_manager.json
+|       fallback.json
+|       file_manager.json
+|       session_manager.json
+|
++---logging_
+|   |   formatters.py
+|   |   handlers.py
+|   |   logging_manager.py
+|   |   __init__.py
+|
++---logs
+|       adder_repo.log
+|
++---models
+|   |   account.py
+|   |   stats.py
+|   |   user.py
+|   |   __init__.py
+|
++---services
+|       account_manager.py
+|       analytics.py
+|       group_manager.py
+|       proxy_manager.py
+|       __init__.py
+|
++---strategies
+|       base_strategy.py
+|       parallel_strategies.py
+|       sequential_strategy.py
+|       strategy_selector.py
+|       __init__.py
+|
++---ui
+|   |   account_menu.py
+|   |   colors.py
+|   |   display.py
+|   |   menu_system.py
+|   |   operation_menu.py
+|   |   settings_menu.py
+|   |   __init__.py
+|   |
+|
+\---utils
+    |   app_context.py
+    |   helpers.py
+    |   validators.py
+    |   __init__.py
 
 # -----------------------------------------------------------------------------------------------------------------------------------------
 
