@@ -27,6 +27,7 @@ Usage:
 
 import logging
 import json
+import re
 import traceback
 from datetime import datetime
 import socket
@@ -549,7 +550,6 @@ class ConfigurableFormatter(logging.Formatter):
             result = result.replace(f"{{{field}}}", str(value))
 
         # Then handle fields with processors
-        import re
         processor_pattern = r'\{(\w+):(\w+)\}'
         matches = re.findall(processor_pattern, result)
 
