@@ -42,6 +42,8 @@ from ui.menu_system import (
 )
 
 # Try to import display utilities
+
+
 class AccountMenu:
     """
     UI component for managing Telegram accounts.
@@ -68,12 +70,18 @@ class AccountMenu:
         account_menu = Menu("Account Management", parent=parent_menu)
 
         # Add menu items
-        account_menu.add_item(create_action_item("1", "List Accounts", self.list_accounts))
-        account_menu.add_item(create_action_item("2", "Add Account", self.add_account))
-        account_menu.add_item(create_action_item("3", "Remove Account", self.remove_account))
-        account_menu.add_item(create_action_item("4", "Reset Daily Limits", self.reset_daily_limits))
-        account_menu.add_item(create_action_item("5", "Test Account Connection", self.test_account))
-        account_menu.add_item(create_action_item("6", "View Account Details", self.view_account_details))
+        account_menu.add_item(create_action_item(
+            "1", "List Accounts", self.list_accounts))
+        account_menu.add_item(create_action_item(
+            "2", "Add Account", self.add_account))
+        account_menu.add_item(create_action_item(
+            "3", "Remove Account", self.remove_account))
+        account_menu.add_item(create_action_item(
+            "4", "Reset Daily Limits", self.reset_daily_limits))
+        account_menu.add_item(create_action_item(
+            "5", "Test Account Connection", self.test_account))
+        account_menu.add_item(create_action_item(
+            "6", "View Account Details", self.view_account_details))
 
         return account_menu
 
@@ -91,7 +99,8 @@ class AccountMenu:
             return
 
         # Prepare data for tabular display
-        headers = ["Index", "Phone", "Status", "Added Today", "Extracted Today", "Last Used"]
+        headers = ["Index", "Phone", "Status",
+                   "Added Today", "Extracted Today", "Last Used"]
         rows = []
 
         for i, account in enumerate(accounts):
@@ -102,10 +111,12 @@ class AccountMenu:
             if account.status == AccountStatus.COOLDOWN and account.cooldown_until:
                 import datetime
                 try:
-                    cooldown_until = datetime.datetime.fromisoformat(account.cooldown_until)
+                    cooldown_until = datetime.datetime.fromisoformat(
+                        account.cooldown_until)
                     now = datetime.datetime.now()
                     if cooldown_until > now:
-                        minutes_left = (cooldown_until - now).total_seconds() / 60
+                        minutes_left = (cooldown_until -
+                                        now).total_seconds() / 60
                         status_text = f"{account.status} ({minutes_left:.0f}m left)"
                 except:
                     pass
@@ -115,7 +126,8 @@ class AccountMenu:
             if account.last_used:
                 try:
                     import datetime
-                    last_used_time = datetime.datetime.fromisoformat(account.last_used)
+                    last_used_time = datetime.datetime.fromisoformat(
+                        account.last_used)
                     last_used = last_used_time.strftime("%Y-%m-%d %H:%M")
                 except:
                     last_used = "Invalid date"
@@ -177,7 +189,8 @@ class AccountMenu:
             # Check if account already exists
             existing_index = self.account_manager.get_account_by_phone(phone)
             if existing_index >= 0:
-                print(f"This account already exists at index {existing_index}.")
+                print(
+                    f"This account already exists at index {existing_index}.")
                 time.sleep(1.5)
                 return
 
@@ -197,7 +210,8 @@ class AccountMenu:
         self.list_accounts()
 
         try:
-            index_str = input("\nEnter the index of the account to remove (-1 to cancel): ").strip()
+            index_str = input(
+                "\nEnter the index of the account to remove (-1 to cancel): ").strip()
 
             if index_str == "-1":
                 print("Operation cancelled.")
@@ -212,7 +226,8 @@ class AccountMenu:
                 return
 
             # Confirm removal
-            confirm = input(f"Are you sure you want to remove account {index}? (y/n): ").strip().lower()
+            confirm = input(
+                f"Are you sure you want to remove account {index}? (y/n): ").strip().lower()
             if confirm != 'y':
                 print("Operation cancelled.")
                 time.sleep(1)
@@ -238,7 +253,8 @@ class AccountMenu:
         self.list_accounts()
 
         try:
-            index_str = input("\nEnter the index of the account to reset limits, or 'all' to reset all accounts (-1 to cancel): ").strip()
+            index_str = input(
+                "\nEnter the index of the account to reset limits, or 'all' to reset all accounts (-1 to cancel): ").strip()
 
             if index_str == "-1":
                 print("Operation cancelled.")
@@ -247,7 +263,8 @@ class AccountMenu:
 
             if index_str.lower() == "all":
                 # Reset all accounts
-                confirm = input("Are you sure you want to reset limits for ALL accounts? (y/n): ").strip().lower()
+                confirm = input(
+                    "Are you sure you want to reset limits for ALL accounts? (y/n): ").strip().lower()
                 if confirm != 'y':
                     print("Operation cancelled.")
                     time.sleep(1)
@@ -263,7 +280,8 @@ class AccountMenu:
                 try:
                     index = int(index_str)
                 except ValueError:
-                    print_error("Invalid input. Please enter a number or 'all'.")
+                    print_error(
+                        "Invalid input. Please enter a number or 'all'.")
                     time.sleep(1.5)
                     return
 
@@ -286,7 +304,8 @@ class AccountMenu:
         self.list_accounts()
 
         try:
-            index_str = input("\nEnter the index of the account to test (-1 to cancel): ").strip()
+            index_str = input(
+                "\nEnter the index of the account to test (-1 to cancel): ").strip()
 
             if index_str == "-1":
                 print("Operation cancelled.")
@@ -304,7 +323,8 @@ class AccountMenu:
             print("\nTesting account connection... This may take a moment.")
 
             # Test the account
-            success, message = self.account_manager.test_account_connection(index)
+            success, message = self.account_manager.test_account_connection(
+                index)
 
             if success:
                 print(f"Connection test successful: {message}")
@@ -324,7 +344,8 @@ class AccountMenu:
         self.list_accounts()
 
         try:
-            index_str = input("\nEnter the index of the account to view details (-1 to cancel): ").strip()
+            index_str = input(
+                "\nEnter the index of the account to view details (-1 to cancel): ").strip()
 
             if index_str == "-1":
                 print("Operation cancelled.")
@@ -354,9 +375,11 @@ class AccountMenu:
             # Format account details
             details = [
                 ("API ID", account.api_id),
-                ("API Hash", f"{account.api_hash[:5]}...{account.api_hash[-5:]}" if account.api_hash else "None"),
+                ("API Hash",
+                 f"{account.api_hash[:5]}...{account.api_hash[-5:]}" if account.api_hash else "None"),
                 ("Phone", account.phone),
-                ("Session String", f"{account.session_string[:10]}...{account.session_string[-10:]}" if account.session_string else "None"),
+                ("Session String",
+                 f"{account.session_string[:10]}...{account.session_string[-10:]}" if account.session_string else "None"),
                 ("Status", account.status),
                 ("Cooldown Until", account.cooldown_until or "N/A"),
                 ("Last Used", account.last_used or "Never"),
@@ -403,7 +426,8 @@ if __name__ == "__main__":
     account_menu = create_account_menu(main_menu)
 
     # Add the account menu to the main menu
-    main_menu.add_item(create_submenu_item("1", "Account Management", account_menu))
+    main_menu.add_item(create_submenu_item(
+        "1", "Account Management", account_menu))
     main_menu.add_item(create_action_item("q", "Quit", lambda: sys.exit(0)))
 
     # Create and run the menu system
@@ -446,13 +470,15 @@ except ImportError:
                 col_widths[i] = max(col_widths[i], len(str(cell)))
 
         # Print headers
-        header_row = " | ".join(h.ljust(col_widths[i]) for i, h in enumerate(headers))
+        header_row = " | ".join(
+            h.ljust(col_widths[i]) for i, h in enumerate(headers))
         print(header_row)
         print("-" * len(header_row))
 
         # Print rows
         for row in rows:
-            print(" | ".join(str(cell).ljust(col_widths[i]) for i, cell in enumerate(row)))
+            print(" | ".join(str(cell).ljust(
+                col_widths[i]) for i, cell in enumerate(row)))
 
 # Try to import services
 try:
@@ -471,6 +497,7 @@ except ImportError:
 
     class Account:
         """Mock Account class."""
+
         def __init__(self, api_id, api_hash, phone, session_string=None, status="active"):
             self.api_id = api_id
             self.api_hash = api_hash
@@ -486,6 +513,7 @@ except ImportError:
 
     class AccountManager:
         """Mock AccountManager for development."""
+
         def __init__(self):
             self.accounts = []
 
@@ -525,11 +553,16 @@ except ImportError:
 
         def get_account_stats(self):
             total = len(self.accounts)
-            active = sum(1 for acc in self.accounts if acc.status == AccountStatus.ACTIVE)
-            cooldown = sum(1 for acc in self.accounts if acc.status == AccountStatus.COOLDOWN)
-            blocked = sum(1 for acc in self.accounts if acc.status == AccountStatus.BLOCKED)
-            unverified = sum(1 for acc in self.accounts if acc.status == AccountStatus.UNVERIFIED)
-            daily_limit = sum(1 for acc in self.accounts if acc.status == AccountStatus.DAILY_LIMIT_REACHED)
+            active = sum(1 for acc in self.accounts if acc.status ==
+                         AccountStatus.ACTIVE)
+            cooldown = sum(
+                1 for acc in self.accounts if acc.status == AccountStatus.COOLDOWN)
+            blocked = sum(
+                1 for acc in self.accounts if acc.status == AccountStatus.BLOCKED)
+            unverified = sum(
+                1 for acc in self.accounts if acc.status == AccountStatus.UNVERIFIED)
+            daily_limit = sum(
+                1 for acc in self.accounts if acc.status == AccountStatus.DAILY_LIMIT_REACHED)
 
             return {
                 "total": total,

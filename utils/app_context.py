@@ -35,21 +35,21 @@ Usage:
     context.shutdown()
 """
 
-import os
-import sys
 import logging
 import threading
-from typing import Any, Dict, List, Optional, Type, Callable, TypeVar, Generic
+from typing import Any, Optional, Type, Callable, TypeVar
 
 # Import core modules
 try:
     from core.config import Config
 except ImportError:
     # Mock Config for development/testing
+    # pylint: disable=C0115  # Missing class docstring
     class Config:
         def __init__(self):
             self._config_data = {}
 
+# pylint: disable=C0116  # Missing function or method docstring
         def get(self, key, default=None):
             return self._config_data.get(key, default)
 
@@ -61,7 +61,9 @@ try:
     from logging_.logging_manager import LoggingManager
 except ImportError:
     # Mock LoggingManager for development/testing
+    # pylint: disable=C0115  # Missing class docstring
     class LoggingManager:
+        # pylint: disable=C0116  # Missing function or method docstring
         def get_logger(self, name):
             return logging.getLogger(name)
 
@@ -118,14 +120,15 @@ class AppContext:
             # Set up logging manager
             try:
                 self._logging_manager = LoggingManager()
-            except Exception as e:
+            except (IOError, FileNotFoundError, ValueError) as e:
                 # Fallback to basic logging if LoggingManager is not available
                 self._logging_manager = None
                 logging.basicConfig(
                     level=logging.INFO,
                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
                 )
-                logger.warning(f"Failed to initialize LoggingManager: {e}. Using basic logging.")
+                logger.warning(
+                    "Failed to initialize LoggingManager: %s. Using basic logging.", e)
 
             # Mark as initialized
             self._initialized = True
@@ -172,11 +175,11 @@ class AppContext:
                 factory = self._factories[name]
                 instance = factory()
                 self._services[name] = instance
-                logger.debug(f"Service '{name}' created using factory")
+                logger.debug("Service '%s' created using factory", name)
                 return instance
 
             # Service not found
-            logger.debug(f"Service '{name}' not found")
+            logger.debug("Service '%s' not found", name)
             return default
 
     def get_service_of_type(self, service_type: Type[T]) -> Optional[T]:
@@ -196,7 +199,8 @@ class AppContext:
                     return service
 
             # Service not found
-            logger.debug(f"Service of type '{service_type.__name__}' not found")
+            logger.debug("Service of type '%s' not found",
+                         service_type.__name__)
             return None
 
     def register_service(self, name: str, instance: Any) -> None:
@@ -209,7 +213,7 @@ class AppContext:
         """
         with self._lock:
             self._services[name] = instance
-            logger.debug(f"Service '{name}' registered")
+            logger.debug("Service '%s' registered", name)
 
     def register_factory(self, name: str, factory: Callable[[], Any]) -> None:
         """
@@ -224,7 +228,7 @@ class AppContext:
             # Remove any existing instance to force recreation
             if name in self._services:
                 del self._services[name]
-            logger.debug(f"Factory for service '{name}' registered")
+            logger.debug("Factory for service '%s' registered", name)
 
     def has_service(self, name: str) -> bool:
         """
@@ -247,24 +251,28 @@ class AppContext:
         """
         with self._lock:
             if self._app_state != "created":
-                logger.warning(f"Cannot initialize AppContext in state: {self._app_state}")
+                logger.warning(
+                    "Cannot initialize AppContext in state: %s", self._app_state)
                 return
 
             # Initialize services
             initialized_count = 0
             for name, service in self._services.items():
-                if hasattr(service, 'initialize') and callable(service.initialize) and name not in self._initialized_services:
+                if hasattr(service, 'initialize') and callable(
+                        service.initialize) and name not in self._initialized_services:
                     try:
                         service.initialize()
                         self._initialized_services.add(name)
                         initialized_count += 1
-                        logger.debug(f"Service '{name}' initialized")
-                    except Exception as e:
-                        logger.error(f"Failed to initialize service '{name}': {e}")
+                        logger.debug("Service '%s' initialized", name)
+                    except (IOError, FileNotFoundError, ValueError) as e:
+                        logger.error(
+                            "Failed to initialize service '%s': %s", name, e)
 
             # Update app state
             self._app_state = "initialized"
-            logger.info(f"AppContext initialized with {initialized_count} services")
+            logger.info("AppContext initialized with %s services",
+                        initialized_count)
 
     def shutdown(self) -> None:
         """
@@ -274,7 +282,8 @@ class AppContext:
         """
         with self._lock:
             if self._app_state not in ["initialized", "running"]:
-                logger.warning(f"Cannot shutdown AppContext in state: {self._app_state}")
+                logger.warning(
+                    "Cannot shutdown AppContext in state: %s", self._app_state)
                 return
 
             # Update app state
@@ -288,9 +297,10 @@ class AppContext:
                     try:
                         service.shutdown()
                         shutdown_count += 1
-                        logger.debug(f"Service '{name}' shutdown")
-                    except Exception as e:
-                        logger.error(f"Failed to shutdown service '{name}': {e}")
+                        logger.debug("Service '%s' shutdown", name)
+                    except (IOError, FileNotFoundError, ValueError) as e:
+                        logger.error(
+                            "Failed to shutdown service '%s': %s", name, e)
 
             # Clear services
             self._services.clear()
@@ -299,7 +309,7 @@ class AppContext:
 
             # Update app state
             self._app_state = "shutdown"
-            logger.info(f"AppContext shutdown with {shutdown_count} services")
+            logger.info("AppContext shutdown with %s services", shutdown_count)
 
     def start(self) -> None:
         """
@@ -309,7 +319,8 @@ class AppContext:
         """
         with self._lock:
             if self._app_state != "initialized":
-                logger.warning(f"Cannot start AppContext in state: {self._app_state}")
+                logger.warning(
+                    "Cannot start AppContext in state: %s", self._app_state)
                 return
 
             # Update app state
