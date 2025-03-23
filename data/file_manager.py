@@ -162,9 +162,7 @@ class FileManager:
             return dir_path
         except Exception as e:
             logger.error("Failed to create directory %s: %s", dir_path, e)
-            raise FileWriteError(
-                str(dir_path), "Failed to create directory: %s" % e
-            ) from e
+            raise FileWriteError(f"Failed to create directory: {e}") from e
 
     def ensure_parent_dir(self, path: Union[str, Path]) -> Path:
         """
@@ -205,8 +203,7 @@ class FileManager:
             raise FileReadError(str(file_path), "File not found") from None
         except UnicodeDecodeError as e:
             logger.error("Unicode decode error for %s: %s", file_path, e)
-            raise FileReadError(
-                str(file_path), "Unicode decode error: %s" % e) from e
+            raise FileReadError(f"Unicode decode error: {e}") from e
         except Exception as e:
             logger.error("Error reading file %s: %s", file_path, e)
             raise FileReadError(str(file_path), str(e)) from e
@@ -382,8 +379,7 @@ class FileManager:
             return backup_path
         except Exception as e:
             logger.error("Error creating backup of %s: %s", file_path, e)
-            raise FileWriteError(
-                backup_path, "Error creating backup: %s" % e) from e
+            raise FileWriteError(f"Error creating backup: {e}") from e
 
     def delete(self, path: Union[str, Path], missing_ok: bool = False) -> bool:
         """
@@ -417,8 +413,7 @@ class FileManager:
             return True
         except Exception as e:
             logger.error("Error deleting %s: %s", file_path, e)
-            raise FileWriteError(
-                str(file_path), "Error deleting file: %s" % e) from e
+            raise FileWriteError(f"Error deleting file: {e}") from e
 
     def copy(
         self, src: Union[str, Path], dst: Union[str, Path], overwrite: bool = False
@@ -517,7 +512,7 @@ class FileManager:
             return dst_path
         except Exception as e:
             logger.error("Error moving %s to %s: %s", src_path, dst_path, e)
-            raise FileWriteError(str(dst_path), "Error moving: %s" % e) from e
+            raise FileWriteError(f"Error moving: {e}") from e
 
     def list_dir(
         self, path: Union[str, Path], pattern: Optional[str] = None
@@ -551,8 +546,7 @@ class FileManager:
             return list(dir_path.iterdir())
         except Exception as e:
             logger.error("Error listing directory %s: %s", dir_path, e)
-            raise FileReadError(
-                str(dir_path), "Error listing directory: %s" % e) from e
+            raise FileReadError(f"Error listing directory: {e}") from e
 
     def get_file_info(self, path: Union[str, Path]) -> Dict[str, Any]:
         """
@@ -601,8 +595,7 @@ class FileManager:
         except Exception as e:
             logger.error(
                 "Error calculating file hash for %s: %s", file_path, e)
-            raise FileReadError(
-                str(file_path), "Error getting file info: %s" % e) from e
+            raise FileReadError(f"Error getting file info: {e}") from e
 
     def calculate_file_hash(
         self, path: Union[str, Path], algorithm: str = "sha256"
@@ -636,7 +629,7 @@ class FileManager:
             hasher = getattr(hashlib, algorithm)()
         except AttributeError:
             logger.error("Unsupported hash algorithm: %s", algorithm)
-            raise ValueError("Unsupported hash algorithm: %s" % algorithm)
+            raise ValueError(f"Unsupported hash algorithm: {algorithm}")
 
         try:
             with open(file_path, "rb") as f:
@@ -815,7 +808,7 @@ class JsonFileManager(FileManager):
             logger.debug("JSON written to %s", file_path)
         except TypeError as e:
             logger.error("Data is not JSON-serializable: %s", e)
-            raise TypeError("Data is not JSON-serializable: %s" % (e))
+            raise TypeError(f"Data is not JSON-serializable: {e}")
 
     def validate_json(
         self, path: Union[str, Path], schema: Dict[str, Any]
@@ -1057,7 +1050,7 @@ class EncryptedFileManager(FileManager):
             logger.debug("Encrypted JSON written to %s", path)
         except TypeError as e:
             logger.error("Data is not JSON-serializable: %s", e)
-            raise TypeError("Data is not JSON-serializable: %s" % (e))
+            raise TypeError(f"Data is not JSON-serializable: {e}")
 
 
 class SafeFileWriter:
@@ -1177,4 +1170,4 @@ def get_file_manager(
         return EncryptedFileManager(*args, **kwargs)
     else:
         logger.error("Unsupported file manager type: %s", manager_type)
-        raise ValueError("Unsupported file manager type: %s" % (manager_type))
+        raise ValueError(f"Unsupported file manager type: {manager_type}")
