@@ -41,13 +41,15 @@ Usage:
 """
 
 import os
+import json
 import glob
 import logging
 import uuid
 import time
 import shutil
 from datetime import datetime
-from typing import Dict, List, Optional, Any, Union
+from typing import Dict, List, Optional, Any, Tuple, Union
+from pathlib import Path
 import threading
 from enum import Enum, auto
 
@@ -61,14 +63,14 @@ except ImportError:
             self.base_dir = base_dir or os.getcwd()
 
     class JsonFileManager(FileManager):
-        def read_json(self, default=None):
+        def read_json(self, path, default=None):
             return default
 
         def write_json(self, path, data, make_backup=False):
             pass
 
 try:
-    from logging_.logging_manager import get_logger
+    from logging_.logging_manager import LoggingManager, get_logger
 except ImportError:
     # For development, provide mock logger
     class LoggingManager:
@@ -80,7 +82,7 @@ except ImportError:
 
 # Import custom exceptions from core
 try:
-    from core.exceptions import FileWriteError
+    from core.exceptions import FileReadError, FileWriteError, FileFormatError
 except ImportError:
     # Define minimal exceptions for development
     class FileReadError(Exception):

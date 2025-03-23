@@ -35,11 +35,11 @@ import os
 import sys
 import time
 from enum import Enum, auto
-from typing import Any, Callable, List, Optional
+from typing import Any, Callable, Dict, List, Optional, Union, Tuple
 
 # Try to import colorama for colored output
 try:
-    from colorama import Fore, Style, init as colorama_init
+    from colorama import Fore, Back, Style, init as colorama_init
     colorama_init()
     COLORAMA_AVAILABLE = True
 except ImportError:
@@ -47,7 +47,7 @@ except ImportError:
 
 # Try to import the display module for rendering
 try:
-    from ui.display import clear_screen, print_colored, print_error
+    from ui.display import clear_screen, print_colored, print_heading, print_error
 except ImportError:
     # Fallback implementations if display module is not available
     def clear_screen():
@@ -92,7 +92,7 @@ class MenuItemType(Enum):
     TOGGLE = auto()    # Toggles a boolean value
     BACK = auto()      # Returns to previous menu
     EXIT = auto()      # Exits the application
-    SEPARATOR = auto()  # Visual separator, not selectable
+    SEPARATOR = auto() # Visual separator, not selectable
 
 
 class MenuItem:
@@ -151,20 +151,16 @@ class MenuItem:
     def _validate(self):
         """Validate the menu item configuration based on its type."""
         if self.item_type == MenuItemType.ACTION and not callable(self.action):
-            raise ValueError(
-                f"ACTION menu item '{self.title}' must have a callable action")
+            raise ValueError(f"ACTION menu item '{self.title}' must have a callable action")
 
         if self.item_type == MenuItemType.SUBMENU and self.submenu is None:
-            raise ValueError(
-                f"SUBMENU menu item '{self.title}' must have a submenu")
+            raise ValueError(f"SUBMENU menu item '{self.title}' must have a submenu")
 
         if self.item_type == MenuItemType.TOGGLE:
             if self.toggle_value is None:
-                raise ValueError(
-                    f"TOGGLE menu item '{self.title}' must have a toggle_value")
+                raise ValueError(f"TOGGLE menu item '{self.title}' must have a toggle_value")
             if not callable(self.toggle_callback):
-                raise ValueError(
-                    f"TOGGLE menu item '{self.title}' must have a callable toggle_callback")
+                raise ValueError(f"TOGGLE menu item '{self.title}' must have a callable toggle_callback")
 
     def execute(self) -> Any:
         """
@@ -192,8 +188,7 @@ class MenuItem:
             try:
                 return self.action()
             except Exception as e:
-                logger.error(
-                    f"Error executing menu action '{self.title}': {e}")
+                logger.error(f"Error executing menu action '{self.title}': {e}")
                 print_error(f"Error executing '{self.title}': {e}")
                 time.sleep(2)  # Longer delay for errors
                 return None
@@ -206,8 +201,7 @@ class MenuItem:
                 self.toggle_callback(self.toggle_value)
                 return self.toggle_value
             except Exception as e:
-                logger.error(
-                    f"Error executing toggle callback '{self.title}': {e}")
+                logger.error(f"Error executing toggle callback '{self.title}': {e}")
                 print_error(f"Error toggling '{self.title}': {e}")
                 # Revert the toggle
                 self.toggle_value = not self.toggle_value
@@ -260,8 +254,7 @@ class MenuItem:
 
             if desc_space > 10:  # Only add description if there's enough space
                 # Truncate description if needed
-                truncated_desc = (self.description[:desc_space-3] + '...') if len(
-                    self.description) > desc_space else self.description
+                truncated_desc = (self.description[:desc_space-3] + '...') if len(self.description) > desc_space else self.description
                 item_text = f"{item_text} - {truncated_desc}"
 
         # Format based on enabled state
@@ -329,8 +322,7 @@ class Menu:
         # Check for duplicate keys
         for existing_item in self.items:
             if existing_item.key == item.key:
-                logger.warning(
-                    f"Duplicate menu item key '{item.key}' in menu '{self.title}'")
+                logger.warning(f"Duplicate menu item key '{item.key}' in menu '{self.title}'")
                 # Don't raise an exception, just log a warning
 
         self.items.append(item)
@@ -573,8 +565,7 @@ class MenuSystem:
                 if not self.navigate_back():
                     # If at main menu, ask if user wants to exit
                     if self.current_menu == self.main_menu:
-                        confirm = input(
-                            "Do you really want to exit? (y/n): ").strip().lower()
+                        confirm = input("Do you really want to exit? (y/n): ").strip().lower()
                         if confirm == 'y':
                             return False  # Exit the menu system
             elif result == "EXIT":
@@ -586,8 +577,7 @@ class MenuSystem:
         else:
             # Invalid input
             if COLORAMA_AVAILABLE:
-                print_colored(
-                    f"Invalid selection: '{user_input}'. Please try again.", Fore.YELLOW)
+                print_colored(f"Invalid selection: '{user_input}'. Please try again.", Fore.YELLOW)
             else:
                 print(f"Invalid selection: '{user_input}'. Please try again.")
             time.sleep(1)
@@ -646,10 +636,9 @@ def create_action_item(key: str, title: str, action: Callable,
         confirm_message=confirm_message
     )
 
-
 def create_submenu_item(key: str, title: str, submenu: Menu,
-                        description: Optional[str] = None,
-                        enabled: bool = True) -> MenuItem:
+                       description: Optional[str] = None,
+                       enabled: bool = True) -> MenuItem:
     """
     Create a submenu menu item.
 
@@ -672,12 +661,11 @@ def create_submenu_item(key: str, title: str, submenu: Menu,
         description=description
     )
 
-
 def create_toggle_item(key: str, title: str,
-                       initial_value: bool,
-                       toggle_callback: Callable[[bool], None],
-                       description: Optional[str] = None,
-                       enabled: bool = True) -> MenuItem:
+                      initial_value: bool,
+                      toggle_callback: Callable[[bool], None],
+                      description: Optional[str] = None,
+                      enabled: bool = True) -> MenuItem:
     """
     Create a toggle menu item.
 
@@ -702,7 +690,6 @@ def create_toggle_item(key: str, title: str,
         description=description
     )
 
-
 def create_back_item(key: str = "b", title: str = "Back") -> MenuItem:
     """
     Create a back navigation menu item.
@@ -720,10 +707,9 @@ def create_back_item(key: str = "b", title: str = "Back") -> MenuItem:
         item_type=MenuItemType.BACK
     )
 
-
 def create_exit_item(key: str = "q", title: str = "Exit",
-                     confirm: bool = True,
-                     confirm_message: Optional[str] = None) -> MenuItem:
+                    confirm: bool = True,
+                    confirm_message: Optional[str] = None) -> MenuItem:
     """
     Create an exit menu item.
 
@@ -756,35 +742,25 @@ if __name__ == "__main__":
     settings_menu = Menu("Settings", parent=main_menu)
 
     # Add items to account menu
-    account_menu.add_item(create_action_item(
-        "1", "List Accounts", lambda: print("Listing accounts...")))
-    account_menu.add_item(create_action_item(
-        "2", "Add Account", lambda: print("Adding account...")))
-    account_menu.add_item(create_action_item(
-        "3", "Remove Account", lambda: print("Removing account...")))
-    account_menu.add_item(create_action_item(
-        "4", "Reset Daily Limits", lambda: print("Resetting limits...")))
+    account_menu.add_item(create_action_item("1", "List Accounts", lambda: print("Listing accounts...")))
+    account_menu.add_item(create_action_item("2", "Add Account", lambda: print("Adding account...")))
+    account_menu.add_item(create_action_item("3", "Remove Account", lambda: print("Removing account...")))
+    account_menu.add_item(create_action_item("4", "Reset Daily Limits", lambda: print("Resetting limits...")))
 
     # Add items to operation menu
-    operation_menu.add_item(create_action_item(
-        "1", "Start Member Transfer", lambda: print("Starting transfer...")))
-    operation_menu.add_item(create_action_item(
-        "2", "Check Transfer Status", lambda: print("Checking status...")))
+    operation_menu.add_item(create_action_item("1", "Start Member Transfer", lambda: print("Starting transfer...")))
+    operation_menu.add_item(create_action_item("2", "Check Transfer Status", lambda: print("Checking status...")))
 
     # Add items to settings menu
     def toggle_debug(value):
         print(f"Debug mode {'enabled' if value else 'disabled'}")
 
-    settings_menu.add_item(create_toggle_item(
-        "1", "Debug Mode", False, toggle_debug))
-    settings_menu.add_item(create_action_item(
-        "2", "Configure Delays", lambda: print("Configuring delays...")))
+    settings_menu.add_item(create_toggle_item("1", "Debug Mode", False, toggle_debug))
+    settings_menu.add_item(create_action_item("2", "Configure Delays", lambda: print("Configuring delays...")))
 
     # Add items to main menu
-    main_menu.add_item(create_submenu_item(
-        "1", "Account Management", account_menu))
-    main_menu.add_item(create_submenu_item(
-        "2", "Transfer Operations", operation_menu))
+    main_menu.add_item(create_submenu_item("1", "Account Management", account_menu))
+    main_menu.add_item(create_submenu_item("2", "Transfer Operations", operation_menu))
     main_menu.add_item(create_submenu_item("3", "Settings", settings_menu))
     main_menu.add_separator()
     main_menu.add_item(create_exit_item("q", "Quit"))

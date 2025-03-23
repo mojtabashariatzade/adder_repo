@@ -23,9 +23,10 @@ Usage:
 
 import os
 import re
+import json
 import ipaddress
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union, Tuple, Callable
+from typing import Any, Dict, List, Optional, Union, Tuple, Set, Callable, TypeVar, Generic
 
 # Import helper utilities
 try:
@@ -37,28 +38,22 @@ except ImportError:
     # Define minimal versions for development/testing
     def normalize_phone(phone):
         digits = re.sub(r'[^\d+]', '', phone)
-        if not digits.startswith('+'):
-            digits = '+' + digits
+        if not digits.startswith('+'): digits = '+' + digits
         return digits
 
     def is_valid_api_id(api_id):
-        try:
-            return int(api_id) > 0 and len(str(int(api_id))) <= 10
-        except (ValueError, TypeError):
-            return False
+        try: return int(api_id) > 0 and len(str(int(api_id))) <= 10
+        except (ValueError, TypeError): return False
 
     def is_valid_api_hash(api_hash):
         return isinstance(api_hash, str) and bool(re.match(r'^[0-9a-fA-F]{32}$', api_hash))
 
     def is_valid_phone_number(phone):
-        try:
-            return bool(re.match(r'^\+\d{7,15}$', normalize_phone(phone)))
-        except ValueError:
-            return False
+        try: return bool(re.match(r'^\+\d{7,15}$', normalize_phone(phone)))
+        except ValueError: return False
 
     def is_valid_hostname(hostname):
-        if not hostname or len(hostname) > 255:
-            return False
+        if not hostname or len(hostname) > 255: return False
         allowed = re.compile(r"(?!-)[A-Z\d-]{1,63}(?<!-)$", re.IGNORECASE)
         return all(allowed.match(x) for x in hostname.split("."))
 
@@ -86,8 +81,6 @@ except ImportError:
 ValidationResult = Tuple[bool, Optional[str]]
 
 # Generic validation function
-
-
 def validate(value: Any, validators: List[Callable[[Any], ValidationResult]]) -> ValidationResult:
     """
     Run a series of validators on a value.
@@ -107,8 +100,6 @@ def validate(value: Any, validators: List[Callable[[Any], ValidationResult]]) ->
     return True, None
 
 # Telegram-specific validations
-
-
 def validate_phone(phone: str) -> ValidationResult:
     """
     Validate a phone number for Telegram.
@@ -130,7 +121,6 @@ def validate_phone(phone: str) -> ValidationResult:
         return True, None
     except Exception as e:
         return False, f"Error validating phone number: {e}"
-
 
 def validate_api_id(api_id: Any) -> ValidationResult:
     """
@@ -161,7 +151,6 @@ def validate_api_id(api_id: Any) -> ValidationResult:
     except Exception as e:
         return False, f"Error validating API ID: {e}"
 
-
 def validate_api_hash(api_hash: str) -> ValidationResult:
     """
     Validate a Telegram API hash.
@@ -183,7 +172,6 @@ def validate_api_hash(api_hash: str) -> ValidationResult:
         return True, None
     except Exception as e:
         return False, f"Error validating API hash: {e}"
-
 
 def validate_api_credentials(api_id: Any, api_hash: str) -> ValidationResult:
     """
@@ -208,7 +196,6 @@ def validate_api_credentials(api_id: Any, api_hash: str) -> ValidationResult:
 
     # Both are valid
     return True, None
-
 
 def validate_username(username: str) -> ValidationResult:
     """
@@ -240,7 +227,6 @@ def validate_username(username: str) -> ValidationResult:
     # Username is valid
     return True, None
 
-
 def validate_group_username(group_username: str) -> ValidationResult:
     """
     Validate a Telegram group username.
@@ -252,7 +238,6 @@ def validate_group_username(group_username: str) -> ValidationResult:
         ValidationResult: (success, error_message)
     """
     return validate_username(group_username)  # Same rules apply
-
 
 def validate_session_string(session_string: str) -> ValidationResult:
     """
@@ -281,8 +266,6 @@ def validate_session_string(session_string: str) -> ValidationResult:
         return False, "Invalid session string format"
 
 # Configuration validations
-
-
 def validate_delay(delay: Any, min_delay: int = 0, max_delay: int = 3600) -> ValidationResult:
     """
     Validate a delay value.
@@ -319,7 +302,6 @@ def validate_delay(delay: Any, min_delay: int = 0, max_delay: int = 3600) -> Val
     except Exception as e:
         return False, f"Error validating delay: {e}"
 
-
 def validate_limit(limit: Any, min_limit: int = 1, max_limit: int = 1000) -> ValidationResult:
     """
     Validate a limit value.
@@ -355,7 +337,6 @@ def validate_limit(limit: Any, min_limit: int = 1, max_limit: int = 1000) -> Val
         return True, None
     except Exception as e:
         return False, f"Error validating limit: {e}"
-
 
 def validate_config_value(key: str, value: Any, config_schema: Dict[str, Dict[str, Any]]) -> ValidationResult:
     """
@@ -424,8 +405,6 @@ def validate_config_value(key: str, value: Any, config_schema: Dict[str, Dict[st
     return True, None
 
 # File and path validations
-
-
 def validate_file_exists(file_path: Union[str, Path]) -> ValidationResult:
     """
     Validate that a file exists.
@@ -449,7 +428,6 @@ def validate_file_exists(file_path: Union[str, Path]) -> ValidationResult:
     except Exception as e:
         return False, f"Error validating file: {e}"
 
-
 def validate_directory_exists(dir_path: Union[str, Path]) -> ValidationResult:
     """
     Validate that a directory exists.
@@ -472,7 +450,6 @@ def validate_directory_exists(dir_path: Union[str, Path]) -> ValidationResult:
         return True, None
     except Exception as e:
         return False, f"Error validating directory: {e}"
-
 
 def validate_writable_path(path: Union[str, Path]) -> ValidationResult:
     """
@@ -508,7 +485,6 @@ def validate_writable_path(path: Union[str, Path]) -> ValidationResult:
     except Exception as e:
         return False, f"Error validating writable path: {e}"
 
-
 def validate_file_extension(file_path: Union[str, Path], allowed_extensions: List[str]) -> ValidationResult:
     """
     Validate that a file has an allowed extension.
@@ -527,8 +503,7 @@ def validate_file_extension(file_path: Union[str, Path], allowed_extensions: Lis
         if not extension:
             return False, "File has no extension"
 
-        normalized_extensions = [ext.lower() if ext.startswith(
-            '.') else f'.{ext.lower()}' for ext in allowed_extensions]
+        normalized_extensions = [ext.lower() if ext.startswith('.') else f'.{ext.lower()}' for ext in allowed_extensions]
 
         if extension not in normalized_extensions:
             ext_list = ', '.join(normalized_extensions)
@@ -540,8 +515,6 @@ def validate_file_extension(file_path: Union[str, Path], allowed_extensions: Lis
         return False, f"Error validating file extension: {e}"
 
 # Network validations
-
-
 def validate_proxy_settings(proxy_settings: Dict[str, Any]) -> ValidationResult:
     """
     Validate proxy settings.
@@ -587,7 +560,6 @@ def validate_proxy_settings(proxy_settings: Dict[str, Any]) -> ValidationResult:
     # Proxy settings are valid
     return True, None
 
-
 def validate_url(url: str) -> ValidationResult:
     """
     Validate a URL.
@@ -610,8 +582,6 @@ def validate_url(url: str) -> ValidationResult:
     return True, None
 
 # Input sanitation and validation
-
-
 def sanitize_input(input_str: str, allow_html: bool = False) -> str:
     """
     Sanitize input to prevent injection attacks.
@@ -634,9 +604,8 @@ def sanitize_input(input_str: str, allow_html: bool = False) -> str:
     # This is a basic implementation - for production, consider using a library like bleach
     return input_str
 
-
 def validate_and_sanitize_input(input_str: str, validators: List[Callable[[str], ValidationResult]],
-                                allow_html: bool = False) -> Tuple[bool, Optional[str], str]:
+                               allow_html: bool = False) -> Tuple[bool, Optional[str], str]:
     """
     Validate and sanitize input.
 
@@ -660,8 +629,6 @@ def validate_and_sanitize_input(input_str: str, validators: List[Callable[[str],
     return True, None, sanitized
 
 # Utility functions for validation
-
-
 def raise_if_invalid(value: Any, validator: Callable[[Any], ValidationResult], field: str = None) -> None:
     """
     Validate a value and raise ValidationError if invalid.
@@ -678,7 +645,6 @@ def raise_if_invalid(value: Any, validator: Callable[[Any], ValidationResult], f
     if not success:
         raise ValidationError(field, error)
 
-
 def validate_required_fields(data: Dict[str, Any], required_fields: List[str]) -> ValidationResult:
     """
     Validate that all required fields are present in the data.
@@ -690,8 +656,7 @@ def validate_required_fields(data: Dict[str, Any], required_fields: List[str]) -
     Returns:
         ValidationResult: (success, error_message)
     """
-    missing_fields = [
-        field for field in required_fields if field not in data or data[field] is None]
+    missing_fields = [field for field in required_fields if field not in data or data[field] is None]
 
     if missing_fields:
         missing_list = ', '.join(missing_fields)
@@ -700,8 +665,6 @@ def validate_required_fields(data: Dict[str, Any], required_fields: List[str]) -
     return True, None
 
 # System and environment validations
-
-
 def validate_environment() -> ValidationResult:
     """
     Validate that the environment has all necessary dependencies and permissions.

@@ -40,15 +40,18 @@ Usage:
 """
 
 import os
+import sys
 import shutil
 import time
-from typing import List, Any, Optional, Tuple, Callable
+from typing import List, Dict, Any, Optional, Tuple, Union, Callable
 
 # Import colors module
 try:
     from ui.colors import (
-        theme_styled,
-        print_progress
+        Colors, Styles, ColorTheme,
+        colorize, styled_text, theme_styled,
+        print_colored, print_status, print_progress,
+        enable_colors, disable_colors
     )
 except ImportError:
     # Fallback if colors module is not available
@@ -71,14 +74,14 @@ except ImportError:
         return text
 
     def styled_text(text: str, fg: Optional[str] = None,
-                    bg: Optional[str] = None, style: Optional[str] = None) -> str:
+                   bg: Optional[str] = None, style: Optional[str] = None) -> str:
         return text
 
     def theme_styled(text: str, element: str) -> str:
         return text
 
     def print_colored(label: str, value: str, color: Optional[str] = None,
-                      label_color: Optional[str] = None) -> None:
+                     label_color: Optional[str] = None) -> None:
         print(f"{label}: {value}")
 
     def print_status(message: str, status: bool) -> None:
@@ -86,7 +89,7 @@ except ImportError:
         print(f"{message} {status_text}")
 
     def print_progress(current: int, total: int, prefix: str = "Progress:",
-                       suffix: str = "", width: int = 40) -> None:
+                      suffix: str = "", width: int = 40) -> None:
         print(f"{prefix} {current}/{total} {suffix}")
 
     def enable_colors() -> None:
@@ -157,8 +160,7 @@ def print_banner(text: str, width: Optional[int] = None, style: str = 'double') 
     """
     if width is None:
         term_width, _ = get_terminal_size()
-        # Limit width to 80 chars or terminal width
-        width = min(term_width, 80)
+        width = min(term_width, 80)  # Limit width to 80 chars or terminal width
 
     # Choose border characters based on style
     if style == 'double':
@@ -211,7 +213,7 @@ def print_banner(text: str, width: Optional[int] = None, style: str = 'double') 
 
 
 def print_header(text: str, width: Optional[int] = None,
-                 char: str = '=', centered: bool = True) -> None:
+                char: str = '=', centered: bool = True) -> None:
     """
     Print a section header.
 
@@ -223,8 +225,7 @@ def print_header(text: str, width: Optional[int] = None,
     """
     if width is None:
         term_width, _ = get_terminal_size()
-        # Limit width to 80 chars or terminal width
-        width = min(term_width, 80)
+        width = min(term_width, 80)  # Limit width to 80 chars or terminal width
 
     # Create the separator line
     separator = char * width
@@ -249,8 +250,8 @@ def print_header(text: str, width: Optional[int] = None,
 
 
 def print_text_box(text: str, title: Optional[str] = None,
-                   width: Optional[int] = None, style: str = 'single',
-                   padding: int = 1) -> None:
+                  width: Optional[int] = None, style: str = 'single',
+                  padding: int = 1) -> None:
     """
     Print text in a bordered box.
 
@@ -309,8 +310,7 @@ def print_text_box(text: str, title: Optional[str] = None,
         t_right = t_left = t_down = t_up = cross = '+'
 
     # Split text into lines that fit within the box
-    # Account for borders and padding
-    content_width = width - 2 * (padding + 1)
+    content_width = width - 2 * (padding + 1)  # Account for borders and padding
     lines = []
 
     # If text is a list or tuple, handle each item
@@ -382,8 +382,7 @@ def print_text_box(text: str, title: Optional[str] = None,
     # Print each line
     for line in lines:
         # Create the line with padding
-        line_text = vertical + ' ' * padding + \
-            line.ljust(content_width) + ' ' * padding + vertical
+        line_text = vertical + ' ' * padding + line.ljust(content_width) + ' ' * padding + vertical
         print(theme_styled(line_text, 'info'))
 
     # Add bottom padding
@@ -394,8 +393,8 @@ def print_text_box(text: str, title: Optional[str] = None,
 
 
 def print_table(headers: List[str], rows: List[List[str]],
-                title: Optional[str] = None, width: Optional[int] = None,
-                alignments: Optional[List[str]] = None) -> None:
+               title: Optional[str] = None, width: Optional[int] = None,
+               alignments: Optional[List[str]] = None) -> None:
     """
     Print data in a formatted table.
 
@@ -537,8 +536,8 @@ def align_text(text: str, width: int, alignment: str = 'left') -> str:
 
 
 def print_menu(title: str, options: List[str],
-               current_selection: int = 0, description: Optional[str] = None,
-               show_numbers: bool = True, show_cursor: bool = True) -> None:
+              current_selection: int = 0, description: Optional[str] = None,
+              show_numbers: bool = True, show_cursor: bool = True) -> None:
     """
     Print a selectable menu with options.
 
@@ -659,7 +658,7 @@ def print_spinning_indicator(state: int, prefix: str = "", suffix: str = "") -> 
 
 
 def create_spinner(prefix: str = "Loading", suffix: str = "",
-                   delay: float = 0.1) -> Callable:
+                  delay: float = 0.1) -> Callable:
     """
     Create and return a function that displays a spinning indicator.
 
@@ -683,7 +682,7 @@ def create_spinner(prefix: str = "Loading", suffix: str = "",
 
 
 def wait_with_spinner(seconds: float, prefix: str = "Loading",
-                      suffix: str = "", step: float = 0.1) -> None:
+                     suffix: str = "", step: float = 0.1) -> None:
     """
     Wait for a specified time while displaying a spinner.
 
@@ -759,7 +758,7 @@ def input_with_placeholder(prompt: str, placeholder: str = "") -> str:
 
 
 def display_loading_animation(iterations: int, prefix: str = "Loading",
-                              suffix: str = "", delay: float = 0.1) -> None:
+                            suffix: str = "", delay: float = 0.1) -> None:
     """
     Display a loading animation for a specified number of iterations.
 
@@ -771,8 +770,7 @@ def display_loading_animation(iterations: int, prefix: str = "Loading",
     """
     animation = "|/-\\"
     for i in range(iterations):
-        print(
-            f"\r{prefix} {animation[i % len(animation)]} {suffix}", end='', flush=True)
+        print(f"\r{prefix} {animation[i % len(animation)]} {suffix}", end='', flush=True)
         time.sleep(delay)
 
     # Clear the animation line
@@ -780,8 +778,8 @@ def display_loading_animation(iterations: int, prefix: str = "Loading",
 
 
 def display_data_page(data: List[Any], page: int, page_size: int,
-                      formatter: Callable[[Any], str],
-                      title: str = "Data", show_page_info: bool = True) -> int:
+                     formatter: Callable[[Any], str],
+                     title: str = "Data", show_page_info: bool = True) -> int:
     """
     Display a page of data with navigation info.
 
@@ -798,8 +796,7 @@ def display_data_page(data: List[Any], page: int, page_size: int,
     """
     # Calculate total pages
     total_items = len(data)
-    total_pages = (total_items + page_size -
-                   1) // page_size if total_items > 0 else 1
+    total_pages = (total_items + page_size - 1) // page_size if total_items > 0 else 1
 
     # Ensure page is within bounds
     page = max(0, min(page, total_pages - 1))
@@ -832,7 +829,7 @@ def display_data_page(data: List[Any], page: int, page_size: int,
 
 
 def create_loading_bar(text: str = "Processing", delay: float = 0.05,
-                       width: int = 20, char: str = "█") -> Callable:
+                      width: int = 20, char: str = "█") -> Callable:
     """
     Create a decorative loading bar function that can be called repeatedly.
 
@@ -878,8 +875,7 @@ if __name__ == "__main__":
     print_header("Display Functions")
 
     # Text box
-    print_text_box(
-        "This is a sample text box with a medium length text that should wrap if it's too long for the box width.", title="Sample Text Box")
+    print_text_box("This is a sample text box with a medium length text that should wrap if it's too long for the box width.", title="Sample Text Box")
 
     # Table display
     headers = ["ID", "Phone Number", "Status", "Last Used"]
@@ -888,8 +884,7 @@ if __name__ == "__main__":
         ["2", "+9876543210", "Cooldown", "2023-10-15 16:45"],
         ["3", "+5551234567", "Blocked", "2023-10-14 09:12"]
     ]
-    print_table(headers, rows, title="Accounts Status",
-                alignments=["center", "left", "center", "right"])
+    print_table(headers, rows, title="Accounts Status", alignments=["center", "left", "center", "right"])
 
     # Menu display
     options = [
@@ -899,21 +894,17 @@ if __name__ == "__main__":
         "View Statistics",
         "Exit"
     ]
-    print_menu("Main Menu", options, current_selection=1,
-               description="Please select an option:")
+    print_menu("Main Menu", options, current_selection=1, description="Please select an option:")
 
     # Status messages
-    print_success("Operation completed successfully",
-                  "Added 15 members to the group")
-    print_warning("Rate limit approaching",
-                  "Slow down operations to avoid hitting limits")
+    print_success("Operation completed successfully", "Added 15 members to the group")
+    print_warning("Rate limit approaching", "Slow down operations to avoid hitting limits")
     print_error("Connection failed", "Could not connect to Telegram servers")
 
     # Progress demonstration
     print("\nProgress bar demo:")
     for i in range(21):
-        print_progress(i, 20, "Transferring members:",
-                       f"{i}/20 members processed")
+        print_progress(i, 20, "Transferring members:", f"{i}/20 members processed")
         time.sleep(0.1)
     print()  # Add a newline after the progress bar
 

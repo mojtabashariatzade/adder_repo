@@ -21,11 +21,13 @@ import time
 import logging
 from datetime import datetime, timedelta
 from enum import Enum, auto
-from typing import Dict, List, Any, Optional, Union, Tuple
+from typing import Dict, List, Any, Optional, Union, Tuple, Callable
+from pathlib import Path
 import threading
 from collections import defaultdict, deque, Counter
 
 try:
+    from core.exceptions import FileReadError, FileWriteError
     from data.file_manager import FileManager, JsonFileManager
     from logging_.logging_manager import get_logger
 except ImportError:
@@ -38,7 +40,7 @@ except ImportError:
             self.base_dir = base_dir or os.getcwd()
 
     class JsonFileManager(FileManager):
-        def read_json(self, default=None):
+        def read_json(self, path, default=None):
             return default or {}
 
         def write_json(self, path, data, make_backup=False):

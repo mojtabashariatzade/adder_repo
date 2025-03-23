@@ -4,20 +4,26 @@ import time
 import os
 import json
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Union, Callable, Type
+from typing import Any, Dict, List, Optional, Tuple, Union, Callable, Type
+from pathlib import Path
 
 from core.exceptions import (
-    AccountVerificationError,
-    FloodWaitError, PeerFloodError, UserPrivacyRestrictedError,
-    PhoneNumberBannedError, SessionExpiredError
+    TelegramAdderError, AccountError, AccountNotFoundError, AccountLimitReachedError,
+    AccountBlockedError, AccountInCooldownError, AccountVerificationError,
+    APIError, FloodWaitError, PeerFloodError, UserPrivacyRestrictedError,
+    PhoneNumberBannedError, ApiIdInvalidError, ApiHashInvalidError,
+    GroupNotFoundError, NotGroupAdminError, MemberExtractionError, MemberAdditionError,
+    NetworkError, ConnectionError, ProxyError, TimeoutError,
+    SessionExpiredError, OperationError
 )
 
 from error_handling.error_handlers import (
-    BaseErrorHandler, create_default_error_handler
+    BaseErrorHandler, AccountErrorHandler, TelegramErrorHandler,
+    GroupErrorHandler, SessionErrorHandler, CompositeErrorHandler,
+    create_default_error_handler, handle_error, execute_with_error_handling
 )
 
 logger = logging.getLogger(__name__)
-
 
 class ErrorManager:
     _instance = None
@@ -51,28 +57,20 @@ class ErrorManager:
         os.makedirs(self.error_log_dir, exist_ok=True)
 
     def _register_default_converters(self):
-        self.register_converter(
-            "telethon.errors.FloodWaitError", self._convert_telethon_flood_wait)
-        self.register_converter(
-            "telethon.errors.PeerFloodError", self._convert_telethon_peer_flood)
-        self.register_converter(
-            "telethon.errors.UserPrivacyRestrictedError", self._convert_telethon_privacy)
-        self.register_converter(
-            "telethon.errors.PhoneNumberBannedError", self._convert_telethon_banned)
-        self.register_converter(
-            "telethon.errors.AuthKeyError", self._convert_telethon_auth_key)
-        self.register_converter(
-            "telethon.errors.SessionPasswordNeededError", self._convert_telethon_session_password)
-        self.register_converter(
-            "telethon.errors.PhoneCodeInvalidError", self._convert_telethon_phone_code)
+        self.register_converter("telethon.errors.FloodWaitError", self._convert_telethon_flood_wait)
+        self.register_converter("telethon.errors.PeerFloodError", self._convert_telethon_peer_flood)
+        self.register_converter("telethon.errors.UserPrivacyRestrictedError", self._convert_telethon_privacy)
+        self.register_converter("telethon.errors.PhoneNumberBannedError", self._convert_telethon_banned)
+        self.register_converter("telethon.errors.AuthKeyError", self._convert_telethon_auth_key)
+        self.register_converter("telethon.errors.SessionPasswordNeededError", self._convert_telethon_session_password)
+        self.register_converter("telethon.errors.PhoneCodeInvalidError", self._convert_telethon_phone_code)
 
     def register_handler(self, error_type: Union[Type[Exception], str], handler: BaseErrorHandler) -> None:
         if isinstance(error_type, type):
             error_type = error_type.__name__
 
         self.handlers[error_type] = handler
-        logger.debug(
-            f"Registered handler {handler.__class__.__name__} for {error_type}")
+        logger.debug(f"Registered handler {handler.__class__.__name__} for {error_type}")
 
     def register_converter(self, error_type: str, converter: Callable[[Exception], Exception]) -> None:
         self.converters[error_type] = converter
@@ -109,12 +107,10 @@ class ErrorManager:
         if converter:
             try:
                 converted = converter(exception)
-                logger.debug(
-                    f"Converted {qualified_name} to {type(converted).__name__}")
+                logger.debug(f"Converted {qualified_name} to {type(converted).__name__}")
                 return converted
             except Exception as e:
-                logger.error(
-                    f"Error converting exception {qualified_name}: {e}")
+                logger.error(f"Error converting exception {qualified_name}: {e}")
 
         return exception
 
@@ -207,8 +203,7 @@ class ErrorManager:
         self._rotate_log_files()
 
     def _rotate_log_files(self) -> None:
-        log_files = [f for f in os.listdir(self.error_log_dir) if f.startswith(
-            "error_log_") and f.endswith(".json")]
+        log_files = [f for f in os.listdir(self.error_log_dir) if f.startswith("error_log_") and f.endswith(".json")]
         if len(log_files) <= self.max_log_files:
             return
 
@@ -220,8 +215,7 @@ class ErrorManager:
                 os.remove(os.path.join(self.error_log_dir, file_name))
                 logger.debug(f"Deleted old error log file: {file_name}")
             except Exception as e:
-                logger.error(
-                    f"Error deleting old error log file {file_name}: {e}")
+                logger.error(f"Error deleting old error log file {file_name}: {e}")
 
     def get_recent_errors(self) -> List[Dict[str, Any]]:
         return self.recent_errors.copy()
@@ -271,9 +265,9 @@ class ErrorManager:
         }
 
     def execute_with_error_handling(self, func: Callable, *args,
-                                    retry_count: int = 3, retry_delay: int = 5,
-                                    context: Optional[Dict[str, Any]] = None,
-                                    **kwargs) -> Any:
+                                  retry_count: int = 3, retry_delay: int = 5,
+                                  context: Optional[Dict[str, Any]] = None,
+                                  **kwargs) -> Any:
         if context is None:
             context = {}
 
@@ -297,10 +291,8 @@ class ErrorManager:
                     break
 
                 if error_response.get("retry", True):
-                    cooldown_time = error_response.get(
-                        "cooldown_time", retry_delay)
-                    logger.info(
-                        f"Retrying in {cooldown_time} seconds (attempt {current_try}/{retry_count})")
+                    cooldown_time = error_response.get("cooldown_time", retry_delay)
+                    logger.info(f"Retrying in {cooldown_time} seconds (attempt {current_try}/{retry_count})")
                     time.sleep(cooldown_time)
                 else:
                     logger.info(f"Not retrying due to error handler decision")
@@ -309,17 +301,13 @@ class ErrorManager:
         if last_exception:
             raise last_exception
 
-
 error_manager = ErrorManager()
-
 
 def get_error_manager() -> ErrorManager:
     return error_manager
 
-
 def handle_error(exception: Exception, context: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
     return error_manager.handle(exception, context)
-
 
 def execute_safely(func, *args, **kwargs):
     return error_manager.execute_with_error_handling(func, *args, **kwargs)

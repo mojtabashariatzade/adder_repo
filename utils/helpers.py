@@ -28,6 +28,7 @@ Usage:
 
 import os
 import re
+import json
 import hashlib
 import platform
 import socket
@@ -35,12 +36,10 @@ import datetime
 import time
 import random
 import string
-from typing import Any, Dict, List, Optional, Union, Tuple, Callable
+from typing import Any, Dict, List, Optional, Union, Tuple, Set, Callable
 from pathlib import Path
 
 # Time and Date Utilities
-
-
 def get_timestamp() -> float:
     """
     Get current Unix timestamp.
@@ -50,7 +49,6 @@ def get_timestamp() -> float:
     """
     return time.time()
 
-
 def get_iso_timestamp() -> str:
     """
     Get current ISO-8601 formatted timestamp.
@@ -59,7 +57,6 @@ def get_iso_timestamp() -> str:
         str: ISO-8601 formatted timestamp
     """
     return datetime.datetime.now().isoformat()
-
 
 def format_time(seconds: Union[int, float]) -> str:
     """
@@ -84,7 +81,6 @@ def format_time(seconds: Union[int, float]) -> str:
         parts.append(f"{seconds}s")
 
     return " ".join(parts)
-
 
 def parse_time_string(time_str: str) -> int:
     """
@@ -114,9 +110,8 @@ def parse_time_string(time_str: str) -> int:
 
     return hours * 3600 + minutes * 60 + seconds
 
-
 def get_time_difference(start: Union[float, datetime.datetime],
-                        end: Optional[Union[float, datetime.datetime]] = None) -> float:
+                       end: Optional[Union[float, datetime.datetime]] = None) -> float:
     """
     Get time difference between two timestamps or datetime objects.
 
@@ -138,12 +133,9 @@ def get_time_difference(start: Union[float, datetime.datetime],
     elif isinstance(start, (int, float)) and isinstance(end, (int, float)):
         return end - start
     else:
-        raise TypeError(
-            "Start and end must be both timestamp floats or both datetime objects")
+        raise TypeError("Start and end must be both timestamp floats or both datetime objects")
 
 # String Formatting Utilities
-
-
 def truncate_string(s: str, max_length: int = 100, suffix: str = "...") -> str:
     """
     Truncate a string to a maximum length, adding a suffix if truncated.
@@ -159,7 +151,6 @@ def truncate_string(s: str, max_length: int = 100, suffix: str = "...") -> str:
     if len(s) <= max_length:
         return s
     return s[:max_length - len(suffix)] + suffix
-
 
 def format_bytes(size: Union[int, float]) -> str:
     """
@@ -185,7 +176,6 @@ def format_bytes(size: Union[int, float]) -> str:
         return f"{size} {units[unit_index]}"
     else:
         return f"{size:.1f} {units[unit_index]}"
-
 
 def normalize_phone(phone: str) -> str:
     """
@@ -213,7 +203,6 @@ def normalize_phone(phone: str) -> str:
 
     return digits
 
-
 def mask_sensitive_data(data: str) -> str:
     """
     Mask sensitive data (like API keys, phone numbers, etc).
@@ -236,7 +225,6 @@ def mask_sensitive_data(data: str) -> str:
         visible = min(len(data) // 4, 4)  # Show at most 4 chars
         return data[:visible] + '*' * (len(data) - visible * 2) + data[-visible:]
 
-
 def generate_random_id(length: int = 12) -> str:
     """
     Generate a random ID string.
@@ -248,7 +236,6 @@ def generate_random_id(length: int = 12) -> str:
         str: Random ID string
     """
     return ''.join(random.choices(string.ascii_lowercase + string.digits, k=length))
-
 
 def pluralize(count: int, singular: str, plural: Optional[str] = None) -> str:
     """
@@ -268,8 +255,6 @@ def pluralize(count: int, singular: str, plural: Optional[str] = None) -> str:
     return singular if count == 1 else plural
 
 # Data Conversion Utilities
-
-
 def ensure_list(value: Any) -> List[Any]:
     """
     Ensure a value is a list.
@@ -286,7 +271,6 @@ def ensure_list(value: Any) -> List[Any]:
         return list(value)
     else:
         return [value]
-
 
 def safe_cast(value: Any, target_type: type, default: Any = None) -> Any:
     """
@@ -305,9 +289,8 @@ def safe_cast(value: Any, target_type: type, default: Any = None) -> Any:
     except (ValueError, TypeError):
         return default
 
-
 def deep_merge(dict1: Dict[str, Any], dict2: Dict[str, Any],
-               overwrite: bool = True) -> Dict[str, Any]:
+              overwrite: bool = True) -> Dict[str, Any]:
     """
     Deep merge two dictionaries.
 
@@ -328,7 +311,6 @@ def deep_merge(dict1: Dict[str, Any], dict2: Dict[str, Any],
             result[key] = value
 
     return result
-
 
 def flatten_dict(d: Dict[str, Any], separator: str = '.', prefix: str = '') -> Dict[str, Any]:
     """
@@ -355,8 +337,6 @@ def flatten_dict(d: Dict[str, Any], separator: str = '.', prefix: str = '') -> D
     return result
 
 # Path and File Utilities
-
-
 def is_valid_path(path: str) -> bool:
     """
     Check if a path is valid.
@@ -372,7 +352,6 @@ def is_valid_path(path: str) -> bool:
         return True
     except (TypeError, ValueError):
         return False
-
 
 def get_project_root() -> Path:
     """
@@ -399,7 +378,6 @@ def get_project_root() -> Path:
     # If root not found, return parent of utils directory as a fallback
     return Path(__file__).parent.parent
 
-
 def ensure_directory(path: Union[str, Path]) -> Path:
     """
     Ensure a directory exists.
@@ -416,7 +394,6 @@ def ensure_directory(path: Union[str, Path]) -> Path:
     dir_path = Path(path)
     dir_path.mkdir(parents=True, exist_ok=True)
     return dir_path
-
 
 def get_file_hash(file_path: Union[str, Path], algorithm: str = 'sha256') -> str:
     """
@@ -449,7 +426,6 @@ def get_file_hash(file_path: Union[str, Path], algorithm: str = 'sha256') -> str
 
     return hash_func.hexdigest()
 
-
 def get_file_size_human_readable(file_path: Union[str, Path]) -> str:
     """
     Get the size of a file in human-readable format.
@@ -471,8 +447,6 @@ def get_file_size_human_readable(file_path: Union[str, Path]) -> str:
     return format_bytes(size)
 
 # Network Utilities
-
-
 def is_valid_ip(ip: str) -> bool:
     """
     Check if a string is a valid IP address.
@@ -488,7 +462,6 @@ def is_valid_ip(ip: str) -> bool:
         return True
     except socket.error:
         return False
-
 
 def is_valid_hostname(hostname: str) -> bool:
     """
@@ -507,7 +480,6 @@ def is_valid_hostname(hostname: str) -> bool:
     allowed = re.compile(r"(?!-)[A-Z\d-]{1,63}(?<!-)$", re.IGNORECASE)
     return all(allowed.match(x) for x in hostname.split("."))
 
-
 def get_system_info() -> Dict[str, str]:
     """
     Get system information.
@@ -525,7 +497,6 @@ def get_system_info() -> Dict[str, str]:
         'python_version': platform.python_version(),
         'timezone': datetime.datetime.now(datetime.timezone.utc).astimezone().tzinfo.tzname(None)
     }
-
 
 def get_platform_info() -> Dict[str, str]:
     """
@@ -546,7 +517,6 @@ def get_platform_info() -> Dict[str, str]:
         'python_implementation': platform.python_implementation(),  # e.g., 'CPython'
     }
 
-
 def is_internet_available(test_url: str = "8.8.8.8", timeout: float = 3) -> bool:
     """
     Check if internet is available.
@@ -566,8 +536,6 @@ def is_internet_available(test_url: str = "8.8.8.8", timeout: float = 3) -> bool
         return False
 
 # Signal handling utilities
-
-
 def setup_signal_handlers(shutdown_handler: Callable[[], None] = None) -> None:
     """
     Set up signal handlers for the application.
@@ -597,8 +565,7 @@ def setup_signal_handlers(shutdown_handler: Callable[[], None] = None) -> None:
     # Register signal handlers
     try:
         signal.signal(signal.SIGINT, signal_handler)  # Handle Ctrl+C
-        # Handle termination request
-        signal.signal(signal.SIGTERM, signal_handler)
+        signal.signal(signal.SIGTERM, signal_handler)  # Handle termination request
 
         # On Windows, SIGBREAK is sent when Ctrl+Break is pressed
         if platform.system() == 'Windows':
@@ -606,16 +573,13 @@ def setup_signal_handlers(shutdown_handler: Callable[[], None] = None) -> None:
 
         # On Unix systems, add more signal handlers
         if platform.system() != 'Windows':
-            # Handle terminal closed
-            signal.signal(signal.SIGHUP, signal_handler)
+            signal.signal(signal.SIGHUP, signal_handler)  # Handle terminal closed
 
     except (AttributeError, ValueError) as e:
         # Some signals might not be available on all platforms
         print(f"Warning: Could not set all signal handlers: {e}")
 
 # Utility functions for terminal/console
-
-
 def clear_console() -> None:
     """
     Clear the console/terminal screen in a cross-platform way.
@@ -630,7 +594,6 @@ def clear_console() -> None:
     else:
         # For Unix/Linux/MacOS, use 'clear' command
         os.system('clear')
-
 
 def get_terminal_size() -> Tuple[int, int]:
     """
@@ -668,7 +631,6 @@ def is_valid_api_id(api_id: Any) -> bool:
     except (ValueError, TypeError):
         return False
 
-
 def is_valid_api_hash(api_hash: Any) -> bool:
     """
     Check if a value is a valid Telegram API hash.
@@ -684,7 +646,6 @@ def is_valid_api_hash(api_hash: Any) -> bool:
 
     # API hash should be a 32-character hexadecimal string
     return bool(re.match(r'^[0-9a-fA-F]{32}$', api_hash))
-
 
 def is_valid_phone_number(phone: Any) -> bool:
     """
@@ -705,7 +666,6 @@ def is_valid_phone_number(phone: Any) -> bool:
     except ValueError:
         return False
 
-
 def format_group_name(name: str, max_length: int = 40) -> str:
     """
     Format a group name for display.
@@ -718,7 +678,6 @@ def format_group_name(name: str, max_length: int = 40) -> str:
         str: Formatted group name
     """
     return truncate_string(name, max_length)
-
 
 def format_username(username: Optional[str]) -> str:
     """
@@ -734,10 +693,9 @@ def format_username(username: Optional[str]) -> str:
         return "No username"
     return f"@{username}" if not username.startswith('@') else username
 
-
 def format_user_info(first_name: Optional[str] = None,
-                     last_name: Optional[str] = None,
-                     username: Optional[str] = None) -> str:
+                    last_name: Optional[str] = None,
+                    username: Optional[str] = None) -> str:
     """
     Format user information for display.
 

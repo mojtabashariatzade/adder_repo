@@ -30,12 +30,14 @@ import json
 import traceback
 from datetime import datetime
 import socket
+import os
+import sys
 import platform
-from enum import Enum
-from typing import Dict, Optional
+from enum import Enum, auto
+from typing import Any, Dict, List, Optional, Union, Tuple
 
 try:
-    from colorama import Fore, Style, init as colorama_init
+    from colorama import Fore, Back, Style, init as colorama_init
     COLORAMA_AVAILABLE = True
     colorama_init()
 except ImportError:
@@ -123,7 +125,7 @@ class ColorFormatter(logging.Formatter):
     """
 
     def __init__(self, fmt: Optional[str] = None, datefmt: Optional[str] = None, style: str = '%',
-                 include_hostname: bool = False):
+                include_hostname: bool = False):
         """
         Initialize the ColorFormatter.
 
@@ -250,7 +252,7 @@ class DetailedFormatter(logging.Formatter):
     """
 
     def __init__(self, fmt: Optional[str] = None, datefmt: Optional[str] = None, style: str = '%',
-                 show_path: bool = True, show_function: bool = True):
+                show_path: bool = True, show_function: bool = True):
         """
         Initialize the DetailedFormatter.
 
@@ -370,9 +372,9 @@ class HTMLFormatter(logging.Formatter):
         self.level_styles = {
             'DEBUG': 'color: #6c757d;',  # Gray
             'INFO': 'color: #28a745;',   # Green
-            'WARNING': 'color: #ffc107;',  # Yellow
+            'WARNING': 'color: #ffc107;', # Yellow
             'ERROR': 'color: #dc3545;',   # Red
-            'CRITICAL': 'color: #dc3545; font-weight: bold;',  # Bold red
+            'CRITICAL': 'color: #dc3545; font-weight: bold;', # Bold red
         }
 
     def format_header(self) -> str:
@@ -424,12 +426,10 @@ class HTMLFormatter(logging.Formatter):
         message = record.getMessage()
 
         # Escape HTML special characters
-        message = message.replace("&", "&amp;").replace(
-            "<", "&lt;").replace(">", "&gt;")
+        message = message.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
 
         # Format the timestamp
-        timestamp = datetime.fromtimestamp(
-            record.created).strftime('%Y-%m-%d %H:%M:%S')
+        timestamp = datetime.fromtimestamp(record.created).strftime('%Y-%m-%d %H:%M:%S')
 
         # Get the style for this log level
         level_style = self.level_styles.get(record.levelname, '')
@@ -438,8 +438,7 @@ class HTMLFormatter(logging.Formatter):
         exception_html = ""
         if record.exc_info:
             exception_text = self.formatException(record.exc_info)
-            exception_text = exception_text.replace(
-                "&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+            exception_text = exception_text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
             exception_html = f'<pre>{exception_text}</pre>'
 
         # Construct the HTML entry
@@ -488,7 +487,7 @@ class ConfigurableFormatter(logging.Formatter):
             'title': str.title,
             'first_char': lambda s: s[0] if s else '',
             'abbreviated': lambda s: '.'.join(part[0] for part in s.split('.')[:-1]) + '.' + s.split('.')[-1]
-            if '.' in s else s,
+                           if '.' in s else s,
         }
 
         # Only add defaults if they don't already exist
@@ -556,7 +555,6 @@ class ConfigurableFormatter(logging.Formatter):
             if field in record_dict and processor_name in self.processors:
                 value = record_dict[field]
                 processed_value = self.processors[processor_name](value)
-                result = result.replace(
-                    f"{{{field}:{processor_name}}}", str(processed_value))
+                result = result.replace(f"{{{field}:{processor_name}}}", str(processed_value))
 
         return result

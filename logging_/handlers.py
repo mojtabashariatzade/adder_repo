@@ -25,7 +25,11 @@ import shutil
 import time
 import multiprocessing
 import socket
-
+import socketserver
+import struct
+import pickle
+import http.client
+import ssl
 
 class SafeRotatingFileHandler(logging.handlers.RotatingFileHandler):
     """
@@ -54,7 +58,6 @@ class SafeRotatingFileHandler(logging.handlers.RotatingFileHandler):
                 self.fallback_stream.flush()
         except Exception:
             pass  # Ignore any errors in the fallback
-
 
 class MultiProcessSafeTimedRotatingFileHandler(logging.handlers.TimedRotatingFileHandler):
     """
@@ -87,7 +90,6 @@ class MultiProcessSafeTimedRotatingFileHandler(logging.handlers.TimedRotatingFil
         with self._lock:
             super().emit(record)
 
-
 class CompressedRotatingFileHandler(logging.handlers.RotatingFileHandler):
     """
     Rotating file handler that compresses old log files using gzip.
@@ -113,7 +115,6 @@ class CompressedRotatingFileHandler(logging.handlers.RotatingFileHandler):
         # Remove the old uncompressed log file
         os.remove(old_log)
 
-
 class CustomStreamHandler(logging.StreamHandler):
     """
     Stream handler with custom formatting and colors.
@@ -130,17 +131,16 @@ class CustomStreamHandler(logging.StreamHandler):
             fmt = "%(asctime)s [%(levelname)s] %(message)s"
 
         if style not in ('%', '{', '$'):
-            raise ValueError(
-                f"Invalid style '{style}' - must be '%', '{{' or '$'")
+            raise ValueError(f"Invalid style '{style}' - must be '%', '{{' or '$'")
 
         self.use_colors = use_colors
 
         default_colors = {
             'DEBUG': '\033[94m',  # Blue
             'INFO': '\033[92m',   # Green
-            'WARNING': '\033[93m',  # Yellow
+            'WARNING': '\033[93m',# Yellow
             'ERROR': '\033[91m',  # Red
-            'CRITICAL': '\033[95m'  # Magenta
+            'CRITICAL': '\033[95m'# Magenta
         }
         self.colors = colors or default_colors
 
@@ -161,7 +161,6 @@ class CustomStreamHandler(logging.StreamHandler):
             formatted = level_color + formatted + '\033[0m'
 
         return formatted
-
 
 class BufferingHandler(logging.handlers.BufferingHandler):
     """
@@ -208,7 +207,6 @@ class BufferingHandler(logging.handlers.BufferingHandler):
         finally:
             self.release()
 
-
 class HTTPHandler(logging.handlers.HTTPHandler):
     """
     Handler that sends logs to a HTTP server.
@@ -237,7 +235,6 @@ class HTTPHandler(logging.handlers.HTTPHandler):
             'time': record.created
         }
 
-
 class SocketHandler(logging.handlers.SocketHandler):
     """
     Handler that sends logs over a socket connection.
@@ -259,13 +256,12 @@ class SocketHandler(logging.handlers.SocketHandler):
         """
         if self.port is None:
             family = socket.AF_INET
-            type_ = socket.SOCK_DGRAM  # UDP
+            type_ = socket.SOCK_DGRAM # UDP
         else:
             family = socket.AF_INET
-            type_ = socket.SOCK_STREAM  # TCP
+            type_ = socket.SOCK_STREAM # TCP
 
         return socket.socket(family, type_)
-
 
 class SysLogHandler(logging.handlers.SysLogHandler):
     """

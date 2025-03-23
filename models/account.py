@@ -34,8 +34,9 @@ Usage:
 """
 
 from datetime import datetime, timedelta
-from typing import Dict, Any, Optional, Union
+from typing import Dict, Any, Optional, List, Tuple, Union
 import uuid
+import json
 import logging
 from dataclasses import dataclass, field, asdict
 from enum import Enum
@@ -43,6 +44,7 @@ import time
 
 # Import from core modules
 from core.constants import AccountStatus, MAX_MEMBERS_PER_DAY, MAX_FAILURES_BEFORE_BLOCK
+from core.exceptions import AccountError, AccountNotFoundError, AccountLimitReachedError
 
 # Setup logger
 try:
@@ -76,8 +78,7 @@ class AccountMetrics:
 
     # Limit tracking
     daily_limit: int = MAX_MEMBERS_PER_DAY
-    daily_reset_time: str = field(
-        default_factory=lambda: datetime.now().isoformat())
+    daily_reset_time: str = field(default_factory=lambda: datetime.now().isoformat())
 
     # Performance metrics
     average_success_rate: float = 100.0
@@ -133,15 +134,13 @@ class AccountMetrics:
 
                 # Track hourly usage for analytics
                 hour = datetime.now().hour
-                self.hourly_usage[hour] = self.hourly_usage.get(
-                    hour, 0) + value
+                self.hourly_usage[hour] = self.hourly_usage.get(hour, 0) + value
 
                 # Track daily usage for analytics
                 day = datetime.now().strftime("%Y-%m-%d")
                 self.daily_usage[day] = self.daily_usage.get(day, 0) + value
             else:
-                logger.warning(
-                    f"Cannot increment non-numeric metric: {metric_name}")
+                logger.warning(f"Cannot increment non-numeric metric: {metric_name}")
         else:
             logger.warning(f"Unknown metric: {metric_name}")
 
@@ -158,8 +157,7 @@ class AccountMetrics:
         """Update and return the average success rate."""
         total_ops = self.total_operations_succeeded + self.total_operations_failed
         if total_ops > 0:
-            self.average_success_rate = (
-                self.total_operations_succeeded / total_ops) * 100.0
+            self.average_success_rate = (self.total_operations_succeeded / total_ops) * 100.0
         else:
             self.average_success_rate = 100.0
 
@@ -173,8 +171,7 @@ class AccountMetrics:
     def from_dict(cls, data: Dict[str, Any]) -> 'AccountMetrics':
         """Create an AccountMetrics instance from a dictionary."""
         # Filter out unknown fields to prevent __init__ errors
-        known_fields = {k: v for k,
-                        v in data.items() if k in cls.__annotations__}
+        known_fields = {k: v for k, v in data.items() if k in cls.__annotations__}
         return cls(**known_fields)
 
 
@@ -244,8 +241,7 @@ class Account:
         self.last_updated = self.added_date
         self.notes = notes
         self.proxy_config = None
-        self.custom_data = kwargs.pop(
-            "custom_data", {}) if "custom_data" in kwargs else {}
+        self.custom_data = kwargs.pop("custom_data", {}) if "custom_data" in kwargs else {}
 
     def update_last_used(self) -> None:
         """Update the last used timestamp to current time."""
@@ -274,8 +270,7 @@ class Account:
             # Set cooldown expiration time
             cooldown_until = datetime.now() + timedelta(hours=cooldown_hours)
             self.cooldown_until = cooldown_until.isoformat()
-            logger.info(
-                f"Account {self.phone} set to cooldown until {self.cooldown_until}")
+            logger.info(f"Account {self.phone} set to cooldown until {self.cooldown_until}")
 
         elif status == AccountStatus.DAILY_LIMIT_REACHED:
             # Log when daily limit is reached
@@ -285,8 +280,7 @@ class Account:
         self.status = status
         self.update_last_used()
 
-        logger.info(
-            f"Account {self.phone} status changed to {AccountStatus.to_str(status)}")
+        logger.info(f"Account {self.phone} status changed to {AccountStatus.to_str(status)}")
 
     def increment_failure_count(self) -> int:
         """
@@ -305,8 +299,7 @@ class Account:
 
         # Check if account should be put in cooldown
         if self.failure_count >= MAX_FAILURES_BEFORE_BLOCK:
-            logger.warning(
-                f"Account {self.phone} reached max failures ({self.failure_count}), setting to cooldown")
+            logger.warning(f"Account {self.phone} reached max failures ({self.failure_count}), setting to cooldown")
             self.set_status(AccountStatus.COOLDOWN, cooldown_hours=6)
 
         return self.failure_count
@@ -353,7 +346,7 @@ class Account:
         # If account is in ACTIVE status but has reached daily limit,
         # update status to DAILY_LIMIT_REACHED
         if (self.status == AccountStatus.ACTIVE and
-                self.metrics.is_daily_limit_reached()):
+            self.metrics.is_daily_limit_reached()):
             self.set_status(AccountStatus.DAILY_LIMIT_REACHED)
             return False
 
@@ -368,8 +361,7 @@ class Account:
                 return False
             except (ValueError, TypeError):
                 # Invalid datetime format
-                logger.warning(
-                    f"Invalid cooldown_until format for account {self.phone}")
+                logger.warning(f"Invalid cooldown_until format for account {self.phone}")
                 self.cooldown_until = None
                 return False
 
@@ -510,8 +502,7 @@ class Account:
         phone = data.get("phone")
 
         if not all([api_id, api_hash, phone]):
-            raise ValueError(
-                "Missing required account data: api_id, api_hash, and phone are required")
+            raise ValueError("Missing required account data: api_id, api_hash, and phone are required")
 
         # Extract other parameters
         session_string = data.get("session_string")
@@ -622,24 +613,20 @@ class AccountFactory:
             if api_id_int <= 0:
                 raise ValueError("API ID must be a positive integer")
         except (ValueError, TypeError):
-            raise ValueError(
-                f"Invalid API ID: {api_id}. Must be a positive integer.")
+            raise ValueError(f"Invalid API ID: {api_id}. Must be a positive integer.")
 
         # Validate API hash
         if not isinstance(api_hash, str) or len(api_hash) < 5:
-            raise ValueError(
-                f"Invalid API hash: {api_hash}. Must be a non-empty string.")
+            raise ValueError(f"Invalid API hash: {api_hash}. Must be a non-empty string.")
 
         # Basic phone validation (could be enhanced)
         if not isinstance(phone, str) or not phone.strip():
-            raise ValueError(
-                f"Invalid phone number: {phone}. Must be a non-empty string.")
+            raise ValueError(f"Invalid phone number: {phone}. Must be a non-empty string.")
 
         # Check phone format
         phone = phone.strip()
         if not (phone.startswith('+') and phone[1:].isdigit()):
-            raise ValueError(
-                f"Invalid phone format: {phone}. Must start with '+' followed by digits.")
+            raise ValueError(f"Invalid phone format: {phone}. Must start with '+' followed by digits.")
 
     @staticmethod
     def from_telethon_client(client, phone: Optional[str] = None) -> Account:
@@ -654,8 +641,7 @@ class AccountFactory:
             Account: The created Account instance
         """
         if not hasattr(client, 'api_id') or not hasattr(client, 'api_hash'):
-            raise ValueError(
-                "Invalid Telethon client: missing api_id or api_hash")
+            raise ValueError("Invalid Telethon client: missing api_id or api_hash")
 
         # Get phone from client if not provided
         if not phone and hasattr(client, 'phone'):

@@ -35,6 +35,7 @@ Usage:
 import os
 import sys
 import logging
+from typing import Dict, Any, List, Tuple, Optional, Callable
 
 # Import core modules
 try:
@@ -42,8 +43,7 @@ try:
     from core.constants import Constants
 except ImportError:
     # For development or testing without the full project structure
-    sys.path.insert(0, os.path.abspath(
-        os.path.join(os.path.dirname(__file__), '..')))
+    sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
     from core.config import Config
     from core.constants import Constants
 
@@ -176,8 +176,7 @@ class SettingsMenu:
         elif choice == '9':
             self.exit_requested = True
         else:
-            self.display.print_error(
-                "Invalid choice. Please enter a number between 1 and 9.")
+            self.display.print_error("Invalid choice. Please enter a number between 1 and 9.")
             input("\nPress Enter to continue...")
 
     def _show_application_settings(self) -> None:
@@ -198,8 +197,7 @@ class SettingsMenu:
             print(f"3. Debug Mode: {'Enabled' if debug_mode else 'Disabled'}")
             print("\n0. Back to Settings Menu")
 
-            choice = input(
-                f"\n{self.colors.colorize('Enter your choice (0-3): ', self.colors.CYAN)}")
+            choice = input(f"\n{self.colors.colorize('Enter your choice (0-3): ', self.colors.CYAN)}")
 
             if choice == '0':
                 break
@@ -230,12 +228,9 @@ class SettingsMenu:
             self.display.print_header("Time Delay Settings")
 
             # Get current settings
-            default_delay = self.config.get(
-                'default_delay', Constants.TimeDelays.DEFAULT)
-            max_delay = self.config.get(
-                'max_delay', Constants.TimeDelays.MAXIMUM)
-            account_change_delay = self.config.get(
-                'account_change_delay', Constants.TimeDelays.ACCOUNT_CHANGE)
+            default_delay = self.config.get('default_delay', Constants.TimeDelays.DEFAULT)
+            max_delay = self.config.get('max_delay', Constants.TimeDelays.MAXIMUM)
+            account_change_delay = self.config.get('account_change_delay', Constants.TimeDelays.ACCOUNT_CHANGE)
 
             # Display current settings
             print(f"\nCurrent Time Delay Settings:")
@@ -244,20 +239,19 @@ class SettingsMenu:
             print(f"3. Account Change Delay: {account_change_delay} seconds")
             print("\n0. Back to Settings Menu")
 
-            choice = input(
-                f"\n{self.colors.colorize('Enter your choice (0-3): ', self.colors.CYAN)}")
+            choice = input(f"\n{self.colors.colorize('Enter your choice (0-3): ', self.colors.CYAN)}")
 
             if choice == '0':
                 break
             elif choice == '1':
                 self._update_numeric_setting('default_delay', "Enter new default delay (seconds)",
-                                             min_value=1, max_value=300)
+                                           min_value=1, max_value=300)
             elif choice == '2':
                 self._update_numeric_setting('max_delay', "Enter new maximum delay (seconds)",
-                                             min_value=60, max_value=3600)
+                                           min_value=60, max_value=3600)
             elif choice == '3':
                 self._update_numeric_setting('account_change_delay', "Enter new account change delay (seconds)",
-                                             min_value=10, max_value=600)
+                                           min_value=10, max_value=600)
             else:
                 self.display.print_error("Invalid choice.")
 
@@ -270,14 +264,10 @@ class SettingsMenu:
             self.display.print_header("Operation Limit Settings")
 
             # Get current settings
-            max_retry_count = self.config.get(
-                'max_retry_count', Constants.Limits.MAX_RETRY)
-            max_failures = self.config.get(
-                'max_failures_before_block', Constants.Limits.MAX_FAILURES)
-            max_members_per_day = self.config.get(
-                'max_members_per_day', Constants.Limits.MAX_MEMBERS_PER_DAY)
-            max_memory_records = self.config.get(
-                'max_memory_records', Constants.Limits.MAX_MEMORY_RECORDS)
+            max_retry_count = self.config.get('max_retry_count', Constants.Limits.MAX_RETRY)
+            max_failures = self.config.get('max_failures_before_block', Constants.Limits.MAX_FAILURES)
+            max_members_per_day = self.config.get('max_members_per_day', Constants.Limits.MAX_MEMBERS_PER_DAY)
+            max_memory_records = self.config.get('max_memory_records', Constants.Limits.MAX_MEMORY_RECORDS)
 
             # Display current settings
             print(f"\nCurrent Operation Limit Settings:")
@@ -287,26 +277,25 @@ class SettingsMenu:
             print(f"4. Maximum Memory Records: {max_memory_records}")
             print("\n0. Back to Settings Menu")
 
-            choice = input(
-                f"\n{self.colors.colorize('Enter your choice (0-4): ', self.colors.CYAN)}")
+            choice = input(f"\n{self.colors.colorize('Enter your choice (0-4): ', self.colors.CYAN)}")
 
             if choice == '0':
                 break
             elif choice == '1':
                 self._update_numeric_setting('max_retry_count', "Enter new maximum retry count",
-                                             min_value=1, max_value=20)
+                                           min_value=1, max_value=20)
             elif choice == '2':
                 self._update_numeric_setting('max_failures_before_block',
-                                             "Enter new maximum failures before block",
-                                             min_value=1, max_value=10)
+                                           "Enter new maximum failures before block",
+                                           min_value=1, max_value=10)
             elif choice == '3':
                 self._update_numeric_setting('max_members_per_day',
-                                             "Enter new maximum members per day",
-                                             min_value=10, max_value=100)
+                                           "Enter new maximum members per day",
+                                           min_value=10, max_value=100)
             elif choice == '4':
                 self._update_numeric_setting('max_memory_records',
-                                             "Enter new maximum memory records",
-                                             min_value=100, max_value=10000)
+                                           "Enter new maximum memory records",
+                                           min_value=100, max_value=10000)
             else:
                 self.display.print_error("Invalid choice.")
 
@@ -320,27 +309,21 @@ class SettingsMenu:
 
             # Get current settings
             use_proxy = self.config.get('use_proxy', False)
-            default_proxy_type = self.config.get(
-                'default_proxy_type', 'socks5')
-            proxy_rotation_enabled = self.config.get(
-                'proxy_rotation_enabled', False)
-            proxy_rotation_interval = self.config.get(
-                'proxy_rotation_interval', 3600)
+            default_proxy_type = self.config.get('default_proxy_type', 'socks5')
+            proxy_rotation_enabled = self.config.get('proxy_rotation_enabled', False)
+            proxy_rotation_interval = self.config.get('proxy_rotation_interval', 3600)
             proxy_settings = self.config.get('proxy_settings', {})
 
             # Display current settings
             print(f"\nCurrent Proxy Settings:")
             print(f"1. Use Proxy: {'Enabled' if use_proxy else 'Disabled'}")
             print(f"2. Default Proxy Type: {default_proxy_type}")
-            print(
-                f"3. Proxy Rotation: {'Enabled' if proxy_rotation_enabled else 'Disabled'}")
-            print(
-                f"4. Proxy Rotation Interval: {proxy_rotation_interval} seconds")
+            print(f"3. Proxy Rotation: {'Enabled' if proxy_rotation_enabled else 'Disabled'}")
+            print(f"4. Proxy Rotation Interval: {proxy_rotation_interval} seconds")
             print(f"5. Configure Proxy Servers")
             print("\n0. Back to Settings Menu")
 
-            choice = input(
-                f"\n{self.colors.colorize('Enter your choice (0-5): ', self.colors.CYAN)}")
+            choice = input(f"\n{self.colors.colorize('Enter your choice (0-5): ', self.colors.CYAN)}")
 
             if choice == '0':
                 break
@@ -350,25 +333,21 @@ class SettingsMenu:
                     self.config.set('use_proxy', new_use_proxy == 'y')
                     self.display.print_success("Proxy usage setting updated.")
             elif choice == '2':
-                new_type = input(
-                    "Enter default proxy type (socks5/http): ").lower()
+                new_type = input("Enter default proxy type (socks5/http): ").lower()
                 if new_type in ('socks5', 'http'):
                     self.config.set('default_proxy_type', new_type)
                     self.display.print_success("Default proxy type updated.")
                 else:
-                    self.display.print_error(
-                        "Invalid proxy type. Use 'socks5' or 'http'.")
+                    self.display.print_error("Invalid proxy type. Use 'socks5' or 'http'.")
             elif choice == '3':
                 new_rotation = input("Enable proxy rotation? (y/n): ").lower()
                 if new_rotation in ('y', 'n'):
-                    self.config.set('proxy_rotation_enabled',
-                                    new_rotation == 'y')
-                    self.display.print_success(
-                        "Proxy rotation setting updated.")
+                    self.config.set('proxy_rotation_enabled', new_rotation == 'y')
+                    self.display.print_success("Proxy rotation setting updated.")
             elif choice == '4':
                 self._update_numeric_setting('proxy_rotation_interval',
-                                             "Enter new rotation interval (seconds)",
-                                             min_value=300, max_value=86400)
+                                           "Enter new rotation interval (seconds)",
+                                           min_value=300, max_value=86400)
             elif choice == '5':
                 self._configure_proxy_servers()
             else:
@@ -395,16 +374,14 @@ class SettingsMenu:
                     port = proxy.get('port', 0)
                     proxy_type = proxy.get('proxy_type', 'socks5')
                     has_auth = bool(proxy.get('username'))
-                    print(
-                        f"{i}. {name}: {proxy_type}://{addr}:{port} {'(Auth)' if has_auth else ''}")
+                    print(f"{i}. {name}: {proxy_type}://{addr}:{port} {'(Auth)' if has_auth else ''}")
 
             print("\n1. Add New Proxy")
             print("2. Edit Existing Proxy")
             print("3. Remove Proxy")
             print("0. Back to Proxy Settings")
 
-            choice = input(
-                f"\n{self.colors.colorize('Enter your choice (0-3): ', self.colors.CYAN)}")
+            choice = input(f"\n{self.colors.colorize('Enter your choice (0-3): ', self.colors.CYAN)}")
 
             if choice == '0':
                 break
@@ -434,15 +411,13 @@ class SettingsMenu:
 
         # Check if name already exists
         if name in proxy_settings:
-            overwrite = input(
-                f"Proxy '{name}' already exists. Overwrite? (y/n): ").lower()
+            overwrite = input(f"Proxy '{name}' already exists. Overwrite? (y/n): ").lower()
             if overwrite != 'y':
                 self.display.print_message("Operation canceled.")
                 return
 
         # Get proxy details
-        proxy_type = input(
-            "Enter proxy type (socks5/http) [socks5]: ").lower() or 'socks5'
+        proxy_type = input("Enter proxy type (socks5/http) [socks5]: ").lower() or 'socks5'
         if proxy_type not in ('socks5', 'http'):
             self.display.print_error("Invalid proxy type. Using 'socks5'.")
             proxy_type = 'socks5'
@@ -458,12 +433,10 @@ class SettingsMenu:
             if port < 1 or port > 65535:
                 raise ValueError("Port out of range")
         except ValueError:
-            self.display.print_error(
-                "Invalid port number. Using default 1080.")
+            self.display.print_error("Invalid port number. Using default 1080.")
             port = 1080
 
-        use_auth = input(
-            "Does this proxy require authentication? (y/n) [n]: ").lower() or 'n'
+        use_auth = input("Does this proxy require authentication? (y/n) [n]: ").lower() or 'n'
         username = ""
         password = ""
         if use_auth == 'y':
@@ -513,12 +486,10 @@ class SettingsMenu:
             port = proxy.get('port', 0)
             proxy_type = proxy.get('proxy_type', 'socks5')
             has_auth = bool(proxy.get('username'))
-            print(
-                f"{i}. {name}: {proxy_type}://{addr}:{port} {'(Auth)' if has_auth else ''}")
+            print(f"{i}. {name}: {proxy_type}://{addr}:{port} {'(Auth)' if has_auth else ''}")
 
         # Get proxy to edit
-        proxy_index_str = input(
-            "\nEnter the number of the proxy to edit (or 0 to cancel): ")
+        proxy_index_str = input("\nEnter the number of the proxy to edit (or 0 to cancel): ")
         try:
             proxy_index = int(proxy_index_str)
             if proxy_index == 0:
@@ -535,45 +506,36 @@ class SettingsMenu:
         # Edit proxy details
         print(f"\nEditing proxy '{proxy_name}':")
 
-        proxy_type = input(
-            f"Enter proxy type (socks5/http) [{proxy.get('proxy_type', 'socks5')}]: ").lower() or proxy.get('proxy_type', 'socks5')
+        proxy_type = input(f"Enter proxy type (socks5/http) [{proxy.get('proxy_type', 'socks5')}]: ").lower() or proxy.get('proxy_type', 'socks5')
         if proxy_type not in ('socks5', 'http'):
-            self.display.print_error(
-                "Invalid proxy type. Using previous value.")
+            self.display.print_error("Invalid proxy type. Using previous value.")
             proxy_type = proxy.get('proxy_type', 'socks5')
 
-        addr = input(
-            f"Enter proxy server address [{proxy.get('addr', '')}]: ") or proxy.get('addr', '')
+        addr = input(f"Enter proxy server address [{proxy.get('addr', '')}]: ") or proxy.get('addr', '')
 
-        port_str = input(f"Enter proxy server port [{proxy.get('port', 1080)}]: ") or str(
-            proxy.get('port', 1080))
+        port_str = input(f"Enter proxy server port [{proxy.get('port', 1080)}]: ") or str(proxy.get('port', 1080))
         try:
             port = int(port_str)
             if port < 1 or port > 65535:
                 raise ValueError("Port out of range")
         except ValueError:
-            self.display.print_error(
-                "Invalid port number. Using previous value.")
+            self.display.print_error("Invalid port number. Using previous value.")
             port = proxy.get('port', 1080)
 
         current_has_auth = bool(proxy.get('username'))
-        use_auth = input(f"Does this proxy require authentication? (y/n) [{'y' if current_has_auth else 'n'}]: ").lower(
-        ) or ('y' if current_has_auth else 'n')
+        use_auth = input(f"Does this proxy require authentication? (y/n) [{'y' if current_has_auth else 'n'}]: ").lower() or ('y' if current_has_auth else 'n')
 
         username = proxy.get('username', '')
         password = proxy.get('password', '')
         if use_auth == 'y':
-            username = input(
-                f"Enter proxy username [{username}]: ") or username
-            password = input(
-                f"Enter proxy password [{password}]: ") or password
+            username = input(f"Enter proxy username [{username}]: ") or username
+            password = input(f"Enter proxy password [{password}]: ") or password
         else:
             username = ""
             password = ""
 
         current_rdns = proxy.get('rdns', True)
-        rdns = input(f"Use remote DNS resolution? (y/n) [{'y' if current_rdns else 'n'}]: ").lower(
-        ) or ('y' if current_rdns else 'n')
+        rdns = input(f"Use remote DNS resolution? (y/n) [{'y' if current_rdns else 'n'}]: ").lower() or ('y' if current_rdns else 'n')
 
         # Update proxy configuration
         proxy_config = {
@@ -589,8 +551,7 @@ class SettingsMenu:
         proxy_settings[proxy_name] = proxy_config
         self.config.set('proxy_settings', proxy_settings)
 
-        self.display.print_success(
-            f"Proxy '{proxy_name}' updated successfully.")
+        self.display.print_success(f"Proxy '{proxy_name}' updated successfully.")
 
     def _remove_proxy(self) -> None:
         """Remove an existing proxy server configuration."""
@@ -613,12 +574,10 @@ class SettingsMenu:
             port = proxy.get('port', 0)
             proxy_type = proxy.get('proxy_type', 'socks5')
             has_auth = bool(proxy.get('username'))
-            print(
-                f"{i}. {name}: {proxy_type}://{addr}:{port} {'(Auth)' if has_auth else ''}")
+            print(f"{i}. {name}: {proxy_type}://{addr}:{port} {'(Auth)' if has_auth else ''}")
 
         # Get proxy to remove
-        proxy_index_str = input(
-            "\nEnter the number of the proxy to remove (or 0 to cancel): ")
+        proxy_index_str = input("\nEnter the number of the proxy to remove (or 0 to cancel): ")
         try:
             proxy_index = int(proxy_index_str)
             if proxy_index == 0:
@@ -632,8 +591,7 @@ class SettingsMenu:
         proxy_name = proxy_names[proxy_index - 1]
 
         # Confirm removal
-        confirm = input(
-            f"Are you sure you want to remove proxy '{proxy_name}'? (y/n): ").lower()
+        confirm = input(f"Are you sure you want to remove proxy '{proxy_name}'? (y/n): ").lower()
         if confirm != 'y':
             self.display.print_message("Operation canceled.")
             return
@@ -646,8 +604,7 @@ class SettingsMenu:
         if not proxy_settings:
             self.config.set('use_proxy', False)
 
-        self.display.print_success(
-            f"Proxy '{proxy_name}' removed successfully.")
+        self.display.print_success(f"Proxy '{proxy_name}' removed successfully.")
 
     def _show_encryption_settings(self) -> None:
         """Display and modify encryption settings."""
@@ -657,22 +614,17 @@ class SettingsMenu:
 
             # Get current settings
             encryption_enabled = self.config.get('encryption_enabled', True)
-            encryption_algorithm = self.config.get(
-                'encryption_algorithm', 'fernet')
-            encryption_required = self.config.get(
-                'encryption_required_for_sensitive_data', True)
+            encryption_algorithm = self.config.get('encryption_algorithm', 'fernet')
+            encryption_required = self.config.get('encryption_required_for_sensitive_data', True)
 
             # Display current settings
             print(f"\nCurrent Encryption Settings:")
-            print(
-                f"1. Encryption Enabled: {'Yes' if encryption_enabled else 'No'}")
+            print(f"1. Encryption Enabled: {'Yes' if encryption_enabled else 'No'}")
             print(f"2. Encryption Algorithm: {encryption_algorithm}")
-            print(
-                f"3. Require Encryption for Sensitive Data: {'Yes' if encryption_required else 'No'}")
+            print(f"3. Require Encryption for Sensitive Data: {'Yes' if encryption_required else 'No'}")
             print("\n0. Back to Settings Menu")
 
-            choice = input(
-                f"\n{self.colors.colorize('Enter your choice (0-3): ', self.colors.CYAN)}")
+            choice = input(f"\n{self.colors.colorize('Enter your choice (0-3): ', self.colors.CYAN)}")
 
             if choice == '0':
                 break
@@ -682,17 +634,13 @@ class SettingsMenu:
                     self.config.set('encryption_enabled', new_value == 'y')
                     self.display.print_success("Encryption setting updated.")
             elif choice == '2':
-                self.display.print_message(
-                    "Currently only 'fernet' encryption is supported.")
+                self.display.print_message("Currently only 'fernet' encryption is supported.")
                 input("\nPress Enter to continue...")
             elif choice == '3':
-                new_value = input(
-                    "Require encryption for sensitive data? (y/n): ").lower()
+                new_value = input("Require encryption for sensitive data? (y/n): ").lower()
                 if new_value in ('y', 'n'):
-                    self.config.set(
-                        'encryption_required_for_sensitive_data', new_value == 'y')
-                    self.display.print_success(
-                        "Encryption requirement setting updated.")
+                    self.config.set('encryption_required_for_sensitive_data', new_value == 'y')
+                    self.display.print_success("Encryption requirement setting updated.")
             else:
                 self.display.print_error("Invalid choice.")
 
@@ -707,12 +655,9 @@ class SettingsMenu:
 
             # Get current settings
             log_file = self.config.get('log_file', 'telegram_adder.log')
-            request_log_file = self.config.get(
-                'request_log_file', 'request_log.json')
-            ai_data_file = self.config.get(
-                'ai_data_file', 'ai_training_data.json')
-            accounts_file = self.config.get(
-                'accounts_file', 'telegram_accounts.json')
+            request_log_file = self.config.get('request_log_file', 'request_log.json')
+            ai_data_file = self.config.get('ai_data_file', 'ai_training_data.json')
+            accounts_file = self.config.get('accounts_file', 'telegram_accounts.json')
 
             # Display current settings
             print(f"\nCurrent File Path Settings:")
@@ -722,29 +667,24 @@ class SettingsMenu:
             print(f"4. Accounts File: {accounts_file}")
             print("\n0. Back to Settings Menu")
 
-            choice = input(
-                f"\n{self.colors.colorize('Enter your choice (0-4): ', self.colors.CYAN)}")
+            choice = input(f"\n{self.colors.colorize('Enter your choice (0-4): ', self.colors.CYAN)}")
 
             if choice == '0':
                 break
             elif choice == '1':
-                new_path = input(
-                    f"Enter new log file path [{log_file}]: ") or log_file
+                new_path = input(f"Enter new log file path [{log_file}]: ") or log_file
                 self.config.set('log_file', new_path)
                 self.display.print_success("Log file path updated.")
             elif choice == '2':
-                new_path = input(
-                    f"Enter new request log file path [{request_log_file}]: ") or request_log_file
+                new_path = input(f"Enter new request log file path [{request_log_file}]: ") or request_log_file
                 self.config.set('request_log_file', new_path)
                 self.display.print_success("Request log file path updated.")
             elif choice == '3':
-                new_path = input(
-                    f"Enter new AI data file path [{ai_data_file}]: ") or ai_data_file
+                new_path = input(f"Enter new AI data file path [{ai_data_file}]: ") or ai_data_file
                 self.config.set('ai_data_file', new_path)
                 self.display.print_success("AI data file path updated.")
             elif choice == '4':
-                new_path = input(
-                    f"Enter new accounts file path [{accounts_file}]: ") or accounts_file
+                new_path = input(f"Enter new accounts file path [{accounts_file}]: ") or accounts_file
                 self.config.set('accounts_file', new_path)
                 self.display.print_success("Accounts file path updated.")
             else:
@@ -753,7 +693,7 @@ class SettingsMenu:
             input("\nPress Enter to continue...")
 
     def _update_numeric_setting(self, setting_name: str, prompt: str,
-                                min_value: int = 0, max_value: int = sys.maxsize) -> None:
+                               min_value: int = 0, max_value: int = sys.maxsize) -> None:
         """
         Update a numeric configuration setting with validation.
 
@@ -764,19 +704,16 @@ class SettingsMenu:
             max_value (int): The maximum allowed value.
         """
         current_value = self.config.get(setting_name, 0)
-        new_value_str = input(
-            f"{prompt} [{current_value}]: ") or str(current_value)
+        new_value_str = input(f"{prompt} [{current_value}]: ") or str(current_value)
 
         try:
             new_value = int(new_value_str)
             if new_value < min_value or new_value > max_value:
-                self.display.print_error(
-                    f"Value must be between {min_value} and {max_value}.")
+                self.display.print_error(f"Value must be between {min_value} and {max_value}.")
                 return
 
             self.config.set(setting_name, new_value)
-            self.display.print_success(
-                f"{setting_name} updated to {new_value}.")
+            self.display.print_success(f"{setting_name} updated to {new_value}.")
         except ValueError:
             self.display.print_error("Please enter a valid number.")
             return
