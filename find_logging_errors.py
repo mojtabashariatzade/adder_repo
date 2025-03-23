@@ -2,12 +2,16 @@
 # -*- coding: utf-8 -*-
 
 """
-Script to find logging-related errors in JSON lint output files.
+Script to find and correct logging-related errors in JSON lint output files.
+This script searches for W1203:logging-fstring-interpolation errors in JSON files,
+finds the corresponding source files, and can apply fixes to convert f-strings
+to proper % formatting in logging functions.
 """
 
 import os
 import json
 import sys
+import re
 from collections import defaultdict
 
 
@@ -70,7 +74,6 @@ def fix_logging_fstring(file_path, line_number, code_line):
     pattern_used = None
 
     for i, (pattern, replacement) in enumerate(patterns):
-        import re
         result = re.search(pattern, code_line)
         if result:
             fixed_line = re.sub(pattern, replacement, code_line)
@@ -78,8 +81,7 @@ def fix_logging_fstring(file_path, line_number, code_line):
             break
 
     if not fixed_line:
-        # Try to handle more complex cases
-        # Check if line contains logger call with f-string inside
+        # Try to handle more complex cases with multiple variables
         if "logger." in code_line and "{" in code_line and "}" in code_line:
             # This needs more sophisticated handling, maybe manual intervention
             return None, "Complex logging pattern - manual fix needed"
@@ -87,53 +89,80 @@ def fix_logging_fstring(file_path, line_number, code_line):
     return fixed_line, pattern_used
 
 
+def find_source_file_path(file_path_resource, project_root=None):
+    """Try multiple approaches to find the actual source file."""
+    possible_paths = []
+
+    # Original path
+    possible_paths.append(file_path_resource)
+
+    # Try with backslashes
+    if '/' in file_path_resource:
+        possible_paths.append(file_path_resource.replace('/', '\\'))
+
+    # Try with forward slashes
+    if '\\' in file_path_resource:
+        possible_paths.append(file_path_resource.replace('\\', '/'))
+
+    # Try without drive letter
+    if ':' in file_path_resource:
+        drive, rest = file_path_resource.split(':', 1)
+        possible_paths.append(rest)
+
+        # Also try with different slash style
+        if '/' in rest:
+            possible_paths.append(rest.replace('/', '\\'))
+        if '\\' in rest:
+            possible_paths.append(rest.replace('\\', '/'))
+
+    # Try with leading slash removed
+    if file_path_resource.startswith('/'):
+        possible_paths.append(file_path_resource[1:])
+
+    # Try with project root
+    if project_root and '/adder_repo/' in file_path_resource:
+        _, rel_path = file_path_resource.split('/adder_repo/', 1)
+        possible_paths.append(os.path.join(project_root, rel_path))
+        possible_paths.append(os.path.join(
+            project_root, rel_path.replace('/', '\\')))
+
+    if project_root and '\\adder_repo\\' in file_path_resource:
+        _, rel_path = file_path_resource.split('\\adder_repo\\', 1)
+        possible_paths.append(os.path.join(project_root, rel_path))
+        possible_paths.append(os.path.join(
+            project_root, rel_path.replace('\\', '/')))
+
+    # Try each path
+    for path in possible_paths:
+        if os.path.exists(path):
+            return path
+
+    return None
+
+
+def read_source_line(file_path, line_number):
+    """Read a specific line from a source file."""
+    try:
+        with open(file_path, 'r', encoding='utf-8') as f:
+            lines = f.readlines()
+            if 0 < line_number <= len(lines):
+                return lines[line_number - 1].strip()
+            else:
+                print(
+                    f"Warning: Line number {line_number} out of range for file {file_path} with {len(lines)} lines")
+    except Exception as e:
+        print(f"Error reading line {line_number} from {file_path}: {e}")
+    return None
+
+
 def apply_fixes_to_file(file_path, errors):
     """Apply fixes to file based on identified errors."""
     try:
-        # Try multiple path formats to find the file
-        possible_paths = []
-
-        # Original path
-        possible_paths.append(file_path)
-
-        # Try with backslashes
-        if '/' in file_path:
-            possible_paths.append(file_path.replace('/', '\\'))
-
-        # Try with forward slashes
-        if '\\' in file_path:
-            possible_paths.append(file_path.replace('\\', '/'))
-
-        # Try without drive letter
-        if ':' in file_path:
-            drive, rest = file_path.split(':', 1)
-            possible_paths.append(rest)
-
-            # Also try with different slash style
-            if '/' in rest:
-                possible_paths.append(rest.replace('/', '\\'))
-            if '\\' in rest:
-                possible_paths.append(rest.replace('\\', '/'))
-
-        # Try with leading slash removed
-        if file_path.startswith('/'):
-            possible_paths.append(file_path[1:])
-
-        # Try with modified separators
-        if '/adder_repo/' in file_path:
-            _, rel_path = file_path.split('/adder_repo/', 1)
-            possible_paths.append(os.path.join('F:\\adder_repo', rel_path))
-            possible_paths.append(os.path.join('F:/adder_repo', rel_path))
-
-        # Try all possible paths
-        actual_path = None
-        for path in possible_paths:
-            if os.path.exists(path):
-                actual_path = path
-                break
+        # Find the actual file
+        actual_path = find_source_file_path(file_path)
 
         if not actual_path:
-            print(f"File not found. Tried paths: {possible_paths}")
+            print(f"File not found: {file_path}")
             return False
 
         # Read file
@@ -146,7 +175,24 @@ def apply_fixes_to_file(file_path, errors):
 
         # Fix each error
         for error in errors:
+            # Use the exact line number from the error report
             line_num = error.get('startLineNumber', 0)
+
+            # Check if the line exists and contains a logger call
+            if 0 < line_num <= len(lines):
+                original_line = lines[line_num - 1]
+                has_logger = any(x in original_line for x in [
+                                 "logger.", ".error", ".info", ".warning", ".debug", ".critical"])
+
+                # If not, try the line before (sometimes line numbers are off by one)
+                if not has_logger and line_num > 1:
+                    prev_line_num = line_num - 1
+                    prev_line = lines[prev_line_num - 1]
+                    if any(x in prev_line for x in ["logger.", ".error", ".info", ".warning", ".debug", ".critical"]):
+                        print(
+                            f"Note: Using line {prev_line_num} instead of reported line {line_num}")
+                        line_num = prev_line_num
+                        original_line = prev_line
 
             if 0 < line_num <= len(lines):
                 original_line = lines[line_num - 1]
@@ -211,74 +257,42 @@ def apply_fixes_to_file(file_path, errors):
         return False
 
 
-def format_error(error):
-    """Format an error for printing."""
+def format_error(error, project_root=None):
+    """Format an error for printing with the actual source code line."""
     file_path = error.get('resource', 'Unknown file')
     message = error.get('message', 'No message')
     severity = error.get('severity', 0)
-    line = error.get('startLineNumber', 0)
+    # Use the exact line number from JSON
+    line_num = error.get('startLineNumber', 0)
     column = error.get('startColumn', 0)
 
     severity_str = "Error" if severity >= 8 else "Warning" if severity >= 4 else "Info"
 
-    # Try to read the actual line from the source file
-    code_line = ""
-    try:
-        # Try multiple path formats to find the file
-        possible_paths = []
+    # Find the actual source file
+    source_file_path = find_source_file_path(file_path, project_root)
+    code_line = None
 
-        # Original path
-        possible_paths.append(file_path)
+    if source_file_path:
+        # Try to read the exact line
+        code_line = read_source_line(source_file_path, line_num)
 
-        # Try with backslashes
-        if '/' in file_path:
-            possible_paths.append(file_path.replace('/', '\\'))
-
-        # Try with forward slashes
-        if '\\' in file_path:
-            possible_paths.append(file_path.replace('\\', '/'))
-
-        # Try without drive letter
-        if ':' in file_path:
-            drive, rest = file_path.split(':', 1)
-            possible_paths.append(rest)
-
-            # Also try with different slash style
-            if '/' in rest:
-                possible_paths.append(rest.replace('/', '\\'))
-            if '\\' in rest:
-                possible_paths.append(rest.replace('\\', '/'))
-
-        # Try with leading slash removed
-        if file_path.startswith('/'):
-            possible_paths.append(file_path[1:])
-
-        # Try with modified separators
-        if '/adder_repo/' in file_path:
-            _, rel_path = file_path.split('/adder_repo/', 1)
-            possible_paths.append(os.path.join('F:\\adder_repo', rel_path))
-            possible_paths.append(os.path.join('F:/adder_repo', rel_path))
-
-        # Try all possible paths
-        file_found = False
-        for path in possible_paths:
-            if os.path.exists(path):
-                with open(path, 'r', encoding='utf-8') as f:
-                    lines = f.readlines()
-                    if 0 < line <= len(lines):
-                        code_line = lines[line-1].strip()
-                        file_found = True
-                        break
-
-        if not file_found:
-            print(f"File not found. Tried paths: {possible_paths}")
-    except Exception as e:
-        print(f"Error reading source file: {e}")
+        # If line not found or doesn't contain logging f-string, try adjacent lines
+        if not code_line or ("logger." not in code_line and ".error" not in code_line
+                             and ".info" not in code_line and ".warning" not in code_line
+                             and ".debug" not in code_line and ".critical" not in code_line):
+            # Try the line before
+            alt_line = read_source_line(source_file_path, line_num - 1)
+            if alt_line and any(x in alt_line for x in ["logger.", ".error", ".info", ".warning", ".debug", ".critical"]):
+                code_line = alt_line
+                print(
+                    f"Note: Using line {line_num-1} instead of reported line {line_num} for {os.path.basename(file_path)}")
+                line_num = line_num - 1  # Update the line number
 
     return {
         "file": os.path.basename(file_path),
         "path": file_path,
-        "line": line,
+        "actual_path": source_file_path,
+        "line": line_num,
         "column": column,
         "severity": severity_str,
         "message": message,
@@ -286,7 +300,7 @@ def format_error(error):
     }
 
 
-def process_json_directory(directory_path):
+def process_json_directory(directory_path, project_root=None, auto_fix=False):
     """Process all JSON files in the directory for logging errors."""
     all_errors = []
     errors_by_file = defaultdict(list)
@@ -315,31 +329,45 @@ def process_json_directory(directory_path):
             print(
                 f"\nFound {len(logging_errors)} logging errors in {json_file}")
             for error in logging_errors:
-                formatted_error = format_error(error)
+                formatted_error = format_error(error, project_root)
                 all_errors.append(formatted_error)
 
-                # Also organize by source file
-                source_file = formatted_error["file"]
-                errors_by_file[source_file].append(formatted_error)
+                # Organize by source file
+                source_file = formatted_error["path"]
+                errors_by_file[source_file].append(error)
 
     # Print summary
     print("\n=== SUMMARY ===")
     print(f"Total logging errors found: {len(all_errors)}")
     print("\nErrors by file:")
     for file, errors in errors_by_file.items():
-        print(f"  {file}: {len(errors)} errors")
+        print(f"  {os.path.basename(file)}: {len(errors)} errors")
+
+    # Apply fixes if requested
+    if auto_fix:
+        print("\n=== APPLYING FIXES ===")
+        for file_path, file_errors in errors_by_file.items():
+            print(f"\nProcessing {file_path}...")
+            apply_fixes_to_file(file_path, file_errors)
 
     # Print detailed errors
-    if all_errors:
-        print("\n=== DETAILED ERRORS ===")
-        for idx, error in enumerate(all_errors, 1):
+    print("\n=== DETAILED ERRORS ===")
+    for idx, error in enumerate(all_errors, 1):
+        print(
+            f"\n{idx}. {error['file']} (Line {error['line']}, Col {error['column']})")
+        print(f"   {error['severity']}: {error['message']}")
+        if error['code']:
+            print(f"   Code: {error['code']}")
+        else:
             print(
-                f"\n{idx}. {error['file']} (Line {error['line']}, Col {error['column']})")
-            print(f"   {error['severity']}: {error['message']}")
+                f"   Source file not found or couldn't be read: {error['path']}")
+
+    return all_errors, errors_by_file
 
 
 def main():
-    """Main function."""
+    """Main function to handle command-line arguments and run the script."""
+    # Check command-line arguments
     if len(sys.argv) > 1:
         json_dir = sys.argv[1]
     else:
@@ -348,6 +376,9 @@ def main():
     # Allow user to specify project root for resolving file paths
     project_root = input(
         "Enter the project root path (e.g., F:\\adder_repo): ")
+
+    # Option to automatically fix errors
+    auto_fix = input("Automatically apply fixes? (y/n): ").lower() == 'y'
 
     if not os.path.isdir(json_dir):
         print(f"Error: {json_dir} is not a valid directory")
@@ -369,7 +400,7 @@ def main():
             "\nEnter file number to analyze (or 'all' for all files): ")
 
         if selection.lower() == 'all':
-            process_json_directory(json_dir)
+            process_json_directory(json_dir, project_root, auto_fix)
         else:
             try:
                 file_idx = int(selection) - 1
@@ -382,35 +413,11 @@ def main():
                             f"\nFound {len(logging_errors)} logging errors in {json_files[file_idx]}")
 
                         # Group errors by file
-                        errors_by_file = {}
+                        errors_by_file = defaultdict(list)
                         for error in logging_errors:
-                            if 'resource' in error:
-                                file_resource = error['resource']
-                                # Extract the relative path after the repo name
-                                if project_root:
-                                    # Make sure project_root has correct format
-                                    if '\\' in project_root and '/' in file_resource:
-                                        # If resource uses / but project_root uses \
-                                        project_root_slash = project_root.replace(
-                                            '\\', '/')
-                                        if '/adder_repo/' in file_resource:
-                                            _, rel_path = file_resource.split(
-                                                '/adder_repo/', 1)
-                                            file_resource = os.path.join(
-                                                project_root, rel_path)
-                                    elif '/' in project_root and '\\' in file_resource:
-                                        # If resource uses \ but project_root uses /
-                                        project_root_backslash = project_root.replace(
-                                            '/', '\\')
-                                        if '\\adder_repo\\' in file_resource:
-                                            _, rel_path = file_resource.split(
-                                                '\\adder_repo\\', 1)
-                                            file_resource = os.path.join(
-                                                project_root, rel_path)
-
-                                if file_resource not in errors_by_file:
-                                    errors_by_file[file_resource] = []
-                                errors_by_file[file_resource].append(error)
+                            formatted_error = format_error(error, project_root)
+                            source_file = formatted_error["path"]
+                            errors_by_file[source_file].append(error)
 
                         # Print summary
                         print("\n=== SUMMARY ===")
@@ -419,8 +426,13 @@ def main():
                             print(
                                 f"  {os.path.basename(file)}: {len(errors)} errors")
 
-                        # Ask if user wants to apply fixes
-                        if errors_by_file:
+                        # Apply fixes if requested
+                        if auto_fix:
+                            for file_path, file_errors in errors_by_file.items():
+                                print(f"\nProcessing {file_path}...")
+                                apply_fixes_to_file(file_path, file_errors)
+                        else:
+                            # Ask if user wants to apply fixes
                             fix_option = input("\nApply fixes? (y/n): ")
                             if fix_option.lower() == 'y':
                                 for file_path, file_errors in errors_by_file.items():
@@ -436,7 +448,8 @@ def main():
                             for file_path, file_errors in errors_by_file.items():
                                 print(f"\nFile: {os.path.basename(file_path)}")
                                 for error in file_errors:
-                                    formatted_error = format_error(error)
+                                    formatted_error = format_error(
+                                        error, project_root)
                                     line = formatted_error['line']
                                     col = formatted_error['column']
                                     message = formatted_error['message']
@@ -448,14 +461,14 @@ def main():
                                         print(f"    Code: {code}")
                                     else:
                                         print(
-                                            f"    Source file: {file_path} (not found or couldn't be read)")
+                                            f"    Source file not found or couldn't be read")
                 else:
                     print("Invalid selection")
             except ValueError:
                 print("Please enter a number or 'all'")
 
     except Exception as e:
-        print(f"Error listing directory {json_dir}: {e}")
+        print(f"Error: {e}")
         import traceback
         traceback.print_exc()
 
