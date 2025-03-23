@@ -16,10 +16,7 @@ import logging
 from pathlib import Path
 from typing import Any, Dict, Optional, Union
 
-# Import base file manager
-from .base_file_manager import FileManager
-
-# Import custom exceptions
+# Import custom exceptions first
 from core.exceptions import (
     FileReadError,
     FileWriteError,
@@ -27,6 +24,13 @@ from core.exceptions import (
     EncryptionError,
     DecryptionError,
 )
+
+# Import Encryptor class for type checking only
+from data.encryption import Encryptor
+
+# Import base file manager
+from .base_file_manager import FileManager
+
 
 # Setup logger
 logger = logging.getLogger(__name__)
@@ -39,7 +43,7 @@ class EncryptedFileManager(FileManager):
     Provides methods to read and write encrypted files using the Encryptor class.
     """
 
-    def __init__(self, encryptor: "Encryptor", base_dir: Optional[str] = None):
+    def __init__(self, encryptor: Encryptor, base_dir: Optional[str] = None):
         """
         Initialize the EncryptedFileManager.
 
@@ -48,18 +52,11 @@ class EncryptedFileManager(FileManager):
             base_dir (str, optional): Base directory for relative paths.
 
         Raises:
-            ImportError: If the Encryptor class is not available.
             TypeError: If the provided encryptor is not an instance of Encryptor.
         """
         super().__init__(base_dir)
 
-        # Check if Encryptor is available and the provided object is valid
-        try:
-            from data.encryption import Encryptor
-        except ImportError:
-            logger.error("data.encryption.Encryptor is not available")
-            raise ImportError("data.encryption.Encryptor is not available")
-
+        # Check if the provided object is valid
         if not isinstance(encryptor, Encryptor):
             logger.error("Invalid encryptor type: %s", type(encryptor))
             raise TypeError(
@@ -159,13 +156,17 @@ class EncryptedFileManager(FileManager):
             decrypted_content = self.read_encrypted(file_path)
 
             # Parse JSON
-            return json.loads(decrypted_content)
-        except json.JSONDecodeError as e:
-            logger.error(
-                "Invalid JSON in decrypted content of %s: %s", file_path, e)
-            raise FileFormatError(
-                str(file_path), f"Invalid JSON in decrypted content: {e}"
-            )
+            try:
+                return json.loads(decrypted_content)
+            except json.JSONDecodeError as e:
+                logger.error(
+                    "Invalid JSON in decrypted content of %s: %s", file_path, e)
+                raise FileFormatError(
+                    str(file_path), f"Invalid JSON in decrypted content: {e}"
+                ) from e
+        except (FileReadError, DecryptionError):
+            # Re-raise these specific exceptions without converting them
+            raise
 
     def write_encrypted_json(
         self,
@@ -188,19 +189,20 @@ class EncryptedFileManager(FileManager):
             EncryptionError: If the content cannot be encrypted.
             TypeError: If the data is not JSON-serializable.
         """
+        # Convert to JSON string
         try:
-            # Convert to JSON string
             json_content = json.dumps(data, indent=indent, ensure_ascii=False)
+        except TypeError as e:
+            logger.error("Data is not JSON-serializable: %s", e)
+            raise TypeError(f"Data is not JSON-serializable: {e}") from e
 
+        try:
             # Encrypt and write
             self.write_encrypted(path, json_content, make_backup=make_backup)
             logger.debug("Encrypted JSON written to %s", path)
-        except EncryptionError:
-            # Re-raise EncryptionError without converting it
+        except (EncryptionError, FileWriteError):
+            # Re-raise these specific exceptions without converting them
             raise
-        except TypeError as e:
-            logger.error("Data is not JSON-serializable: %s", e)
-            raise TypeError(f"Data is not JSON-serializable: {e}")
         except Exception as e:
             logger.error("Error encrypting or writing to %s: %s", path, e)
             raise EncryptionError(
