@@ -51,20 +51,20 @@ import socket
 import threading
 import asyncio
 from enum import Enum, auto
-from typing import Dict, List, Optional, Tuple, Any, Union, Callable
-from datetime import datetime, timedelta
+from typing import Dict, List, Optional, Tuple, Any, Union
+from datetime import datetime
 
 # Try to import from project modules
 try:
     from core.config import Config
-    from core.constants import Constants
     from core.exceptions import (
-        ProxyError, ConnectionError, TimeoutError, ValidationError
+        ProxyError, ValidationError
     )
     from data.file_manager import JsonFileManager, FileReadError, FileWriteError
     from logging_.logging_manager import get_logger
 except ImportError:
     # For standalone testing, define minimal versions of dependencies
+    # pylint: disable=C0115  # Missing class docstring
     class Config:
         _instance = None
 
@@ -74,6 +74,7 @@ except ImportError:
                 cls._instance._config_data = {}
             return cls._instance
 
+# pylint: disable=C0116  # Missing function or method docstring
         def get(self, key, default=None):
             return self._config_data.get(key, default)
 
@@ -87,18 +88,30 @@ except ImportError:
             TIMEOUT = 30
 
     # Define minimal exception classes
-    class ProxyError(Exception): pass
-    class ConnectionError(Exception): pass
-    class TimeoutError(Exception): pass
-    class ValidationError(Exception): pass
-    class FileReadError(Exception): pass
-    class FileWriteError(Exception): pass
+    class ProxyError(Exception):
+        pass
+
+    class ConnectionErrors(Exception):
+        pass
+
+    class TimeoutErrors(Exception):
+        pass
+
+    class ValidationError(Exception):
+        pass
+
+    class FileReadError(Exception):
+        pass
+
+    class FileWriteError(Exception):
+        pass
 
     # Define minimal JsonFileManager
     class JsonFileManager:
         def __init__(self, base_dir=None):
             self.base_dir = base_dir or os.getcwd()
 
+# pylint: disable=C0116  # Missing function or method docstring
         def read_json(self, path, default=None):
             try:
                 with open(path, 'r') as f:
@@ -112,6 +125,7 @@ except ImportError:
                 json.dump(data, f, indent=4)
 
     # Define minimal logger
+    # pylint: disable=C0116  # Missing function or method docstring
     def get_logger(name):
         return logging.getLogger(name)
 
@@ -291,15 +305,20 @@ class ProxyManager:
 
             # Proxy rotation settings
             self.auto_rotation_enabled = False
-            self.rotation_interval = self.config.get("proxy_rotation_interval", 3600)  # 1 hour
+            self.rotation_interval = self.config.get(
+                "proxy_rotation_interval", 3600)  # 1 hour
             self.rotation_thread = None
             self.stop_rotation = threading.Event()
 
             # Test settings
-            self.test_timeout = self.config.get("proxy_test_timeout", self.DEFAULT_TEST_TIMEOUT)
-            self.max_latency = self.config.get("proxy_max_latency", self.DEFAULT_MAX_LATENCY)
-            self.test_url = self.config.get("proxy_test_url", self.DEFAULT_TEST_URL)
-            self.test_port = self.config.get("proxy_test_port", self.DEFAULT_TEST_PORT)
+            self.test_timeout = self.config.get(
+                "proxy_test_timeout", self.DEFAULT_TEST_TIMEOUT)
+            self.max_latency = self.config.get(
+                "proxy_max_latency", self.DEFAULT_MAX_LATENCY)
+            self.test_url = self.config.get(
+                "proxy_test_url", self.DEFAULT_TEST_URL)
+            self.test_port = self.config.get(
+                "proxy_test_port", self.DEFAULT_TEST_PORT)
 
             # Current active proxy
             self.current_proxy_id = None
@@ -337,7 +356,8 @@ class ProxyManager:
             bool: True if proxies were loaded successfully, False otherwise.
         """
         try:
-            proxies_data = self.file_manager.read_json(self.proxies_file, default={})
+            proxies_data = self.file_manager.read_json(
+                self.proxies_file, default={})
 
             if not proxies_data:
                 logger.info(f"No proxies found in {self.proxies_file}")
@@ -347,26 +367,29 @@ class ProxyManager:
             self.proxies = {}
             for proxy_id, proxy_data in proxies_data.items():
                 # Convert string status and type to enum
-                proxy_data["status"] = ProxyStatus.from_str(proxy_data.get("status", "untested"))
-                proxy_data["type"] = ProxyType.from_str(proxy_data.get("type", "socks5"))
+                proxy_data["status"] = ProxyStatus.from_str(
+                    proxy_data.get("status", "untested"))
+                proxy_data["type"] = ProxyType.from_str(
+                    proxy_data.get("type", "socks5"))
 
                 # Add to proxies dictionary
                 self.proxies[proxy_id] = proxy_data
 
             # Select current proxy if any are active
             active_proxies = {p_id: p for p_id, p in self.proxies.items()
-                             if p.get("status") == ProxyStatus.ACTIVE}
+                              if p.get("status") == ProxyStatus.ACTIVE}
 
             if active_proxies:
                 # Select proxy with lowest latency or most recent test
                 sorted_proxies = sorted(
                     active_proxies.items(),
                     key=lambda x: (x[1].get("latency", float('inf')),
-                                  -x[1].get("last_tested", 0))
+                                   -x[1].get("last_tested", 0))
                 )
                 self.current_proxy_id = sorted_proxies[0][0]
 
-            logger.info(f"Loaded {len(self.proxies)} proxies from {self.proxies_file}")
+            logger.info(
+                f"Loaded {len(self.proxies)} proxies from {self.proxies_file}")
             return True
 
         except FileReadError as e:
@@ -393,17 +416,21 @@ class ProxyManager:
                 # Convert enum values to strings
                 if "status" in serialized_proxy:
                     if isinstance(serialized_proxy["status"], ProxyStatus):
-                        serialized_proxy["status"] = ProxyStatus.to_str(serialized_proxy["status"])
+                        serialized_proxy["status"] = ProxyStatus.to_str(
+                            serialized_proxy["status"])
 
                 if "type" in serialized_proxy:
                     if isinstance(serialized_proxy["type"], ProxyType):
-                        serialized_proxy["type"] = ProxyType.to_str(serialized_proxy["type"])
+                        serialized_proxy["type"] = ProxyType.to_str(
+                            serialized_proxy["type"])
 
                 proxies_data[proxy_id] = serialized_proxy
 
             # Save to file
-            self.file_manager.write_json(self.proxies_file, proxies_data, make_backup=True)
-            logger.debug(f"Saved {len(self.proxies)} proxies to {self.proxies_file}")
+            self.file_manager.write_json(
+                self.proxies_file, proxies_data, make_backup=True)
+            logger.debug(
+                f"Saved {len(self.proxies)} proxies to {self.proxies_file}")
             return True
 
         except FileWriteError as e:
@@ -414,9 +441,9 @@ class ProxyManager:
             return False
 
     def add_proxy(self, proxy_type: Union[ProxyType, str], host: str, port: int,
-                 username: Optional[str] = None, password: Optional[str] = None,
-                 label: Optional[str] = None, region: Optional[str] = None,
-                 test: bool = True) -> str:
+                  username: Optional[str] = None, password: Optional[str] = None,
+                  label: Optional[str] = None, region: Optional[str] = None,
+                  test: bool = True) -> str:
         """
         Add a new proxy to the manager.
 
@@ -481,13 +508,14 @@ class ProxyManager:
             self.proxies[proxy_id] = proxy_data
             self._save_proxies()
 
-        logger.info(f"Added new proxy {proxy_id}: {host}:{port} ({ProxyType.to_str(proxy_type)})")
+        logger.info(
+            f"Added new proxy {proxy_id}: {host}:{port} ({ProxyType.to_str(proxy_type)})")
 
         # Test the proxy if requested
         if test:
             is_working, latency = self.test_proxy(proxy_id)
             logger.info(f"Tested proxy {proxy_id}: {'Success' if is_working else 'Failed'}" +
-                       (f", latency: {latency}ms" if is_working else ""))
+                        (f", latency: {latency}ms" if is_working else ""))
 
         return proxy_id
 
@@ -537,8 +565,8 @@ class ProxyManager:
         return self.proxies.get(proxy_id)
 
     def list_proxies(self, status: Optional[Union[ProxyStatus, str]] = None,
-                    region: Optional[str] = None,
-                    max_latency: Optional[int] = None) -> List[Dict[str, Any]]:
+                     region: Optional[str] = None,
+                     max_latency: Optional[int] = None) -> List[Dict[str, Any]]:
         """
         List proxies, optionally filtered by criteria.
 
@@ -582,7 +610,8 @@ class ProxyManager:
             # Then by latency (None is considered worst)
             float('inf') if p.get("latency") is None else p.get("latency"),
             # Then by success rate
-            -(p.get("success_count", 0) / max(p.get("success_count", 0) + p.get("failure_count", 0), 1))
+            -(p.get("success_count", 0) /
+              max(p.get("success_count", 0) + p.get("failure_count", 0), 1))
         ))
 
         return result
@@ -687,7 +716,8 @@ class ProxyManager:
             if is_working:
                 proxy_data["latency"] = latency
                 proxy_data["last_success"] = now
-                proxy_data["success_count"] = proxy_data.get("success_count", 0) + 1
+                proxy_data["success_count"] = proxy_data.get(
+                    "success_count", 0) + 1
 
                 # Set status based on latency
                 if latency <= self.max_latency:
@@ -696,7 +726,8 @@ class ProxyManager:
                     proxy_data["status"] = ProxyStatus.SLOW
             else:
                 proxy_data["last_failure"] = now
-                proxy_data["failure_count"] = proxy_data.get("failure_count", 0) + 1
+                proxy_data["failure_count"] = proxy_data.get(
+                    "failure_count", 0) + 1
 
                 # If too many failures, mark as failed
                 failure_count = proxy_data.get("failure_count", 0)
@@ -710,7 +741,7 @@ class ProxyManager:
 
             # Log test result
             log_msg = f"Proxy {proxy_id} ({host}:{port}) test: " + \
-                      ("Successful" if is_working else "Failed")
+                ("Successful" if is_working else "Failed")
             if is_working and latency is not None:
                 log_msg += f", latency: {latency:.2f}ms"
             logger.debug(log_msg)
@@ -750,14 +781,16 @@ class ProxyManager:
 
             if not active_proxies:
                 # If no active proxies, try to test untested ones
-                untested_proxies = self.list_proxies(status=ProxyStatus.UNTESTED)
+                untested_proxies = self.list_proxies(
+                    status=ProxyStatus.UNTESTED)
                 for proxy in untested_proxies:
                     proxy_id = proxy.get("id")
                     try:
                         success, _ = self.test_proxy(proxy_id)
                         if success:
                             # Found a working proxy, update active proxies list
-                            active_proxies = self.list_proxies(status=ProxyStatus.ACTIVE)
+                            active_proxies = self.list_proxies(
+                                status=ProxyStatus.ACTIVE)
                             break
                     except Exception:
                         continue
@@ -792,7 +825,8 @@ class ProxyManager:
             if proxy_id:
                 proxy_data = self.proxies.get(proxy_id)
                 if not proxy_data:
-                    logger.warning(f"Proxy {proxy_id} not found, using best available")
+                    logger.warning(
+                        f"Proxy {proxy_id} not found, using best available")
                     proxy_data = self.get_best_proxy()
             else:
                 proxy_data = self.get_best_proxy()
@@ -831,7 +865,8 @@ class ProxyManager:
                     proxy_args['password'] = password
 
                 client.proxy = proxy_args
-                logger.info(f"Applied proxy {proxy_id} ({host}:{port}) to client")
+                logger.info(
+                    f"Applied proxy {proxy_id} ({host}:{port}) to client")
                 return True
 
             elif hasattr(client, 'session') and hasattr(client.session, 'proxy'):
@@ -843,7 +878,8 @@ class ProxyManager:
                     'username': username,
                     'password': password
                 }
-                logger.info(f"Applied proxy {proxy_id} ({host}:{port}) to client session")
+                logger.info(
+                    f"Applied proxy {proxy_id} ({host}:{port}) to client session")
                 return True
 
             else:
@@ -885,7 +921,8 @@ class ProxyManager:
             )
             self.rotation_thread.start()
 
-            logger.info(f"Enabled automatic proxy rotation every {interval_minutes} minutes")
+            logger.info(
+                f"Enabled automatic proxy rotation every {interval_minutes} minutes")
 
             # Update config
             self.config.set("proxy_rotation_enabled", True)
@@ -952,24 +989,27 @@ class ProxyManager:
         with self._lock:
             # Get current proxy info
             current_id = self.current_proxy_id
-            current_proxy = self.proxies.get(current_id) if current_id else None
+            current_proxy = self.proxies.get(
+                current_id) if current_id else None
 
             # Get list of active proxies excluding current one
             active_proxies = [p for p in self.list_proxies(status=ProxyStatus.ACTIVE)
-                             if p.get("id") != current_id]
+                              if p.get("id") != current_id]
 
             # If no active proxies other than current, try to find some
             if not active_proxies:
                 # Test some untested proxies
-                untested_proxies = self.list_proxies(status=ProxyStatus.UNTESTED)
-                for proxy in untested_proxies[:3]:  # Test up to 3 untested proxies
+                untested_proxies = self.list_proxies(
+                    status=ProxyStatus.UNTESTED)
+                # Test up to 3 untested proxies
+                for proxy in untested_proxies[:3]:
                     proxy_id = proxy.get("id")
                     try:
                         success, _ = self.test_proxy(proxy_id)
                         if success:
                             # Found a working proxy, update active proxies list
                             active_proxies = [p for p in self.list_proxies(status=ProxyStatus.ACTIVE)
-                                             if p.get("id") != current_id]
+                                              if p.get("id") != current_id]
                             break
                     except Exception:
                         continue
@@ -977,12 +1017,13 @@ class ProxyManager:
             # If still no other active proxies, try slow ones
             if not active_proxies:
                 active_proxies = [p for p in self.list_proxies(status=ProxyStatus.SLOW)
-                                 if p.get("id") != current_id]
+                                  if p.get("id") != current_id]
 
             # If no alternative proxies available, keep using current one
             if not active_proxies:
                 if current_proxy:
-                    logger.warning("No alternative proxies available for rotation, keeping current proxy")
+                    logger.warning(
+                        "No alternative proxies available for rotation, keeping current proxy")
                     return current_id
                 else:
                     logger.warning("No proxies available for rotation")
@@ -995,7 +1036,8 @@ class ProxyManager:
             # Update current proxy
             self.current_proxy_id = new_proxy_id
 
-            logger.info(f"Rotated proxy from {current_id or 'None'} to {new_proxy_id}")
+            logger.info(
+                f"Rotated proxy from {current_id or 'None'} to {new_proxy_id}")
             return new_proxy_id
 
     def import_proxies_from_file(self, file_path: str, format_type: str = "json") -> Tuple[int, int]:
@@ -1025,7 +1067,8 @@ class ProxyManager:
                 # Import from JSON format
                 proxies_data = self.file_manager.read_json(file_path)
                 if not isinstance(proxies_data, dict) and not isinstance(proxies_data, list):
-                    raise ValidationError("file", "Invalid JSON format for proxies file")
+                    raise ValidationError(
+                        "file", "Invalid JSON format for proxies file")
 
                 if isinstance(proxies_data, dict):
                     # Handle dictionary format {id -> proxy_data}
@@ -1042,7 +1085,8 @@ class ProxyManager:
                             region = proxy_data.get("region")
 
                             if not host or not port:
-                                logger.warning(f"Skipping proxy with missing host or port: {proxy_id}")
+                                logger.warning(
+                                    f"Skipping proxy with missing host or port: {proxy_id}")
                                 continue
 
                             # Add proxy
@@ -1059,7 +1103,8 @@ class ProxyManager:
                             imported_count += 1
 
                         except Exception as e:
-                            logger.error(f"Error importing proxy {proxy_id}: {e}")
+                            logger.error(
+                                f"Error importing proxy {proxy_id}: {e}")
 
                 elif isinstance(proxies_data, list):
                     # Handle list format [proxy_data, proxy_data, ...]
@@ -1076,7 +1121,8 @@ class ProxyManager:
                             region = proxy_data.get("region")
 
                             if not host or not port:
-                                logger.warning("Skipping proxy with missing host or port")
+                                logger.warning(
+                                    "Skipping proxy with missing host or port")
                                 continue
 
                             # Add proxy
@@ -1142,12 +1188,15 @@ class ProxyManager:
                                 imported_count += 1
 
                             except ValueError:
-                                logger.warning(f"Invalid port number in proxy entry: {line}")
+                                logger.warning(
+                                    f"Invalid port number in proxy entry: {line}")
                         else:
-                            logger.warning(f"Invalid proxy format (missing port): {line}")
+                            logger.warning(
+                                f"Invalid proxy format (missing port): {line}")
 
                     except Exception as e:
-                        logger.error(f"Error importing proxy from line '{line}': {e}")
+                        logger.error(
+                            f"Error importing proxy from line '{line}': {e}")
 
             elif format_type == "csv":
                 # Import from CSV format
@@ -1160,13 +1209,20 @@ class ProxyManager:
                     # Try to identify columns
                     if header:
                         header = [h.lower() for h in header]
-                        type_col = next((i for i, h in enumerate(header) if 'type' in h), None)
-                        host_col = next((i for i, h in enumerate(header) if 'host' in h or 'ip' in h), None)
-                        port_col = next((i for i, h in enumerate(header) if 'port' in h), None)
-                        user_col = next((i for i, h in enumerate(header) if 'user' in h), None)
-                        pass_col = next((i for i, h in enumerate(header) if 'pass' in h), None)
-                        label_col = next((i for i, h in enumerate(header) if 'label' in h or 'name' in h), None)
-                        region_col = next((i for i, h in enumerate(header) if 'region' in h or 'country' in h), None)
+                        type_col = next(
+                            (i for i, h in enumerate(header) if 'type' in h), None)
+                        host_col = next((i for i, h in enumerate(
+                            header) if 'host' in h or 'ip' in h), None)
+                        port_col = next(
+                            (i for i, h in enumerate(header) if 'port' in h), None)
+                        user_col = next(
+                            (i for i, h in enumerate(header) if 'user' in h), None)
+                        pass_col = next(
+                            (i for i, h in enumerate(header) if 'pass' in h), None)
+                        label_col = next((i for i, h in enumerate(
+                            header) if 'label' in h or 'name' in h), None)
+                        region_col = next((i for i, h in enumerate(
+                            header) if 'region' in h or 'country' in h), None)
                     else:
                         # No header, assume fixed order: type,host,port,username,password,label,region
                         type_col, host_col, port_col, user_col, pass_col, label_col, region_col = 0, 1, 2, 3, 4, 5, 6
@@ -1175,22 +1231,29 @@ class ProxyManager:
                         total_count += 1
                         try:
                             # Extract values, with fallbacks for missing columns
-                            proxy_type = row[type_col] if type_col is not None and type_col < len(row) else "socks5"
-                            host = row[host_col] if host_col is not None and host_col < len(row) else None
+                            proxy_type = row[type_col] if type_col is not None and type_col < len(
+                                row) else "socks5"
+                            host = row[host_col] if host_col is not None and host_col < len(
+                                row) else None
 
                             if port_col is not None and port_col < len(row):
                                 try:
                                     port = int(row[port_col])
                                 except ValueError:
-                                    logger.warning(f"Invalid port value in row: {row}")
+                                    logger.warning(
+                                        f"Invalid port value in row: {row}")
                                     continue
                             else:
                                 continue  # Port is required
 
-                            username = row[user_col] if user_col is not None and user_col < len(row) else None
-                            password = row[pass_col] if pass_col is not None and pass_col < len(row) else None
-                            label = row[label_col] if label_col is not None and label_col < len(row) else None
-                            region = row[region_col] if region_col is not None and region_col < len(row) else None
+                            username = row[user_col] if user_col is not None and user_col < len(
+                                row) else None
+                            password = row[pass_col] if pass_col is not None and pass_col < len(
+                                row) else None
+                            label = row[label_col] if label_col is not None and label_col < len(
+                                row) else None
+                            region = row[region_col] if region_col is not None and region_col < len(
+                                row) else None
 
                             if not host:
                                 logger.warning(f"Missing host in row: {row}")
@@ -1210,15 +1273,18 @@ class ProxyManager:
                             imported_count += 1
 
                         except Exception as e:
-                            logger.error(f"Error importing proxy from row '{row}': {e}")
+                            logger.error(
+                                f"Error importing proxy from row '{row}': {e}")
 
             else:
-                raise ValidationError("format_type", f"Unsupported import format: {format_type}")
+                raise ValidationError(
+                    "format_type", f"Unsupported import format: {format_type}")
 
             # Save changes
             self._save_proxies()
 
-            logger.info(f"Imported {imported_count}/{total_count} proxies from {file_path}")
+            logger.info(
+                f"Imported {imported_count}/{total_count} proxies from {file_path}")
             return total_count, imported_count
 
         except Exception as e:
@@ -1226,8 +1292,8 @@ class ProxyManager:
             raise
 
     def export_proxies_to_file(self, file_path: str, format_type: str = "json",
-                              include_credentials: bool = False,
-                              filter_status: Optional[ProxyStatus] = None) -> int:
+                               include_credentials: bool = False,
+                               filter_status: Optional[ProxyStatus] = None) -> int:
         """
         Export proxies to a file.
 
@@ -1259,7 +1325,8 @@ class ProxyManager:
                 export_data = {}
 
                 for proxy in proxies_to_export:
-                    proxy_id = proxy.pop("id")  # Remove ID from data to avoid duplicates
+                    # Remove ID from data to avoid duplicates
+                    proxy_id = proxy.pop("id")
 
                     # Remove credentials if not including them
                     if not include_credentials:
@@ -1278,7 +1345,8 @@ class ProxyManager:
                 # Export to plain text format (one proxy per line)
                 with open(file_path, 'w') as f:
                     for proxy in proxies_to_export:
-                        proxy_type = ProxyType.to_str(proxy.get("type", "socks5"))
+                        proxy_type = ProxyType.to_str(
+                            proxy.get("type", "socks5"))
                         host = proxy.get("host")
                         port = proxy.get("port")
 
@@ -1297,7 +1365,8 @@ class ProxyManager:
                         proxy_str += f"{host}:{port}"
 
                         # Add comments for status and label
-                        status = ProxyStatus.to_str(proxy.get("status", "unknown"))
+                        status = ProxyStatus.to_str(
+                            proxy.get("status", "unknown"))
                         label = proxy.get("label", "")
 
                         if label:
@@ -1318,7 +1387,8 @@ class ProxyManager:
                     if include_credentials:
                         fieldnames.extend(["username", "password"])
 
-                    fieldnames.extend(["label", "region", "status", "latency", "success_count", "failure_count"])
+                    fieldnames.extend(
+                        ["label", "region", "status", "latency", "success_count", "failure_count"])
 
                     writer = csv.DictWriter(f, fieldnames=fieldnames)
                     writer.writeheader()
@@ -1344,9 +1414,11 @@ class ProxyManager:
                         writer.writerow(row_data)
 
             else:
-                raise ValidationError("format_type", f"Unsupported export format: {format_type}")
+                raise ValidationError(
+                    "format_type", f"Unsupported export format: {format_type}")
 
-            logger.info(f"Exported {len(proxies_to_export)} proxies to {file_path}")
+            logger.info(
+                f"Exported {len(proxies_to_export)} proxies to {file_path}")
             return len(proxies_to_export)
 
         except Exception as e:
@@ -1377,7 +1449,8 @@ class ProxyManager:
             self.proxies[proxy_id]["status"] = status
             self._save_proxies()
 
-            logger.info(f"Updated proxy {proxy_id} status to {ProxyStatus.to_str(status)}")
+            logger.info(
+                f"Updated proxy {proxy_id} status to {ProxyStatus.to_str(status)}")
             return True
 
     def cleanup(self):
