@@ -1,4 +1,10 @@
-# pylint: disable=missing-module-docstring
+"""
+Logging Manager Module
+
+This module provides a centralized logging facility for the Telegram Adder application.
+It handles file and console logging with support for color formatting and JSON output.
+"""
+
 import logging
 import os
 import sys
@@ -190,22 +196,22 @@ class LoggingManager:
         self.healthy = True
         self._initialized = True
 
-    def get_logger(self, name):
+    def get_logger(self, logger_name):
         """
         Get a logger with the specified name
 
         Parameters:
-            name (str): Logger name
+            logger_name (str): Logger name
 
         Returns:
             logging.Logger: Configured logger
         """
         # If logger already exists, return it
-        if name in self.loggers:
-            return self.loggers[name]
+        if logger_name in self.loggers:
+            return self.loggers[logger_name]
 
         # Create new logger
-        local_logger = logging.getLogger(name)
+        local_logger = logging.getLogger(logger_name)
         local_logger.setLevel(self.default_level)
 
         # Clear existing handlers to avoid duplicates
@@ -259,7 +265,7 @@ class LoggingManager:
             # Handle general error in logger setup
             self.healthy = False
             sys.stderr.write(
-                f"General error in setting up logger {name}: {str(e)}\n")
+                f"General error in setting up logger {logger_name}: {str(e)}\n")
 
             # Create at least a console handler to ensure functionality
             try:
@@ -271,7 +277,7 @@ class LoggingManager:
                 pass
 
         # Store logger in dictionary
-        self.loggers[name] = local_logger
+        self.loggers[logger_name] = local_logger
 
         # Log status if logging system is unhealthy
         if not self.healthy:
@@ -361,7 +367,7 @@ class LoggingManager:
         if enable:
             # Add JSON handlers to loggers
             if logger_name is None:
-                for name, log_instance in self.loggers.items():
+                for _, log_instance in self.loggers.items():
                     # Check if JSON handler doesn't already exist
                     if not any(isinstance(h, logging.FileHandler) and
                                h.formatter == self.json_formatter
@@ -372,23 +378,23 @@ class LoggingManager:
                 # Check if JSON handler doesn't already exist
                 if not any(isinstance(h, logging.FileHandler) and
                            h.formatter == self.json_formatter
-                           for h in logger.handlers):
-                    self._add_json_handler(logger)
+                           for h in log_instance.handlers):
+                    self._add_json_handler(log_instance)
         else:
             # Remove JSON handlers from loggers
             if logger_name is None:
-                for name, log_instance in self.loggers.items():
+                for _, log_instance in self.loggers.items():
                     for handler in list(log_instance.handlers):
                         if (isinstance(handler, logging.FileHandler) and
                                 handler.formatter == self.json_formatter):
-                            logger.removeHandler(handler)
+                            log_instance.removeHandler(handler)
                             handler.close()
             elif logger_name in self.loggers:
                 log_instance = self.loggers[logger_name]
                 for handler in list(log_instance.handlers):
-                    if isinstance(handler,
-                                  logging.FileHandler) and handler.formatter == self.json_formatter:
-                        logger.removeHandler(handler)
+                    if (isinstance(handler, logging.FileHandler) and
+                            handler.formatter == self.json_formatter):
+                        log_instance.removeHandler(handler)
                         handler.close()
 
     def _add_json_handler(self, logger):
@@ -442,12 +448,12 @@ class LoggingManager:
         """
         Close all loggers and release resources
         """
-        for logger_name, logger in self.loggers.items():
+        for _, logger in self.loggers.items():
             for handler in logger.handlers:
                 try:
                     handler.close()
                     logger.removeHandler(handler)
-                except:
+                except (ValueError, TypeError, AttributeError):
                     pass
 
         self.loggers.clear()
@@ -475,71 +481,72 @@ class LoggingManager:
         Returns:
             tuple: (healthy, issues) health status and list of issues
         """
-        issues = []
+        health_issues = []
 
         # Check log directory
         if not os.path.exists(self.log_dir):
-            issues.append(f"Log directory {self.log_dir} does not exist")
+            health_issues.append(
+                f"Log directory {self.log_dir} does not exist")
 
         # Check log file access
         if os.path.exists(self.log_file_path):
             if not os.access(self.log_file_path, os.W_OK):
-                issues.append(
+                health_issues.append(
                     f"No write access to log file {self.log_file_path}")
         else:
             try:
                 # Try to create file
-                with open(self.log_file_path, 'a'):
+                with open(self.log_file_path, 'a', encoding='utf-8'):
                     pass
                 os.remove(self.log_file_path)  # Remove test file
             except (IOError, OSError, ValueError, TypeError) as e:
-                issues.append(
+                health_issues.append(
                     f"Error creating log file {self.log_file_path}: {str(e)}")
 
         # Check JSON file if enabled
         if self.json_log_enabled:
             if os.path.exists(self.json_log_file_path):
                 if not os.access(self.json_log_file_path, os.W_OK):
-                    issues.append(
+                    health_issues.append(
                         f"No write access to JSON file {self.json_log_file_path}")
             else:
                 try:
                     # Try to create file
-                    with open(self.json_log_file_path, 'a'):
+                    with open(self.json_log_file_path, 'a', encoding='utf-8'):
                         pass
                     os.remove(self.json_log_file_path)  # Remove test file
                 except (IOError, OSError, ValueError, TypeError) as e:
-                    issues.append(
+                    health_issues.append(
                         f"Error creating JSON file {self.json_log_file_path}: {str(e)}")
 
         # Check overall status
-        healthy = len(issues) == 0 and self.healthy
+        is_healthy = len(health_issues) == 0 and self.healthy
 
-        return healthy, issues
+        return is_healthy, health_issues
 
 
 # Usage examples
-def get_logger(name="AdderRepo"):
+def get_logger(logger_name="AdderRepo"):
     """
     Helper function to get a logger
 
     Parameters:
-        name (str): Logger name
+        logger_name (str): Logger name
 
     Returns:
         logging.Logger: Configured logger
     """
     # Use default values
     logging_manager = LoggingManager()
-    return logging_manager.get_logger(name)
+    return logging_manager.get_logger(logger_name)
 
 
-def get_json_logger(name="AdderRepo", json_file=None):
+def get_json_logger(logger_name="AdderRepo", json_file=None):
     """
     Helper function to get a logger with JSON capability
 
     Parameters:
-        name (str): Logger name
+        logger_name (str): Logger name
         json_file (str): JSON file name (optional)
 
     Returns:
@@ -548,7 +555,7 @@ def get_json_logger(name="AdderRepo", json_file=None):
     # Use default values with JSON enabled
     logging_manager = LoggingManager(
         json_log_enabled=True, json_log_file=json_file)
-    return logging_manager.get_logger(name)
+    return logging_manager.get_logger(logger_name)
 
 
 # Simple test example
@@ -556,22 +563,22 @@ if __name__ == "__main__":
     # This code only runs when the file is executed directly
 
     # Regular logger
-    logger = get_logger("TestLogger")
+    test_logger = get_logger("TestLogger")
 
-    logger.debug("This is a debug message")
-    logger.info("This is an info message")
-    logger.warning("This is a warning message")
-    logger.error("This is an error message")
-    logger.critical("This is a critical message")
+    test_logger.debug("This is a debug message")
+    test_logger.info("This is an info message")
+    test_logger.warning("This is a warning message")
+    test_logger.error("This is an error message")
+    test_logger.critical("This is a critical message")
 
     # Logger with JSON support
-    json_logger = get_json_logger("JSONLogger")
+    json_test_logger = get_json_logger("JSONLogger")
 
-    json_logger.info("This is a message with JSON format")
+    json_test_logger.info("This is a message with JSON format")
 
     # Log with additional data
-    logging_manager = LoggingManager()
-    logging_manager.log_with_data(
+    test_manager = LoggingManager()
+    test_manager.log_with_data(
         "JSONLogger",
         logging.INFO,
         "Log message with custom data",
@@ -585,11 +592,11 @@ if __name__ == "__main__":
     )
 
     # Check logging system health
-    healthy, issues = logging_manager.health_check()
+    system_healthy, system_issues = test_manager.health_check()
     print(
-        f"Logging system health status: {'Healthy' if healthy else 'Unhealthy'}")
-    if issues:
+        f"Logging system health status: {'Healthy' if system_healthy else 'Unhealthy'}")
+    if system_issues:
         print("Identified issues:")
-        for issue in issues:
+        for issue in system_issues:
             print(f"- {issue}")
     print("Logging test completed. Check log files in the logs directory.")
