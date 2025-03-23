@@ -247,9 +247,10 @@ class SocketHandler(logging.handlers.SocketHandler):
     """
 
     def __init__(self, host, port):
+        # pylint: disable=useless-super-delegation
         super().__init__(host, port)
 
-    def makeSocket(self):
+    def makeSocket(self, timeout=1):
         """
         Create a socket that can be used for logging.
 
