@@ -9,10 +9,8 @@ insightful reports to help optimize account usage and operation strategies.
 
 import os
 import json
-import logging
 import datetime
-from typing import Dict, List, Any, Optional, Union, Tuple
-from pathlib import Path
+from typing import Dict, Any, Optional, Union
 import statistics
 import time
 import uuid
@@ -21,13 +19,13 @@ from enum import Enum, auto
 
 try:
     from data.file_manager import JsonFileManager, get_file_manager
-    from data.session_manager import SessionManager, get_session_manager
+    from data.session_manager import get_session_manager
     from logging_.logging_manager import get_logger
     from core.config import Config
     from core.exceptions import FileReadError, FileWriteError
-    from models.stats import OperationStats, AccountStats
 except ImportError:
     print("Warning: Some dependencies could not be imported. Analytics functionality may be limited.")
+
 
 class MetricType(Enum):
     ACCOUNT = auto()
@@ -36,6 +34,7 @@ class MetricType(Enum):
     PERFORMANCE = auto()
     USER = auto()
     GROUP = auto()
+
 
 class AnalyticsManager:
     _instance = None
@@ -59,8 +58,10 @@ class AnalyticsManager:
             self.logger = get_logger("AnalyticsManager")
             self.config = Config()
 
-            self.data_dir = data_dir or os.path.join(os.getcwd(), "analytics_data")
-            self.file_manager = file_manager or get_file_manager('json', base_dir=self.data_dir)
+            self.data_dir = data_dir or os.path.join(
+                os.getcwd(), "analytics_data")
+            self.file_manager = file_manager or get_file_manager(
+                'json', base_dir=self.data_dir)
             self.metrics_file = metrics_file or "metrics.json"
             self.retention_days = retention_days
 
@@ -86,17 +87,20 @@ class AnalyticsManager:
     def _load_metrics(self) -> None:
         metrics_path = os.path.join(self.data_dir, self.metrics_file)
         try:
-            loaded_metrics = self.file_manager.read_json(metrics_path, default={})
+            loaded_metrics = self.file_manager.read_json(
+                metrics_path, default={})
             if loaded_metrics:
                 self.metrics.update(loaded_metrics)
                 self.logger.debug(f"Loaded metrics from {metrics_path}")
         except (FileReadError, json.JSONDecodeError) as e:
-            self.logger.warning(f"Could not load metrics from {metrics_path}: {e}")
+            self.logger.warning(
+                f"Could not load metrics from {metrics_path}: {e}")
 
     def _save_metrics(self) -> bool:
         metrics_path = os.path.join(self.data_dir, self.metrics_file)
         try:
-            self.file_manager.write_json(metrics_path, self.metrics, make_backup=True)
+            self.file_manager.write_json(
+                metrics_path, self.metrics, make_backup=True)
             self.logger.debug(f"Saved metrics to {metrics_path}")
             return True
         except (FileWriteError, json.JSONDecodeError) as e:
@@ -104,7 +108,7 @@ class AnalyticsManager:
             return False
 
     def record_account_metric(self, account_id: str, metric_name: str,
-                             value: Any, category: Optional[str] = None) -> None:
+                              value: Any, category: Optional[str] = None) -> None:
         if account_id not in self.metrics["accounts"]:
             self.metrics["accounts"][account_id] = {
                 "first_seen": datetime.datetime.now().isoformat(),
@@ -129,7 +133,7 @@ class AnalyticsManager:
         self._save_metrics()
 
     def record_operation_metric(self, operation_id: str, metric_name: str,
-                               value: Any, operation_type: Optional[str] = None) -> None:
+                                value: Any, operation_type: Optional[str] = None) -> None:
         if operation_id not in self.metrics["operations"]:
             self.metrics["operations"][operation_id] = {
                 "start_time": datetime.datetime.now().isoformat(),
@@ -151,7 +155,7 @@ class AnalyticsManager:
         self._save_metrics()
 
     def record_error(self, error_type: str, error_message: str,
-                    context: Optional[Dict[str, Any]] = None) -> None:
+                     context: Optional[Dict[str, Any]] = None) -> None:
         if error_type not in self.metrics["errors"]:
             self.metrics["errors"][error_type] = []
 
@@ -165,7 +169,7 @@ class AnalyticsManager:
         self._save_metrics()
 
     def record_performance_metric(self, metric_name: str, value: Any,
-                                 component: Optional[str] = None) -> None:
+                                  component: Optional[str] = None) -> None:
         component = component or "general"
 
         if component not in self.metrics["performance"]:
@@ -179,7 +183,8 @@ class AnalyticsManager:
             "value": value
         }
 
-        self.metrics["performance"][component][metric_name].append(metric_entry)
+        self.metrics["performance"][component][metric_name].append(
+            metric_entry)
         self._save_metrics()
 
     def start_timer(self, operation_name: str, context: Optional[Dict[str, Any]] = None) -> str:
@@ -227,7 +232,7 @@ class AnalyticsManager:
                     continue
 
                 numeric_values = [entry["value"] for entry in values
-                                if isinstance(entry["value"], (int, float))]
+                                  if isinstance(entry["value"], (int, float))]
 
                 if numeric_values:
                     stats["metrics_summary"][category][metric_name] = {
@@ -263,7 +268,7 @@ class AnalyticsManager:
                 continue
 
             numeric_values = [entry["value"] for entry in values
-                            if isinstance(entry["value"], (int, float))]
+                              if isinstance(entry["value"], (int, float))]
 
             if numeric_values:
                 stats["metrics_summary"][metric_name] = {
@@ -322,7 +327,7 @@ class AnalyticsManager:
                     continue
 
                 numeric_values = [entry["value"] for entry in values
-                                if isinstance(entry["value"], (int, float))]
+                                  if isinstance(entry["value"], (int, float))]
 
                 if numeric_values:
                     performance_stats[component][metric_name] = {
@@ -335,18 +340,21 @@ class AnalyticsManager:
 
                     # Calculate standard deviation if more than one value
                     if len(numeric_values) > 1:
-                        performance_stats[component][metric_name]["std_dev"] = statistics.stdev(numeric_values)
+                        performance_stats[component][metric_name]["std_dev"] = statistics.stdev(
+                            numeric_values)
 
                     # Calculate linear regression (simple trend)
                     if len(numeric_values) > 2:
                         x = list(range(len(numeric_values)))
                         sum_x = sum(x)
                         sum_y = sum(numeric_values)
-                        sum_xy = sum(x_i * y_i for x_i, y_i in zip(x, numeric_values))
+                        sum_xy = sum(x_i * y_i for x_i,
+                                     y_i in zip(x, numeric_values))
                         sum_xx = sum(x_i ** 2 for x_i in x)
                         n = len(numeric_values)
 
-                        slope = (n * sum_xy - sum_x * sum_y) / (n * sum_xx - sum_x ** 2)
+                        slope = (n * sum_xy - sum_x * sum_y) / \
+                            (n * sum_xx - sum_x ** 2)
                         performance_stats[component][metric_name]["trend"] = "increasing" if slope > 0 else "decreasing"
                         performance_stats[component][metric_name]["trend_value"] = slope
 
@@ -417,10 +425,12 @@ class AnalyticsManager:
                         duration_count += 1
 
         if len(self.metrics["operations"]) > 0:
-            report["operation_summary"]["success_rate"] = (successful_operations / len(self.metrics["operations"])) * 100
+            report["operation_summary"]["success_rate"] = (
+                successful_operations / len(self.metrics["operations"])) * 100
 
         if duration_count > 0:
-            report["operation_summary"]["average_duration"] = total_duration / duration_count
+            report["operation_summary"]["average_duration"] = total_duration / \
+                duration_count
 
         # Performance summary
         performance_stats = self.get_performance_stats()
@@ -494,7 +504,8 @@ class AnalyticsManager:
             if "metrics" in operation_data and "success" in operation_data["metrics"]:
                 for entry in operation_data["metrics"]["success"]:
                     try:
-                        timestamp = datetime.datetime.fromisoformat(entry["timestamp"])
+                        timestamp = datetime.datetime.fromisoformat(
+                            entry["timestamp"])
                         hour = str(timestamp.hour)
                         if entry["value"]:
                             report["success_by_hour"][hour] += 1
@@ -507,12 +518,14 @@ class AnalyticsManager:
             type_stats = report["operation_types"][op_type]
 
             if type_stats["duration_count"] > 0:
-                type_stats["average_duration"] = type_stats["total_duration"] / type_stats["duration_count"]
+                type_stats["average_duration"] = type_stats["total_duration"] / \
+                    type_stats["duration_count"]
             else:
                 type_stats["average_duration"] = 0
 
             if type_stats["count"] > 0:
-                type_stats["success_rate"] = (type_stats["success_count"] / type_stats["count"]) * 100
+                type_stats["success_rate"] = (
+                    type_stats["success_count"] / type_stats["count"]) * 100
             else:
                 type_stats["success_rate"] = 0
 
@@ -521,7 +534,8 @@ class AnalyticsManager:
         for hour in report["success_by_hour"]:
             if report["success_count_by_hour"][hour] > 0:
                 report["success_rate_by_hour"][hour] = (
-                    report["success_by_hour"][hour] / report["success_count_by_hour"][hour]
+                    report["success_by_hour"][hour] /
+                    report["success_count_by_hour"][hour]
                 ) * 100
             else:
                 report["success_rate_by_hour"][hour] = 0
@@ -543,7 +557,8 @@ class AnalyticsManager:
         for error_type, errors in self.metrics["errors"].items():
             for error in errors:
                 try:
-                    timestamp = datetime.datetime.fromisoformat(error["timestamp"])
+                    timestamp = datetime.datetime.fromisoformat(
+                        error["timestamp"])
                     date_str = timestamp.strftime("%Y-%m-%d")
                     hour_str = timestamp.strftime("%Y-%m-%d %H")
 
@@ -581,8 +596,10 @@ class AnalyticsManager:
                     pass
 
         # Sort timelines by date/hour
-        report["error_timeline"]["daily"] = dict(sorted(report["error_timeline"]["daily"].items()))
-        report["error_timeline"]["hourly"] = dict(sorted(report["error_timeline"]["hourly"].items()))
+        report["error_timeline"]["daily"] = dict(
+            sorted(report["error_timeline"]["daily"].items()))
+        report["error_timeline"]["hourly"] = dict(
+            sorted(report["error_timeline"]["hourly"].items()))
 
         return report
 
@@ -596,7 +613,8 @@ class AnalyticsManager:
         }
 
         # Generate performance timeline data
-        timeline_metrics = ["response_time", "duration", "cpu_usage", "memory_usage"]
+        timeline_metrics = ["response_time",
+                            "duration", "cpu_usage", "memory_usage"]
 
         for component, metrics in self.metrics["performance"].items():
             for metric_name, values in metrics.items():
@@ -607,7 +625,8 @@ class AnalyticsManager:
                     for entry in values:
                         if isinstance(entry["value"], (int, float)):
                             try:
-                                timestamp = datetime.datetime.fromisoformat(entry["timestamp"])
+                                timestamp = datetime.datetime.fromisoformat(
+                                    entry["timestamp"])
                                 report["performance_timeline"][metric_key].append({
                                     "timestamp": entry["timestamp"],
                                     "value": entry["value"]
@@ -685,15 +704,19 @@ class AnalyticsManager:
         # Add success rate recommendations from operation stats
         if hasattr(self, "_generate_operations_report"):
             operations_report = self._generate_operations_report()
-            success_rate_by_hour = operations_report.get("success_rate_by_hour", {})
+            success_rate_by_hour = operations_report.get(
+                "success_rate_by_hour", {})
 
             # Find best and worst hours
             if success_rate_by_hour:
-                best_hours = sorted(success_rate_by_hour.items(), key=lambda x: x[1], reverse=True)[:3]
-                worst_hours = sorted(success_rate_by_hour.items(), key=lambda x: x[1])[:3]
+                best_hours = sorted(success_rate_by_hour.items(
+                ), key=lambda x: x[1], reverse=True)[:3]
+                worst_hours = sorted(
+                    success_rate_by_hour.items(), key=lambda x: x[1])[:3]
 
                 if best_hours and best_hours[0][1] > 0:
-                    best_hours_list = [f"{h}:00-{int(h)+1}:00" for h, _ in best_hours if float(_) > 0]
+                    best_hours_list = [
+                        f"{h}:00-{int(h)+1}:00" for h, _ in best_hours if float(_) > 0]
                     if best_hours_list:
                         report["recommendations"].append({
                             "component": "scheduling",
@@ -702,7 +725,8 @@ class AnalyticsManager:
                         })
 
                 if worst_hours and worst_hours[0][1] < 50:
-                    worst_hours_list = [f"{h}:00-{int(h)+1}:00" for h, _ in worst_hours if float(_) < 50]
+                    worst_hours_list = [
+                        f"{h}:00-{int(h)+1}:00" for h, _ in worst_hours if float(_) < 50]
                     if worst_hours_list:
                         report["recommendations"].append({
                             "component": "scheduling",
@@ -713,7 +737,7 @@ class AnalyticsManager:
         return report
 
     def export_report(self, report_type: str = "general", format: str = "json",
-                     file_path: Optional[str] = None) -> Union[str, Dict[str, Any]]:
+                      file_path: Optional[str] = None) -> Union[str, Dict[str, Any]]:
         report = self.generate_report(report_type)
 
         if format.lower() == "json":
@@ -722,7 +746,8 @@ class AnalyticsManager:
                     self.file_manager.write_json(file_path, report)
                     return f"Report saved to {file_path}"
                 except Exception as e:
-                    self.logger.error(f"Error saving report to {file_path}: {e}")
+                    self.logger.error(
+                        f"Error saving report to {file_path}: {e}")
                     return {"error": f"Failed to save report: {str(e)}"}
             return report
 
@@ -735,7 +760,8 @@ class AnalyticsManager:
                         f.write(text_report)
                     return f"Report saved to {file_path}"
                 except Exception as e:
-                    self.logger.error(f"Error saving report to {file_path}: {e}")
+                    self.logger.error(
+                        f"Error saving report to {file_path}: {e}")
                     return {"error": f"Failed to save report: {str(e)}"}
             return text_report
 
@@ -767,18 +793,25 @@ class AnalyticsManager:
         lines.append("ACCOUNT SUMMARY")
         lines.append("-" * 30)
         account_summary = report.get("account_summary", {})
-        lines.append(f"Total Accounts: {account_summary.get('total_accounts', 0)}")
-        lines.append(f"Active Accounts: {account_summary.get('active_accounts', 0)}")
-        lines.append(f"Blocked Accounts: {account_summary.get('blocked_accounts', 0)}")
-        lines.append(f"Daily Limit Reached: {account_summary.get('daily_limit_reached_accounts', 0)}")
+        lines.append(
+            f"Total Accounts: {account_summary.get('total_accounts', 0)}")
+        lines.append(
+            f"Active Accounts: {account_summary.get('active_accounts', 0)}")
+        lines.append(
+            f"Blocked Accounts: {account_summary.get('blocked_accounts', 0)}")
+        lines.append(
+            f"Daily Limit Reached: {account_summary.get('daily_limit_reached_accounts', 0)}")
         lines.append("")
 
         lines.append("OPERATION SUMMARY")
         lines.append("-" * 30)
         operation_summary = report.get("operation_summary", {})
-        lines.append(f"Total Operations: {operation_summary.get('total_operations', 0)}")
-        lines.append(f"Success Rate: {operation_summary.get('success_rate', 0):.2f}%")
-        lines.append(f"Average Duration: {operation_summary.get('average_duration', 0):.2f} seconds")
+        lines.append(
+            f"Total Operations: {operation_summary.get('total_operations', 0)}")
+        lines.append(
+            f"Success Rate: {operation_summary.get('success_rate', 0):.2f}%")
+        lines.append(
+            f"Average Duration: {operation_summary.get('average_duration', 0):.2f} seconds")
         lines.append("")
 
         lines.append("ERROR SUMMARY")
@@ -798,7 +831,8 @@ class AnalyticsManager:
         recent_errors = error_summary.get("recent_errors", [])
         if recent_errors:
             for error in recent_errors[:5]:  # Show only 5 most recent
-                lines.append(f"[{error.get('timestamp', '')}] {error.get('type', '')}: {error.get('message', '')}")
+                lines.append(
+                    f"[{error.get('timestamp', '')}] {error.get('type', '')}: {error.get('message', '')}")
         else:
             lines.append("No recent errors")
 
@@ -828,7 +862,8 @@ class AnalyticsManager:
         for account_id, account_data in accounts.items():
             lines.append(f"ACCOUNT: {account_id}")
             lines.append("-" * 30)
-            lines.append(f"First Seen: {account_data.get('first_seen', 'Unknown')}")
+            lines.append(
+                f"First Seen: {account_data.get('first_seen', 'Unknown')}")
 
             metrics_summary = account_data.get("metrics_summary", {})
             for category, metrics in metrics_summary.items():
@@ -840,7 +875,8 @@ class AnalyticsManager:
                         lines.append(f"    Max: {stats.get('max', 'N/A')}")
                         lines.append(f"    Avg: {stats.get('avg', 'N/A')}")
                         lines.append(f"    Count: {stats.get('count', 'N/A')}")
-                        lines.append(f"    Latest: {stats.get('latest', 'N/A')}")
+                        lines.append(
+                            f"    Latest: {stats.get('latest', 'N/A')}")
                     else:
                         lines.append(f"  {metric_name}: {stats}")
 
@@ -864,15 +900,18 @@ class AnalyticsManager:
             lines.append(f"  Count: {stats.get('count', 0)}")
             lines.append(f"  Success Count: {stats.get('success_count', 0)}")
             lines.append(f"  Failure Count: {stats.get('failure_count', 0)}")
-            lines.append(f"  Success Rate: {stats.get('success_rate', 0):.2f}%")
-            lines.append(f"  Average Duration: {stats.get('average_duration', 0):.2f} seconds")
+            lines.append(
+                f"  Success Rate: {stats.get('success_rate', 0):.2f}%")
+            lines.append(
+                f"  Average Duration: {stats.get('average_duration', 0):.2f} seconds")
             lines.append("")
 
         lines.append("SUCCESS RATE BY HOUR")
         lines.append("-" * 30)
         success_rate_by_hour = report.get("success_rate_by_hour", {})
         for hour in sorted(success_rate_by_hour.keys()):
-            lines.append(f"  {hour}:00 - {int(hour)+1}:00: {success_rate_by_hour[hour]:.2f}%")
+            lines.append(
+                f"  {hour}:00 - {int(hour)+1}:00: {success_rate_by_hour[hour]:.2f}%")
 
         lines.append("\nOPERATION DETAILS")
         lines.append("-" * 30)
@@ -881,14 +920,16 @@ class AnalyticsManager:
         for i, (operation_id, operation_data) in enumerate(list(operations.items())[:5]):
             lines.append(f"Operation ID: {operation_id}")
             lines.append(f"Type: {operation_data.get('type', 'Unknown')}")
-            lines.append(f"Start Time: {operation_data.get('start_time', 'Unknown')}")
+            lines.append(
+                f"Start Time: {operation_data.get('start_time', 'Unknown')}")
 
             metrics_summary = operation_data.get("metrics_summary", {})
             if metrics_summary:
                 lines.append("Metrics:")
                 for metric_name, stats in metrics_summary.items():
                     if isinstance(stats, dict) and "avg" in stats:
-                        lines.append(f"  {metric_name}: {stats.get('avg', 'N/A')} (avg)")
+                        lines.append(
+                            f"  {metric_name}: {stats.get('avg', 'N/A')} (avg)")
                     else:
                         lines.append(f"  {metric_name}: {stats}")
 
@@ -924,14 +965,16 @@ class AnalyticsManager:
         recent_errors = error_summary.get("recent_errors", [])
         if recent_errors:
             for error in recent_errors:
-                lines.append(f"[{error.get('timestamp', '')}] {error.get('type', '')}: {error.get('message', '')}")
+                lines.append(
+                    f"[{error.get('timestamp', '')}] {error.get('type', '')}: {error.get('message', '')}")
         else:
             lines.append("No recent errors")
 
         lines.append("\nERROR TIMELINE (DAILY)")
         lines.append("-" * 30)
         daily_timeline = report.get("error_timeline", {}).get("daily", {})
-        for date, errors in sorted(daily_timeline.items())[:10]:  # Last 10 days
+        # Last 10 days
+        for date, errors in sorted(daily_timeline.items())[:10]:
             total = sum(errors.values())
             lines.append(f"{date}: {total} errors")
             for error_type, count in errors.items():
@@ -942,8 +985,8 @@ class AnalyticsManager:
         correlations = report.get("error_correlations", {})
         # Show top 10 correlations
         top_correlations = sorted(correlations.items(),
-                                 key=lambda x: sum(x[1].values()),
-                                 reverse=True)[:10]
+                                  key=lambda x: sum(x[1].values()),
+                                  reverse=True)[:10]
         for context, error_counts in top_correlations:
             total = sum(error_counts.values())
             lines.append(f"{context}: {total} errors")
@@ -982,9 +1025,11 @@ class AnalyticsManager:
         bottlenecks = report.get("bottlenecks", [])
         if bottlenecks:
             for bottleneck in bottlenecks:
-                lines.append(f"Component: {bottleneck.get('component', 'Unknown')}")
+                lines.append(
+                    f"Component: {bottleneck.get('component', 'Unknown')}")
                 lines.append(f"Metric: {bottleneck.get('metric', 'Unknown')}")
-                lines.append(f"Severity: {bottleneck.get('severity', 'Unknown')}")
+                lines.append(
+                    f"Severity: {bottleneck.get('severity', 'Unknown')}")
 
                 stats = bottleneck.get("stats", {})
                 if stats:
@@ -1004,9 +1049,12 @@ class AnalyticsManager:
         recommendations = report.get("recommendations", [])
         if recommendations:
             for i, recommendation in enumerate(recommendations):
-                lines.append(f"{i+1}. Component: {recommendation.get('component', 'Unknown')}")
-                lines.append(f"   Issue: {recommendation.get('issue', 'Unknown')}")
-                lines.append(f"   Recommendation: {recommendation.get('recommendation', 'Unknown')}")
+                lines.append(
+                    f"{i+1}. Component: {recommendation.get('component', 'Unknown')}")
+                lines.append(
+                    f"   Issue: {recommendation.get('issue', 'Unknown')}")
+                lines.append(
+                    f"   Recommendation: {recommendation.get('recommendation', 'Unknown')}")
                 lines.append("")
         else:
             lines.append("No recommendations available")
@@ -1039,14 +1087,16 @@ class AnalyticsManager:
                         for metric_category in list(self.metrics["accounts"][account_id]["metrics"].keys()):
                             for metric_name in list(self.metrics["accounts"][account_id]["metrics"][metric_category].keys()):
                                 values = self.metrics["accounts"][account_id]["metrics"][metric_category][metric_name]
-                                new_values = [v for v in values if v.get("timestamp", "") >= cutoff_str]
+                                new_values = [v for v in values if v.get(
+                                    "timestamp", "") >= cutoff_str]
                                 removed_count += len(values) - len(new_values)
                                 self.metrics["accounts"][account_id]["metrics"][metric_category][metric_name] = new_values
 
             elif category == "operations":
                 # For operations, check start_time and clean up metrics
                 for operation_id in list(self.metrics["operations"].keys()):
-                    start_time = self.metrics["operations"][operation_id].get("start_time", "")
+                    start_time = self.metrics["operations"][operation_id].get(
+                        "start_time", "")
                     if start_time < cutoff_str:
                         removed_count += 1
                         del self.metrics["operations"][operation_id]
@@ -1055,7 +1105,8 @@ class AnalyticsManager:
                 # For errors, filter each error type by timestamp
                 for error_type in list(self.metrics["errors"].keys()):
                     errors = self.metrics["errors"][error_type]
-                    new_errors = [e for e in errors if e.get("timestamp", "") >= cutoff_str]
+                    new_errors = [e for e in errors if e.get(
+                        "timestamp", "") >= cutoff_str]
                     removed_count += len(errors) - len(new_errors)
                     self.metrics["errors"][error_type] = new_errors
 
@@ -1064,7 +1115,8 @@ class AnalyticsManager:
                 for component in list(self.metrics["performance"].keys()):
                     for metric_name in list(self.metrics["performance"][component].keys()):
                         values = self.metrics["performance"][component][metric_name]
-                        new_values = [v for v in values if v.get("timestamp", "") >= cutoff_str]
+                        new_values = [v for v in values if v.get(
+                            "timestamp", "") >= cutoff_str]
                         removed_count += len(values) - len(new_values)
                         self.metrics["performance"][component][metric_name] = new_values
 
@@ -1118,7 +1170,8 @@ class AnalyticsManager:
 
         for operation in successful_operations + failed_operations:
             try:
-                timestamp = datetime.datetime.fromisoformat(operation["start_time"])
+                timestamp = datetime.datetime.fromisoformat(
+                    operation["start_time"])
                 hour = timestamp.hour
                 day_of_week = timestamp.weekday()
 
@@ -1155,12 +1208,14 @@ class AnalyticsManager:
 
         # Find best and worst hours
         hour_success_rates = {hour: data["success_rate"]
-                            for hour, data in time_patterns.items()
-                            if isinstance(hour, int)}
+                              for hour, data in time_patterns.items()
+                              if isinstance(hour, int)}
 
         if hour_success_rates:
-            best_hours = sorted(hour_success_rates.items(), key=lambda x: x[1], reverse=True)[:3]
-            worst_hours = sorted(hour_success_rates.items(), key=lambda x: x[1])[:3]
+            best_hours = sorted(hour_success_rates.items(),
+                                key=lambda x: x[1], reverse=True)[:3]
+            worst_hours = sorted(hour_success_rates.items(),
+                                 key=lambda x: x[1])[:3]
 
             analysis["success_factors"]["best_hours"] = [
                 {"hour": hour, "success_rate": rate} for hour, rate in best_hours
@@ -1189,7 +1244,8 @@ class AnalyticsManager:
                                     failure_count += 1
 
                 if success_count + failure_count > 0:
-                    success_rate = (success_count / (success_count + failure_count)) * 100
+                    success_rate = (
+                        success_count / (success_count + failure_count)) * 100
 
                     if account_id not in analysis["account_patterns"]:
                         analysis["account_patterns"][account_id] = {}
@@ -1203,12 +1259,15 @@ class AnalyticsManager:
             account_success_rates = {
                 account_id: data["success_rate"]
                 for account_id, data in analysis["account_patterns"].items()
-                if "success_rate" in data and data["success_count"] + data["failure_count"] >= 5  # Minimum sample size
+                # Minimum sample size
+                if "success_rate" in data and data["success_count"] + data["failure_count"] >= 5
             }
 
             if account_success_rates:
-                best_accounts = sorted(account_success_rates.items(), key=lambda x: x[1], reverse=True)[:3]
-                worst_accounts = sorted(account_success_rates.items(), key=lambda x: x[1])[:3]
+                best_accounts = sorted(
+                    account_success_rates.items(), key=lambda x: x[1], reverse=True)[:3]
+                worst_accounts = sorted(
+                    account_success_rates.items(), key=lambda x: x[1])[:3]
 
                 analysis["success_factors"]["best_accounts"] = [
                     {"account_id": account_id, "success_rate": rate} for account_id, rate in best_accounts
@@ -1228,7 +1287,8 @@ class AnalyticsManager:
                         context_key = f"{key}:{value}"
 
                         if context_key not in error_contexts:
-                            error_contexts[context_key] = {"count": 0, "types": {}}
+                            error_contexts[context_key] = {
+                                "count": 0, "types": {}}
 
                         error_contexts[context_key]["count"] += 1
 
@@ -1238,7 +1298,8 @@ class AnalyticsManager:
                         error_contexts[context_key]["types"][error_type] += 1
 
         # Find strongest correlations
-        top_contexts = sorted(error_contexts.items(), key=lambda x: x[1]["count"], reverse=True)[:10]
+        top_contexts = sorted(error_contexts.items(),
+                              key=lambda x: x[1]["count"], reverse=True)[:10]
         analysis["correlations"]["error_contexts"] = [
             {
                 "context": context_key,
@@ -1249,6 +1310,7 @@ class AnalyticsManager:
         ]
 
         return analysis
+
 
 def get_analytics_manager(data_dir: Optional[str] = None) -> AnalyticsManager:
     """

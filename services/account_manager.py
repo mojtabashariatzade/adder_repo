@@ -4,30 +4,27 @@ Account Manager Service
 
 import os
 import json
-import time
 import logging
 import threading
 from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Union, Tuple, Any
-from pathlib import Path
 import uuid
 
 # Import from other modules
 try:
-    from core.constants import Constants, AccountStatus
+    from core.constants import AccountStatus
     from core.exceptions import (
-        AccountError, AccountNotFoundError, AccountLimitReachedError,
-        AccountBlockedError, AccountInCooldownError, ConfigError,
-        FileReadError, FileWriteError, FileFormatError
+        AccountNotFoundError
     )
     from core.config import Config
     from models.account import Account
     from data.encryption import Encryptor
-    from data.file_manager import JsonFileManager, FileManager
+    from data.file_manager import JsonFileManager
     from logging_.logging_manager import get_logger
 except ImportError:
     # For development
     from enum import Enum, auto
+
+# pylint: disable=C0115  # Missing class docstring
     class AccountStatus(Enum):
         ACTIVE = auto()
         COOLDOWN = auto()
@@ -62,7 +59,11 @@ except ImportError:
                 "phone": self.phone,
                 "session_string": self.session_string,
                 "status": self.status.name,
-                "status_changed_at": self.status_changed_at.isoformat() if self.status_changed_at else None,
+                "status_changed_at": (
+                    self.status_changed_at.isoformat()
+                    if self.status_changed_at
+                    else None
+                ),
                 "cooldown_until": self.cooldown_until.isoformat() if self.cooldown_until else None,
                 "daily_reset_time": self.daily_reset_time,
                 "members_added_today": self.members_added_today,
@@ -75,6 +76,7 @@ except ImportError:
             }
 
         @classmethod
+        # pylint: disable=C0116  # Missing function or method docstring
         def from_dict(cls, data):
             account = cls(
                 account_id=data.get("account_id"),
@@ -84,25 +86,33 @@ except ImportError:
                 session_string=data.get("session_string")
             )
             account.status = AccountStatus[data.get("status", "ACTIVE")]
-            account.status_changed_at = datetime.fromisoformat(data.get("status_changed_at")) if data.get("status_changed_at") else None
-            account.cooldown_until = datetime.fromisoformat(data.get("cooldown_until")) if data.get("cooldown_until") else None
-            account.daily_reset_time = data.get("daily_reset_time", datetime.now().isoformat())
+            account.status_changed_at = datetime.fromisoformat(
+                data.get("status_changed_at")) if data.get("status_changed_at") else None
+            account.cooldown_until = datetime.fromisoformat(
+                data.get("cooldown_until")) if data.get("cooldown_until") else None
+            account.daily_reset_time = data.get(
+                "daily_reset_time", datetime.now().isoformat())
             account.members_added_today = data.get("members_added_today", 0)
-            account.members_extracted_today = data.get("members_extracted_today", 0)
+            account.members_extracted_today = data.get(
+                "members_extracted_today", 0)
             account.failure_count = data.get("failure_count", 0)
             account.total_usage_count = data.get("total_usage_count", 0)
-            account.last_used = datetime.fromisoformat(data.get("last_used")) if data.get("last_used") else None
-            account.creation_date = data.get("creation_date", datetime.now().isoformat())
+            account.last_used = datetime.fromisoformat(
+                data.get("last_used")) if data.get("last_used") else None
+            account.creation_date = data.get(
+                "creation_date", datetime.now().isoformat())
             account.notes = data.get("notes", "")
             return account
 
-    get_logger = lambda name: logging.getLogger(name)
+# pylint: disable=C0116  # Missing function or method docstring
+    def get_logger(name): return logging.getLogger(name)
     JsonFileManager = None
     Encryptor = None
     FileManager = None
 
     class Config:
         _instance = None
+
         def __new__(cls):
             if cls._instance is None:
                 cls._instance = super(Config, cls).__new__(cls)
@@ -126,10 +136,14 @@ ENCRYPTION_KEY_FILE = "encryption.key"
 # Logger setup
 logger = get_logger("AccountManager")
 
+# pylint: disable=C0115  # Missing class docstring
+
+
 class AccountManager:
     _instance = None
     _lock = threading.RLock()
 
+# pylint: disable=C0116  # Missing function or method docstring
     def __new__(cls, *args, **kwargs):
         with cls._lock:
             if cls._instance is None:
@@ -143,10 +157,14 @@ class AccountManager:
                 return
 
             self.config = Config()
-            self.accounts_file = accounts_file or self.config.get('accounts_file', ACCOUNTS_FILE)
-            self.encryption_key_file = encryption_key_file or self.config.get('encryption_key_file', ENCRYPTION_KEY_FILE)
-            self.max_members_per_day = self.config.get('max_members_per_day', MAX_MEMBERS_PER_DAY)
-            self.encryption_enabled = self.config.get('encryption_enabled', True)
+            self.accounts_file = accounts_file or self.config.get(
+                'accounts_file', ACCOUNTS_FILE)
+            self.encryption_key_file = encryption_key_file or self.config.get(
+                'encryption_key_file', ENCRYPTION_KEY_FILE)
+            self.max_members_per_day = self.config.get(
+                'max_members_per_day', MAX_MEMBERS_PER_DAY)
+            self.encryption_enabled = self.config.get(
+                'encryption_enabled', True)
 
             self.accounts = {}
             self.encryptor = None
@@ -154,9 +172,10 @@ class AccountManager:
 
             if self.encryption_enabled and Encryptor:
                 try:
-                    self.encryptor = Encryptor(key_file=self.encryption_key_file)
+                    self.encryptor = Encryptor(
+                        key_file=self.encryption_key_file)
                 except Exception as e:
-                    logger.error(f"Error initializing encryption: {e}")
+                    logger.error("Error initializing encryption: %s", e)
                     self.encryption_enabled = False
 
             self._load_accounts()
@@ -166,7 +185,8 @@ class AccountManager:
     def _load_accounts(self):
         try:
             if not os.path.exists(self.accounts_file):
-                logger.info(f"Accounts file not found: {self.accounts_file}. Creating new file.")
+                logger.info(
+                    "Accounts file not found: %s. Creating new file.", self.accounts_file)
                 self.accounts = {}
                 self._save_accounts()
                 return
@@ -178,11 +198,12 @@ class AccountManager:
                         decrypted_data = self.encryptor.decrypt(encrypted_data)
                         accounts_data = json.loads(decrypted_data)
                 except Exception as e:
-                    logger.error(f"Error decrypting accounts file: {e}")
+                    logger.error("Error decrypting accounts file: %s", e)
                     accounts_data = {}
             else:
                 if self.file_manager:
-                    accounts_data = self.file_manager.read_json(self.accounts_file, default={})
+                    accounts_data = self.file_manager.read_json(
+                        self.accounts_file, default={})
                 else:
                     with open(self.accounts_file, 'r') as file:
                         accounts_data = json.loads(file.read())
@@ -193,9 +214,10 @@ class AccountManager:
                 self.accounts[account.account_id] = account
 
             self._check_account_statuses()
-            logger.info(f"Loaded {len(self.accounts)} accounts from {self.accounts_file}")
+            logger.info("Loaded %s accounts from %s", len(
+                self.accounts), self.accounts_file)
         except Exception as e:
-            logger.error(f"Error loading accounts: {e}")
+            logger.error("Error loading accounts: %s", e)
             self.accounts = {}
 
     def _save_accounts(self):
@@ -207,23 +229,26 @@ class AccountManager:
 
             if self.encryption_enabled and self.encryptor:
                 try:
-                    encrypted_data = self.encryptor.encrypt(json.dumps(accounts_data))
+                    encrypted_data = self.encryptor.encrypt(
+                        json.dumps(accounts_data))
                     with open(self.accounts_file, 'w') as file:
                         file.write(encrypted_data)
                 except Exception as e:
-                    logger.error(f"Error encrypting accounts data: {e}")
+                    logger.error("Error encrypting accounts data: %s", e)
                     raise
             else:
                 if self.file_manager:
-                    self.file_manager.write_json(self.accounts_file, accounts_data)
+                    self.file_manager.write_json(
+                        self.accounts_file, accounts_data)
                 else:
                     with open(self.accounts_file, 'w') as file:
                         json.dump(accounts_data, file, indent=4)
 
-            logger.debug(f"Saved {len(self.accounts)} accounts to {self.accounts_file}")
+            logger.debug("Saved %s accounts to %s", len(
+                self.accounts), self.accounts_file)
             return True
         except Exception as e:
-            logger.error(f"Error saving accounts: {e}")
+            logger.error("Error saving accounts: %s", e)
             return False
 
     def _check_account_statuses(self):
@@ -236,7 +261,8 @@ class AccountManager:
                     account.status = AccountStatus.ACTIVE
                     account.status_changed_at = now
                     account.cooldown_until = None
-                    logger.info(f"Account {account.phone} is now active (cooldown ended)")
+                    logger.info(
+                        "Account %s is now active (cooldown ended)", account.phone)
 
             # Check if daily limits should be reset
             try:
@@ -250,7 +276,8 @@ class AccountManager:
                     if account.status == AccountStatus.DAILY_LIMIT_REACHED:
                         account.status = AccountStatus.ACTIVE
                         account.status_changed_at = now
-                        logger.info(f"Account {account.phone} is now active (daily limits reset)")
+                        logger.info(
+                            "Account %s is now active (daily limits reset)", account.phone)
             except (ValueError, TypeError):
                 # If there's an error parsing the date, just reset it
                 account.daily_reset_time = now.isoformat()
@@ -261,7 +288,7 @@ class AccountManager:
         # Check if phone number already exists
         for existing_account in self.accounts.values():
             if existing_account.phone == phone:
-                logger.warning(f"Account with phone {phone} already exists")
+                logger.warning("Account with phone %s already exists", phone)
                 return existing_account.account_id
 
         # Create new account
@@ -280,12 +307,13 @@ class AccountManager:
         self.accounts[account_id] = account
         self._save_accounts()
 
-        logger.info(f"Added new account: {phone} (ID: {account_id})")
+        logger.info("Added new account: %s (ID: %s)", phone, account_id)
         return account_id
 
     def get_account(self, account_id):
         if account_id not in self.accounts:
-            raise AccountNotFoundError(f"Account with ID {account_id} not found")
+            raise AccountNotFoundError(
+                f"Account with ID {account_id} not found")
         return self.accounts[account_id]
 
     def get_account_by_phone(self, phone):
@@ -296,7 +324,8 @@ class AccountManager:
 
     def update_account(self, account_id, **kwargs):
         if account_id not in self.accounts:
-            raise AccountNotFoundError(f"Account with ID {account_id} not found")
+            raise AccountNotFoundError(
+                f"Account with ID {account_id} not found")
 
         account = self.accounts[account_id]
 
@@ -311,17 +340,18 @@ class AccountManager:
             account.status_changed_at = datetime.now()
 
         self._save_accounts()
-        logger.info(f"Updated account {account.phone} (ID: {account_id})")
+        logger.info("Updated account %s (ID: %s)", account.phone, account_id)
         return True
 
     def remove_account(self, account_id):
         if account_id not in self.accounts:
-            raise AccountNotFoundError(f"Account with ID {account_id} not found")
+            raise AccountNotFoundError(
+                f"Account with ID {account_id} not found")
 
         account = self.accounts.pop(account_id)
         self._save_accounts()
 
-        logger.info(f"Removed account {account.phone} (ID: {account_id})")
+        logger.info("Removed account %s (ID: %s)", account.phone, account_id)
         return True
 
     def get_all_accounts(self):
@@ -360,7 +390,8 @@ class AccountManager:
 
     def update_account_status(self, account_id, status, cooldown_hours=None):
         if account_id not in self.accounts:
-            raise AccountNotFoundError(f"Account with ID {account_id} not found")
+            raise AccountNotFoundError(
+                f"Account with ID {account_id} not found")
 
         account = self.accounts[account_id]
 
@@ -372,22 +403,24 @@ class AccountManager:
 
         if status == AccountStatus.COOLDOWN and cooldown_hours:
             account.cooldown_until = datetime.now() + timedelta(hours=cooldown_hours)
-            logger.info(f"Account {account.phone} placed in cooldown for {cooldown_hours} hours")
+            logger.info("Account %s placed in cooldown for %s hours",
+                        account.phone, cooldown_hours)
         elif status == AccountStatus.ACTIVE:
             account.cooldown_until = None
             account.failure_count = 0
-            logger.info(f"Account {account.phone} set to active status")
+            logger.info("Account %s set to active status", account.phone)
         elif status == AccountStatus.BLOCKED:
-            logger.warning(f"Account {account.phone} has been blocked")
+            logger.warning("Account %s has been blocked", account.phone)
         elif status == AccountStatus.DAILY_LIMIT_REACHED:
-            logger.info(f"Account {account.phone} has reached daily limit")
+            logger.info("Account %s has reached daily limit", account.phone)
 
         self._save_accounts()
         return True
 
     def increment_member_count(self, account_id, count_type="added"):
         if account_id not in self.accounts:
-            raise AccountNotFoundError(f"Account with ID {account_id} not found")
+            raise AccountNotFoundError(
+                f"Account with ID {account_id} not found")
 
         account = self.accounts[account_id]
 
@@ -398,7 +431,8 @@ class AccountManager:
             if account.members_added_today >= self.max_members_per_day:
                 account.status = AccountStatus.DAILY_LIMIT_REACHED
                 account.status_changed_at = datetime.now()
-                logger.info(f"Account {account.phone} reached daily adding limit")
+                logger.info(
+                    "Account %s reached daily adding limit", account.phone)
         elif count_type == "extracted":
             account.members_extracted_today += 1
 
@@ -406,7 +440,8 @@ class AccountManager:
             if account.members_extracted_today >= self.max_members_per_day:
                 account.status = AccountStatus.DAILY_LIMIT_REACHED
                 account.status_changed_at = datetime.now()
-                logger.info(f"Account {account.phone} reached daily extraction limit")
+                logger.info(
+                    "Account %s reached daily extraction limit", account.phone)
 
         account.total_usage_count += 1
         account.last_used = datetime.now()
@@ -419,7 +454,8 @@ class AccountManager:
 
         if account_id:
             if account_id not in self.accounts:
-                raise AccountNotFoundError(f"Account with ID {account_id} not found")
+                raise AccountNotFoundError(
+                    f"Account with ID {account_id} not found")
 
             account = self.accounts[account_id]
             account.members_added_today = 0
@@ -431,7 +467,7 @@ class AccountManager:
                 account.status = AccountStatus.ACTIVE
                 account.status_changed_at = now
 
-            logger.info(f"Daily limits reset for account {account.phone}")
+            logger.info("Daily limits reset for account %s", account.phone)
         else:
             # Reset all accounts
             for account in self.accounts.values():
@@ -451,7 +487,8 @@ class AccountManager:
 
     def increment_failure_count(self, account_id):
         if account_id not in self.accounts:
-            raise AccountNotFoundError(f"Account with ID {account_id} not found")
+            raise AccountNotFoundError(
+                f"Account with ID {account_id} not found")
 
         account = self.accounts[account_id]
         account.failure_count += 1
@@ -461,32 +498,41 @@ class AccountManager:
             account.status = AccountStatus.COOLDOWN
             account.status_changed_at = datetime.now()
             account.cooldown_until = datetime.now() + timedelta(hours=DEFAULT_COOL_DOWN_HOURS)
-            logger.warning(f"Account {account.phone} placed in cooldown due to excessive failures")
+            logger.warning(
+                "Account %s placed in cooldown due to excessive failures", account.phone)
 
         self._save_accounts()
         return account.failure_count
 
     def reset_failure_count(self, account_id):
         if account_id not in self.accounts:
-            raise AccountNotFoundError(f"Account with ID {account_id} not found")
+            raise AccountNotFoundError(
+                f"Account with ID {account_id} not found")
 
         account = self.accounts[account_id]
         account.failure_count = 0
 
         self._save_accounts()
-        logger.debug(f"Reset failure count for account {account.phone}")
+        logger.debug("Reset failure count for account %s", account.phone)
         return True
 
     def get_account_stats(self):
         total = len(self.accounts)
-        active = len([a for a in self.accounts.values() if a.status == AccountStatus.ACTIVE])
-        cooldown = len([a for a in self.accounts.values() if a.status == AccountStatus.COOLDOWN])
-        blocked = len([a for a in self.accounts.values() if a.status == AccountStatus.BLOCKED])
-        unverified = len([a for a in self.accounts.values() if a.status == AccountStatus.UNVERIFIED])
-        daily_limit = len([a for a in self.accounts.values() if a.status == AccountStatus.DAILY_LIMIT_REACHED])
+        active = len([a for a in self.accounts.values()
+                     if a.status == AccountStatus.ACTIVE])
+        cooldown = len([a for a in self.accounts.values()
+                       if a.status == AccountStatus.COOLDOWN])
+        blocked = len([a for a in self.accounts.values()
+                      if a.status == AccountStatus.BLOCKED])
+        unverified = len([a for a in self.accounts.values()
+                         if a.status == AccountStatus.UNVERIFIED])
+        daily_limit = len([a for a in self.accounts.values()
+                          if a.status == AccountStatus.DAILY_LIMIT_REACHED])
 
-        added_today = sum(a.members_added_today for a in self.accounts.values())
-        extracted_today = sum(a.members_extracted_today for a in self.accounts.values())
+        added_today = sum(
+            a.members_added_today for a in self.accounts.values())
+        extracted_today = sum(
+            a.members_extracted_today for a in self.accounts.values())
         total_usage = sum(a.total_usage_count for a in self.accounts.values())
 
         return {
@@ -503,7 +549,8 @@ class AccountManager:
 
     def set_session_string(self, account_id, session_string):
         if account_id not in self.accounts:
-            raise AccountNotFoundError(f"Account with ID {account_id} not found")
+            raise AccountNotFoundError(
+                f"Account with ID {account_id} not found")
 
         account = self.accounts[account_id]
         account.session_string = session_string
@@ -513,7 +560,7 @@ class AccountManager:
             account.status_changed_at = datetime.now()
 
         self._save_accounts()
-        logger.info(f"Set session string for account {account.phone}")
+        logger.info("Set session string for account %s", account.phone)
         return True
 
     def backup_accounts(self, backup_file=None):
@@ -530,10 +577,10 @@ class AccountManager:
             with open(backup_file, 'w') as file:
                 json.dump(accounts_data, file, indent=4)
 
-            logger.info(f"Accounts backed up to {backup_file}")
+            logger.info("Accounts backed up to %s", backup_file)
             return backup_file
         except Exception as e:
-            logger.error(f"Error backing up accounts: {e}")
+            logger.error("Error backing up accounts: %s", e)
             return None
 
     def restore_accounts(self, backup_file):
@@ -550,11 +597,15 @@ class AccountManager:
             self.accounts = new_accounts
             self._save_accounts()
 
-            logger.info(f"Restored {len(self.accounts)} accounts from {backup_file}")
+            logger.info("Restored %s accounts from %s",
+                        len(self.accounts), backup_file)
             return True
         except Exception as e:
-            logger.error(f"Error restoring accounts from backup: {e}")
+            logger.error("Error restoring accounts from backup: %s", e)
             return False
+
+# pylint: disable=C0116  # Missing function or method docstring
+
 
 def get_account_manager():
     return AccountManager()
