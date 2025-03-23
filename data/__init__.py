@@ -1,15 +1,57 @@
 """
-Data Module
+Data Module Package
 
-This module contains utilities for data management, including encryption, file operations,
-and session management.
+This package contains modules for data management, including file operations,
+encryption, and session management.
+
+The file management modules provide functionality for handling different types of files:
+- Basic file operations (read, write, copy, delete)
+- JSON file operations (read, write, validate)
+- Encrypted file operations (secure storage of sensitive data)
 """
 
-# During development, these imports may not work until modules are implemented
-# We'll use a try/except to handle this gracefully
+# Import and re-export classes and functions to maintain
+# the same API as before to avoid breaking changes
+
+# Import File Managers
+from .base_file_manager import FileManager, SafeFileWriter
+from .json_file_manager import JsonFileManager
+from .encrypted_file_manager import EncryptedFileManager
+from .file_factory import get_file_manager
+
+# Import other data modules if they are available
 try:
-    # Use relative imports instead of absolute
     from .encryption import Encryptor, get_password
-except (ImportError, ModuleNotFoundError):
-    # Just pass if modules aren't implemented yet
+except ImportError:
+    # These may not be implemented yet
     pass
+
+try:
+    from .session_manager import (
+        Session,
+        SessionManager,
+        SessionStatus,
+        get_session_manager
+    )
+except ImportError:
+    # These may not be implemented yet
+    pass
+
+# Define what's available when importing * from this package
+__all__ = [
+    # File Managers
+    'FileManager',
+    'JsonFileManager',
+    'EncryptedFileManager',
+    'SafeFileWriter',
+    'get_file_manager',
+
+    # Conditional exports based on what's imported
+    *([] if 'Encryptor' not in globals() else ['Encryptor', 'get_password']),
+    *([] if 'SessionManager' not in globals() else [
+        'Session',
+        'SessionManager',
+        'SessionStatus',
+        'get_session_manager'
+    ]),
+]
