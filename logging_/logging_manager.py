@@ -108,6 +108,7 @@ class LoggingManager:
     the Singleton pattern for easy access from all parts of the application.
     """
     _instance = None
+    _initialized = False
 
     def __new__(cls, *args, **kwargs):
         """
@@ -266,7 +267,7 @@ class LoggingManager:
                 basic_handler.setFormatter(
                     logging.Formatter('%(levelname)s - %(message)s'))
                 local_logger.addHandler(basic_handler)
-            except:
+            except (ValueError, TypeError, AttributeError):
                 pass
 
         # Store logger in dictionary
@@ -289,8 +290,8 @@ class LoggingManager:
         """
         if logger_name is None:
             # Change level for all loggers
-            for logger in self.loggers.values():
-                logger.setLevel(level)
+            for log_instance in self.loggers.values():
+                log_instance.setLevel(level)
         elif logger_name in self.loggers:
             # Change level for specified logger
             self.loggers[logger_name].setLevel(level)
@@ -306,15 +307,15 @@ class LoggingManager:
         self.console_level = level
         if logger_name is None:
             # Change console level for all loggers
-            for logger in self.loggers.values():
-                for handler in logger.handlers:
+            for log_instance in self.loggers.values():
+                for handler in log_instance.handlers:
                     if (isinstance(handler, logging.StreamHandler) and
                             not isinstance(handler, logging.FileHandler)):
                         handler.setLevel(level)
         elif logger_name in self.loggers:
             # Change console level for specified logger
-            logger = self.loggers[logger_name]
-            for handler in logger.handlers:
+            log_instance = self.loggers[logger_name]
+            for handler in log_instance.handlers:
                 if (isinstance(handler, logging.StreamHandler) and
                         not isinstance(handler, logging.FileHandler)):
                     handler.setLevel(level)
@@ -330,14 +331,14 @@ class LoggingManager:
         self.file_level = level
         if logger_name is None:
             # Change file level for all loggers
-            for logger in self.loggers.values():
-                for handler in logger.handlers:
+            for log_instance in self.loggers.values():
+                for handler in log_instance.handlers:
                     if isinstance(handler, logging.FileHandler):
                         handler.setLevel(level)
         elif logger_name in self.loggers:
             # Change file level for specified logger
-            logger = self.loggers[logger_name]
-            for handler in logger.handlers:
+            log_instance = self.loggers[logger_name]
+            for handler in log_instance.handlers:
                 if isinstance(handler, logging.FileHandler):
                     handler.setLevel(level)
 
@@ -360,14 +361,14 @@ class LoggingManager:
         if enable:
             # Add JSON handlers to loggers
             if logger_name is None:
-                for name, logger in self.loggers.items():
+                for name, log_instance in self.loggers.items():
                     # Check if JSON handler doesn't already exist
                     if not any(isinstance(h, logging.FileHandler) and
                                h.formatter == self.json_formatter
-                               for h in logger.handlers):
-                        self._add_json_handler(logger)
+                               for h in log_instance.handlers):
+                        self._add_json_handler(log_instance)
             elif logger_name in self.loggers:
-                logger = self.loggers[logger_name]
+                log_instance = self.loggers[logger_name]
                 # Check if JSON handler doesn't already exist
                 if not any(isinstance(h, logging.FileHandler) and
                            h.formatter == self.json_formatter
@@ -376,15 +377,15 @@ class LoggingManager:
         else:
             # Remove JSON handlers from loggers
             if logger_name is None:
-                for name, logger in self.loggers.items():
-                    for handler in list(logger.handlers):
+                for name, log_instance in self.loggers.items():
+                    for handler in list(log_instance.handlers):
                         if (isinstance(handler, logging.FileHandler) and
                                 handler.formatter == self.json_formatter):
                             logger.removeHandler(handler)
                             handler.close()
             elif logger_name in self.loggers:
-                logger = self.loggers[logger_name]
-                for handler in list(logger.handlers):
+                log_instance = self.loggers[logger_name]
+                for handler in list(log_instance.handlers):
                     if isinstance(handler,
                                   logging.FileHandler) and handler.formatter == self.json_formatter:
                         logger.removeHandler(handler)
