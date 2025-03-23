@@ -35,11 +35,9 @@ Usage:
     context.shutdown()
 """
 
-import os
-import sys
 import logging
 import threading
-from typing import Any, Dict, List, Optional, Type, Callable, TypeVar, Generic
+from typing import Any, Optional, Type, Callable, TypeVar
 
 # Import core modules
 try:
@@ -125,7 +123,8 @@ class AppContext:
                     level=logging.INFO,
                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
                 )
-                logger.warning(f"Failed to initialize LoggingManager: {e}. Using basic logging.")
+                logger.warning(
+                    f"Failed to initialize LoggingManager: {e}. Using basic logging.")
 
             # Mark as initialized
             self._initialized = True
@@ -196,7 +195,8 @@ class AppContext:
                     return service
 
             # Service not found
-            logger.debug(f"Service of type '{service_type.__name__}' not found")
+            logger.debug(
+                f"Service of type '{service_type.__name__}' not found")
             return None
 
     def register_service(self, name: str, instance: Any) -> None:
@@ -247,7 +247,8 @@ class AppContext:
         """
         with self._lock:
             if self._app_state != "created":
-                logger.warning(f"Cannot initialize AppContext in state: {self._app_state}")
+                logger.warning(
+                    f"Cannot initialize AppContext in state: {self._app_state}")
                 return
 
             # Initialize services
@@ -260,11 +261,13 @@ class AppContext:
                         initialized_count += 1
                         logger.debug(f"Service '{name}' initialized")
                     except Exception as e:
-                        logger.error(f"Failed to initialize service '{name}': {e}")
+                        logger.error(
+                            f"Failed to initialize service '{name}': {e}")
 
             # Update app state
             self._app_state = "initialized"
-            logger.info(f"AppContext initialized with {initialized_count} services")
+            logger.info(
+                f"AppContext initialized with {initialized_count} services")
 
     def shutdown(self) -> None:
         """
@@ -274,7 +277,8 @@ class AppContext:
         """
         with self._lock:
             if self._app_state not in ["initialized", "running"]:
-                logger.warning(f"Cannot shutdown AppContext in state: {self._app_state}")
+                logger.warning(
+                    f"Cannot shutdown AppContext in state: {self._app_state}")
                 return
 
             # Update app state
@@ -290,7 +294,8 @@ class AppContext:
                         shutdown_count += 1
                         logger.debug(f"Service '{name}' shutdown")
                     except Exception as e:
-                        logger.error(f"Failed to shutdown service '{name}': {e}")
+                        logger.error(
+                            f"Failed to shutdown service '{name}': {e}")
 
             # Clear services
             self._services.clear()
@@ -309,7 +314,8 @@ class AppContext:
         """
         with self._lock:
             if self._app_state != "initialized":
-                logger.warning(f"Cannot start AppContext in state: {self._app_state}")
+                logger.warning(
+                    f"Cannot start AppContext in state: {self._app_state}")
                 return
 
             # Update app state

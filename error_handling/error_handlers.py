@@ -1,11 +1,11 @@
 import logging
 import traceback
 import time
-from typing import Any, Dict, List, Optional, Tuple, Union, Callable, Type
+from typing import Any, Dict, List, Optional, Callable
 from core.exceptions import (
-    TelegramAdderError, AccountError, AccountNotFoundError, AccountLimitReachedError,
+    AccountNotFoundError, AccountLimitReachedError,
     AccountBlockedError, AccountInCooldownError, AccountVerificationError,
-    APIError, FloodWaitError, PeerFloodError, UserPrivacyRestrictedError,
+    FloodWaitError, PeerFloodError, UserPrivacyRestrictedError,
     PhoneNumberBannedError, ApiIdInvalidError, ApiHashInvalidError,
     GroupNotFoundError, NotGroupAdminError, MemberExtractionError, MemberAdditionError,
     NetworkError, ConnectionError, ProxyError, TimeoutError,

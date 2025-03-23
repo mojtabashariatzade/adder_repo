@@ -1,0 +1,22 @@
+[
+    {
+        "resource": "/f:/adder_repo/utils/validators.py",
+        "owner": "_generated_diagnostic_collection_name_#2",
+        "code": {
+            "value": "W0718:broad-exception-caught",
+            "target": {
+                "$mid": 1,
+                "path": "/en/latest/user_guide/messages/warning/broad-exception-caught.html",
+                "scheme": "https",
+                "authority": "pylint.readthedocs.io"
+            }
+        },
+        "severity": 4,
+        "message": "Catching too general exception Exception",
+        "source": "Pylint",
+        "startLineNumber": 449,
+        "startColumn": 12,
+        "endLineNumber": 449,
+        "endColumn": 21
+    }
+]
