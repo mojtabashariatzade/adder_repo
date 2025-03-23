@@ -16,15 +16,15 @@ import logging
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union, Tuple
 
-# Import base file manager
-from .base_file_manager import FileManager
-
 # Import custom exceptions
 from core.exceptions import (
     FileReadError,
-    FileWriteError,
     FileFormatError,
 )
+
+# Import base file manager
+from .base_file_manager import FileManager
+
 
 # Setup logger
 logger = logging.getLogger(__name__)
@@ -80,7 +80,7 @@ class JsonFileManager(FileManager):
             return json.loads(content)
         except json.JSONDecodeError as e:
             logger.error("Invalid JSON in %s: %s", file_path, e)
-            raise FileFormatError(str(file_path), f"Invalid JSON: {e}")
+            raise FileFormatError(str(file_path), f"Invalid JSON: {e}") from e
 
     def write_json(
         self, path: Union[str, Path], data: Dict[str, Any], make_backup: bool = False
@@ -108,7 +108,7 @@ class JsonFileManager(FileManager):
             logger.debug("JSON written to %s", file_path)
         except TypeError as e:
             logger.error("Data is not JSON-serializable: %s", e)
-            raise TypeError(f"Data is not JSON-serializable: {e}")
+            raise TypeError(f"Data is not JSON-serializable: {e}") from e
 
     def validate_json(
         self, path: Union[str, Path], schema: Dict[str, Any]
@@ -128,13 +128,14 @@ class JsonFileManager(FileManager):
             FileFormatError: If the file is not valid JSON.
             ImportError: If jsonschema package is not available.
         """
-        # Try to import jsonschema
+        # Try to import jsonschema - will trigger IDE warnings but works at runtime
+        jsonschema = None
         try:
             import jsonschema
-            from jsonschema import ValidationError, SchemaError
-        except ImportError:
+        except ImportError as exc:
             logger.error("jsonschema package is required for validation")
-            raise ImportError("jsonschema package is required for validation")
+            raise ImportError(
+                "jsonschema package is required for validation") from exc
 
         # Read the JSON file
         data = self.read_json(path)
@@ -144,11 +145,11 @@ class JsonFileManager(FileManager):
         try:
             jsonschema.validate(instance=data, schema=schema)
             return True, issues
-        except ValidationError as e:
+        except jsonschema.exceptions.ValidationError as e:
             issues.append(f"Validation error: {e.message}")
             logger.warning("JSON validation failed for %s: %s",
                            path, e.message)
-        except SchemaError as e:
+        except jsonschema.exceptions.SchemaError as e:
             issues.append(f"Schema error: {e.message}")
             logger.error("Invalid schema: %s", e.message)
 

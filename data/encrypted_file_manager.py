@@ -201,7 +201,7 @@ class EncryptedFileManager(FileManager):
             self.write_encrypted(path, json_content, make_backup=make_backup)
             logger.debug("Encrypted JSON written to %s", path)
         except (EncryptionError, FileWriteError):
-            # Re-raise these specific exceptions without converting them
+            # Let these exceptions pass through unchanged
             raise
         except Exception as e:
             logger.error("Error encrypting or writing to %s: %s", path, e)

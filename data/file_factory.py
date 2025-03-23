@@ -11,7 +11,7 @@ Features:
 """
 
 import logging
-from typing import Union, Optional, Any
+from typing import Union
 
 # Import file managers
 from .base_file_manager import FileManager
@@ -23,8 +23,8 @@ logger = logging.getLogger(__name__)
 
 
 def get_file_manager(
-    manager_type: str = "basic", *args, **kwargs
-) -> Union[FileManager, JsonFileManager, EncryptedFileManager]:
+        *args, manager_type: str = "basic", **kwargs) -> Union[
+            FileManager, JsonFileManager, EncryptedFileManager]:
     """
     Factory function to get an appropriate file manager.
 
