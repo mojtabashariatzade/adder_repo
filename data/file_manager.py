@@ -947,9 +947,12 @@ class EncryptedFileManager(FileManager):
         try:
             # Decrypt the content
             return self.encryptor.decrypt(encrypted_content)
+        except DecryptionError:
+         # Re-raise DecryptionError without converting it
+            raise
         except Exception as e:
-            logger.error("Error decrypting %s: {e}", path)
-            raise DecryptionError("Error decrypting %s: {e}" % (path))
+            logger.error("Error decrypting %s: %s", path, e)
+            raise DecryptionError(f"Error decrypting {path}: {e}") from e
 
     def write_encrypted(
         self, path: Union[str, Path], content: str, make_backup: bool = False
