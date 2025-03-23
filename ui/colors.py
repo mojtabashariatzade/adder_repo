@@ -31,17 +31,20 @@ Usage:
 import os
 import sys
 import platform
-from typing import Optional, Dict, List, Tuple, Union
+from typing import Optional, Dict
 
 # Try to import colorama for cross-platform color support
 try:
     from colorama import init as colorama_init, Fore, Back, Style
     COLORAMA_AVAILABLE = True
-    colorama_init(autoreset=False)  # Don't auto-reset, we'll handle it manually
+    # Don't auto-reset, we'll handle it manually
+    colorama_init(autoreset=False)
 except ImportError:
     COLORAMA_AVAILABLE = False
 
 # Check if we're in a terminal that supports colors
+
+
 def _supports_color() -> bool:
     """
     Check if the current terminal supports colors.
@@ -66,6 +69,7 @@ def _supports_color() -> bool:
     # ANSI colors are supported if we're on a supported platform, outputting to a TTY,
     # and the NO_COLOR environment variable is not set
     return supported_platform and is_a_tty and not no_color
+
 
 # Flag for color support
 COLOR_SUPPORTED = _supports_color()
@@ -250,7 +254,7 @@ def colorize(text: str, color: str, reset: bool = True) -> str:
 
 
 def styled_text(text: str, fg: Optional[str] = None, bg: Optional[str] = None,
-               style: Optional[str] = None) -> str:
+                style: Optional[str] = None) -> str:
     """
     Apply a combination of foreground color, background color, and style to text.
 
@@ -298,7 +302,7 @@ def theme_styled(text: str, element: str) -> str:
 
 
 def print_colored(label: str, value: str, color: Optional[str] = None,
-                 label_color: Optional[str] = None) -> None:
+                  label_color: Optional[str] = None) -> None:
     """
     Print a label and value with colors.
 
@@ -325,7 +329,8 @@ def print_status(message: str, status: bool) -> None:
         message (str): The message to print
         status (bool): True for success (green), False for failure (red)
     """
-    status_color = ColorTheme.get('success') if status else ColorTheme.get('error')
+    status_color = ColorTheme.get(
+        'success') if status else ColorTheme.get('error')
     status_text = "✓ Success" if status else "✗ Failed"
 
     print(f"{colorize(message, Colors.RESET)} {colorize(status_text, status_color)}")
@@ -370,7 +375,7 @@ def enable_colors() -> None:
 
 
 def create_progress_bar(current: int, total: int, width: int = 40,
-                       filled_char: str = '█', empty_char: str = '░') -> str:
+                        filled_char: str = '█', empty_char: str = '░') -> str:
     """
     Create a colored progress bar.
 
@@ -394,13 +399,14 @@ def create_progress_bar(current: int, total: int, width: int = 40,
     percentage = progress * 100
 
     bar_colored = colorize(bar, ColorTheme.get('progress_bar'))
-    percentage_text = colorize(f" {percentage:6.2f}%", ColorTheme.get('progress_text'))
+    percentage_text = colorize(
+        f" {percentage:6.2f}%", ColorTheme.get('progress_text'))
 
     return f"[{bar_colored}]{percentage_text}"
 
 
 def print_progress(current: int, total: int, prefix: str = "Progress:",
-                  suffix: str = "", width: int = 40) -> None:
+                   suffix: str = "", width: int = 40) -> None:
     """
     Print a progress bar with prefix and suffix.
 
@@ -413,7 +419,8 @@ def print_progress(current: int, total: int, prefix: str = "Progress:",
     """
     bar = create_progress_bar(current, total, width)
     prefix_colored = colorize(prefix, ColorTheme.get('info'))
-    suffix_colored = colorize(suffix, ColorTheme.get('normal')) if suffix else ""
+    suffix_colored = colorize(
+        suffix, ColorTheme.get('normal')) if suffix else ""
 
     # Use \r to return to the beginning of the line and overwrite
     print(f"\r{prefix_colored} {bar} {suffix_colored}", end='', flush=True)
