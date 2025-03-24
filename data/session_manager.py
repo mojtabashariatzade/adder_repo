@@ -189,7 +189,7 @@ class SessionManager:
             if os.path.exists(temp_path):
                 try:
                     os.unlink(temp_path)
-                except Exception as ex:
+                except (json.JSONDecodeError, TypeError, ValueError, OSError):
                     pass
 
             logger.error("Error saving session %s: %s", session.session_id, e)
@@ -247,7 +247,7 @@ class SessionManager:
         except json.JSONDecodeError as e:
             logger.error("Error parsing session file %s: %s", session_path, e)
             return None
-        except (json.JSONDecodeError, TypeError, ValueError, OSError) as e:
+        except (TypeError, ValueError, OSError) as e:
             logger.error("Error loading session %s: %s", session_id, e)
             return None
 
