@@ -110,6 +110,13 @@ class JsonFileManager(FileManager):
             logger.error("Data is not JSON-serializable: %s", e)
             raise TypeError(f"Data is not JSON-serializable: {e}") from e
 
+        try:
+            import jsonschema
+        except ImportError as exc:
+            logger.error("jsonschema package is required for validation")
+            raise ImportError(
+                "jsonschema package is required for validation") from exc
+
     def validate_json(
         self, path: Union[str, Path], schema: Dict[str, Any]
     ) -> Tuple[bool, List[str]]:
@@ -130,12 +137,6 @@ class JsonFileManager(FileManager):
         """
         # Try to import jsonschema - will trigger IDE warnings but works at runtime
         jsonschema = None
-        try:
-            import jsonschema
-        except ImportError as exc:
-            logger.error("jsonschema package is required for validation")
-            raise ImportError(
-                "jsonschema package is required for validation") from exc
 
         # Read the JSON file
         data = self.read_json(path)

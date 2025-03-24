@@ -164,8 +164,10 @@ class EncryptedFileManager(FileManager):
                 raise FileFormatError(
                     str(file_path), f"Invalid JSON in decrypted content: {e}"
                 ) from e
-        except (FileReadError, DecryptionError):
-            # Re-raise these specific exceptions without converting them
+        except (FileReadError, DecryptionError) as e:
+            # Log the error
+            logging.error("An error occurred: %s", str(e))
+            # Optionally re-raise the exception
             raise
 
     def write_encrypted_json(
