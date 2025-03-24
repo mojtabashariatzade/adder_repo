@@ -25,6 +25,14 @@ from core.exceptions import (
 # Import base file manager
 from .base_file_manager import FileManager
 
+# Indicator if jsonschema is available
+_HAS_JSONSCHEMA = False
+try:
+    import jsonschema
+    _HAS_JSONSCHEMA = True
+except ImportError:
+    # jsonschema not available - validation will raise ImportError when used
+    pass
 
 # Setup logger
 logger = logging.getLogger(__name__)
@@ -110,13 +118,6 @@ class JsonFileManager(FileManager):
             logger.error("Data is not JSON-serializable: %s", e)
             raise TypeError(f"Data is not JSON-serializable: {e}") from e
 
-        try:
-            import jsonschema
-        except ImportError as exc:
-            logger.error("jsonschema package is required for validation")
-            raise ImportError(
-                "jsonschema package is required for validation") from exc
-
     def validate_json(
         self, path: Union[str, Path], schema: Dict[str, Any]
     ) -> Tuple[bool, List[str]]:
@@ -135,8 +136,10 @@ class JsonFileManager(FileManager):
             FileFormatError: If the file is not valid JSON.
             ImportError: If jsonschema package is not available.
         """
-        # Try to import jsonschema - will trigger IDE warnings but works at runtime
-        jsonschema = None
+        # Check if jsonschema is available
+        if not _HAS_JSONSCHEMA:
+            logger.error("jsonschema package is required for validation")
+            raise ImportError("jsonschema package is required for validation")
 
         # Read the JSON file
         data = self.read_json(path)

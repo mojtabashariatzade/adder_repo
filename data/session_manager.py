@@ -20,16 +20,16 @@ import threading
 import time
 import shutil
 from datetime import datetime
-from typing import Dict, List, Optional, Any, Union, Tuple
+from typing import Dict, List, Optional, Any, Union
 
-from session_types import (
+from .session_types import (
     SessionStatus,
     DEFAULT_MAX_ACTIVE_SESSIONS,
     DEFAULT_SESSIONS_DIR,
     DEFAULT_ARCHIVE_AGE_DAYS,
     SESSION_FIELDS
 )
-from session import Session
+from .session import Session
 
 # Setup logger
 logger = logging.getLogger(__name__)
@@ -147,7 +147,9 @@ class SessionManager:
         self.save_session(session)
 
         logger.info(
-            f"Created new {session_type or 'generic'} session with ID: {session.session_id}")
+            "Created new %s session with ID: %s",
+            session_type or 'generic', session.session_id
+        )
         return session
 
     def save_session(self, session: Session) -> bool:
@@ -178,17 +180,19 @@ class SessionManager:
             os.replace(temp_path, session_path)
 
             logger.debug(
-                f"Saved session {session.session_id} to {session_path}")
+                "Saved session %s to %s",
+                session.session_id, session_path
+            )
             return True
-        except Exception as e:
+        except (json.JSONDecodeError, TypeError, ValueError, OSError) as e:
             # Clean up temp file if it exists
             if os.path.exists(temp_path):
                 try:
                     os.unlink(temp_path)
-                except:
+                except Exception as ex:
                     pass
 
-            logger.error(f"Error saving session {session.session_id}: {e}")
+            logger.error("Error saving session %s: %s", session.session_id, e)
             return False
 
     def load_session(self, session_id: str) -> Optional[Session]:
@@ -215,14 +219,14 @@ class SessionManager:
 
         try:
             if not os.path.exists(session_path):
-                logger.warning(f"Session file not found: {session_path}")
+                logger.warning("Session file not found: %s", session_path)
                 return None
 
             with open(session_path, 'r', encoding='utf-8') as f:
                 session_data = json.load(f)
 
             if not session_data:
-                logger.warning(f"Session file empty: {session_path}")
+                logger.warning("Session file empty: %s", session_path)
                 return None
 
             session = Session.from_dict(session_data)
@@ -238,13 +242,13 @@ class SessionManager:
             # Trim active sessions if needed
             self._trim_active_sessions()
 
-            logger.debug(f"Loaded session {session_id} from {session_path}")
+            logger.debug("Loaded session %s from %s", session_id, session_path)
             return session
         except json.JSONDecodeError as e:
-            logger.error(f"Error parsing session file {session_path}: {e}")
+            logger.error("Error parsing session file %s: %s", session_path, e)
             return None
-        except Exception as e:
-            logger.error(f"Error loading session {session_id}: {e}")
+        except (json.JSONDecodeError, TypeError, ValueError, OSError) as e:
+            logger.error("Error loading session %s: %s", session_id, e)
             return None
 
     def delete_session(self, session_id: str) -> bool:
@@ -270,14 +274,14 @@ class SessionManager:
             # Delete the file if it exists
             if os.path.exists(session_path):
                 os.remove(session_path)
-                logger.info(f"Deleted session {session_id}")
+                logger.info("Deleted session %s", session_id)
                 return True
             else:
                 logger.warning(
-                    f"Session file not found for deletion: {session_path}")
+                    "Session file not found for deletion: %s", session_path)
                 return False
-        except Exception as e:
-            logger.error(f"Error deleting session {session_id}: {e}")
+        except (json.JSONDecodeError, TypeError, ValueError, OSError) as e:
+            logger.error("Error deleting session %s: %s", session_id, e)
             return False
 
     def list_sessions(self, session_type: Optional[str] = None,
@@ -326,15 +330,17 @@ class SessionManager:
                 }
 
                 sessions.append(session_meta)
-            except Exception as e:
+            except (json.JSONDecodeError, TypeError, ValueError, OSError) as e:
                 logger.warning(
-                    f"Error reading session file {session_file}: {e}")
+                    "Error reading session file %s: %s", session_file, e)
 
         # Sort by updated_at (most recent first)
         sessions.sort(key=lambda s: s.get("updated_at", ""), reverse=True)
 
         logger.debug(
-            f"Listed {len(sessions)} sessions matching criteria (type={session_type}, status={status_str})")
+            "Listed %d sessions matching criteria (type=%s, status=%s)",
+            len(sessions), session_type, status_str
+        )
         return sessions
 
     def find_incomplete_sessions(self) -> List[str]:
@@ -360,9 +366,9 @@ class SessionManager:
                 if status.lower() in incomplete_statuses:
                     incomplete_sessions.append(
                         session_data.get(SESSION_FIELDS["ID"]))
-            except Exception as e:
+            except (json.JSONDecodeError, TypeError, ValueError, OSError) as e:
                 logger.warning(
-                    f"Error checking session file {session_file}: {e}")
+                    "Error checking session file %s: %s", session_file, e)
 
         return incomplete_sessions
 
@@ -431,8 +437,8 @@ class SessionManager:
 
                 # Sleep for a day (86400 seconds)
                 time.sleep(86400)
-            except Exception as e:
-                logger.error(f"Error in session maintenance thread: {e}")
+            except (json.JSONDecodeError, TypeError, ValueError, OSError) as e:
+                logger.error("Error in session maintenance thread: %s", e)
                 # Sleep for an hour before retrying
                 time.sleep(3600)
 
@@ -459,7 +465,7 @@ class SessionManager:
                 if session_id in self._session_last_accessed:
                     del self._session_last_accessed[session_id]
 
-        logger.debug(f"Trimmed {sessions_to_remove} sessions from memory")
+        logger.debug("Trimmed %d sessions from memory", sessions_to_remove)
 
     def archive_completed_sessions(self, older_than_days: int = DEFAULT_ARCHIVE_AGE_DAYS,
                                    archive_dir: Optional[str] = None,
@@ -547,13 +553,13 @@ class SessionManager:
 
                 archived_count += 1
 
-                logger.debug(
-                    f"Archived session {session_id} to {archive_path}")
-            except Exception as e:
+                logger.debug("Archived session %s to %s",
+                             session_id, archive_path)
+            except (json.JSONDecodeError, TypeError, ValueError, OSError) as e:
                 logger.warning(
-                    f"Error archiving session file {session_file}: {e}")
+                    "Error archiving session file %s: %s", session_file, e)
 
-        logger.info(f"Archived {archived_count} sessions to {archive_dir}")
+        logger.info("Archived %d sessions to %s", archived_count, archive_dir)
         return archived_count
 
     def generate_session_report(self, session_id: str) -> Dict[str, Any]:
