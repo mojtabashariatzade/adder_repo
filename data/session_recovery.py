@@ -14,15 +14,13 @@ Features:
 - Monitoring and reporting of recovery operations
 """
 
-import os
-import json
 import logging
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Any
 
-from session_types import SessionStatus
-from session import Session
-from session_storage import SessionStorage, default_storage
+from .session_types import SessionStatus
+from .session import Session
+from .session_manager import SessionManager, get_session_manager
 
 # Setup logger
 logger = logging.getLogger(__name__)
@@ -33,13 +31,13 @@ class RecoveryStrategy:
 
     def can_recover(self, session: Session) -> bool:
         """
-        Determine if this strategy can recover the given session.
+        Check if the session has valid checkpoints for recovery.
 
         Args:
             session (Session): The session to evaluate
 
         Returns:
-            bool: True if this strategy can recover the session
+            bool: True if checkpoints are available for recovery
         """
         return False
 
@@ -247,15 +245,15 @@ class SessionRecoveryManager:
     This class coordinates the detection and recovery of interrupted sessions.
     """
 
-    def __init__(self, storage: Optional[SessionStorage] = None):
+    def __init__(self, session_manager: Optional[SessionManager] = None):
         """
         Initialize the recovery manager.
 
         Args:
-            storage (SessionStorage, optional): Storage for session data.
-                If None, uses the default storage.
+            session_manager (SessionManager, optional): Session manager for session operations.
+                If None, uses the default session manager.
         """
-        self.storage = storage or default_storage
+        self.session_manager = session_manager or get_session_manager()
         self.recovery_strategies = [
             CheckpointRecoveryStrategy(),  # Try checkpoint recovery first
             StateBasedRecoveryStrategy()   # Fall back to state-based recovery
@@ -274,25 +272,19 @@ class SessionRecoveryManager:
         Returns:
             List[str]: List of session IDs that appear to be interrupted
         """
+        # Get all sessions from the session manager
+        all_sessions = self.session_manager.list_sessions()
         interrupted_sessions = []
-
-        # List all session files
-        session_files = self.storage.list_session_files()
 
         # Current time for age filtering
         now = datetime.now()
 
-        for file_path in session_files:
+        for session_meta in all_sessions:
             try:
-                # Get session data
-                with open(file_path, 'r', encoding='utf-8') as f:
-                    session_data = json.load(f)
-
                 # Extract key information
-                session_id = os.path.basename(file_path).replace(
-                    "session_", "").replace(".json", "")
-                status = session_data.get("status", "").lower()
-                session_type = session_data.get("session_type")
+                session_id = session_meta.get("session_id")
+                status = session_meta.get("status", "").lower()
+                session_type = session_meta.get("session_type")
 
                 # Filter by interrupted status
                 if status not in ["running", "paused", "interrupted"]:
@@ -303,7 +295,7 @@ class SessionRecoveryManager:
                     continue
 
                 # Filter by age
-                updated_str = session_data.get("updated_at")
+                updated_str = session_meta.get("updated_at")
                 if not updated_str:
                     continue
 
@@ -317,11 +309,12 @@ class SessionRecoveryManager:
                     continue
 
                 # This session appears to be interrupted
-                interrupted_sessions.append(session_id)
+                if session_id:
+                    interrupted_sessions.append(session_id)
 
             except (ValueError, TypeError, AttributeError) as e:
                 logger.warning(
-                    "Error checking session file %s: %s", file_path, e)
+                    "Error checking session: %s", e)
 
         logger.info("Found %d interrupted sessions", len(interrupted_sessions))
         return interrupted_sessions
@@ -408,7 +401,7 @@ class SessionRecoveryManager:
                     )
 
                     # Save the recovered session
-                    self.storage.save_session(session)
+                    self.session_manager.save_session(session)
 
                     return True
                 else:
@@ -437,19 +430,13 @@ class SessionRecoveryManager:
 
         for session_id in session_ids:
             try:
-                # Load session data
-                session_data = self.storage.load_session(session_id)
+                # Load session
+                session = self.session_manager.get_session(session_id)
 
-                if not session_data:
-                    logger.warning(
-                        "Could not load data for session %s",
-                        session_id
-                    )
+                if not session:
+                    logger.warning("Could not load session %s", session_id)
                     results[session_id] = False
                     continue
-
-                # Create session object
-                session = Session.from_dict(session_data)
 
                 # Attempt recovery
                 result = self.recover_session(session)
@@ -483,7 +470,7 @@ class SessionRecoveryManager:
             session.add_state_checkpoint(name)
 
             # Save the session to persist the checkpoint
-            return self.storage.save_session(session)
+            return self.session_manager.save_session(session)
 
         except (ValueError, TypeError, AttributeError) as e:
             logger.error(
@@ -506,7 +493,7 @@ class SessionRecoveryManager:
             session.set_recovery_point(data)
 
             # Save the session to persist the recovery point
-            return self.storage.save_session(session)
+            return self.session_manager.save_session(session)
 
         except (ValueError, TypeError, AttributeError) as e:
             logger.error(
@@ -533,20 +520,17 @@ class SessionRecoveryManager:
 
         for session_id in session_ids:
             try:
-                # Load session data
-                session_data = self.storage.load_session(session_id)
+                # Load session
+                session = self.session_manager.get_session(session_id)
 
-                if not session_data:
+                if not session:
                     session_report = {
                         "session_id": session_id,
                         "status": "error",
-                        "error": "Could not load session data",
+                        "error": "Could not load session",
                         "recoverable": False
                     }
                 else:
-                    # Create session object
-                    session = Session.from_dict(session_data)
-
                     # Analyze session
                     analysis = self.analyze_session(session)
 
@@ -584,11 +568,31 @@ class SessionRecoveryManager:
 
 
 # Create a default recovery manager instance
-default_recovery_manager = SessionRecoveryManager()
+DEFAULT_RECOVERY_MANAGER = None
+
+
+def get_recovery_manager(
+        session_manager: Optional[SessionManager] = None) -> SessionRecoveryManager:
+    """
+    Get the default recovery manager instance.
+
+    Args:
+        session_manager (SessionManager, optional): Session manager to use
+
+    Returns:
+        SessionRecoveryManager: Default recovery manager instance
+    """
+    # Use module level constant
+    if DEFAULT_RECOVERY_MANAGER is None:
+        # Use function-local variable instead of global statement
+        recovery_manager = SessionRecoveryManager(session_manager)
+        # Store in module constant
+        globals()['DEFAULT_RECOVERY_MANAGER'] = recovery_manager
+        return recovery_manager
+    return DEFAULT_RECOVERY_MANAGER
+
 
 # Helper functions for common operations
-
-
 def find_interrupted_sessions(max_age_hours: int = 24) -> List[str]:
     """
     Find interrupted sessions using the default recovery manager.
@@ -599,7 +603,7 @@ def find_interrupted_sessions(max_age_hours: int = 24) -> List[str]:
     Returns:
         List[str]: List of interrupted session IDs
     """
-    return default_recovery_manager.find_interrupted_sessions(max_age_hours)
+    return get_recovery_manager().find_interrupted_sessions(max_age_hours)
 
 
 def recover_session(session: Session) -> bool:
@@ -612,7 +616,7 @@ def recover_session(session: Session) -> bool:
     Returns:
         bool: True if recovery was successful
     """
-    return default_recovery_manager.recover_session(session)
+    return get_recovery_manager().recover_session(session)
 
 
 def create_checkpoint(session: Session, name: str) -> bool:
@@ -626,4 +630,4 @@ def create_checkpoint(session: Session, name: str) -> bool:
     Returns:
         bool: True if successful
     """
-    return default_recovery_manager.create_checkpoint(session, name)
+    return get_recovery_manager().create_checkpoint(session, name)

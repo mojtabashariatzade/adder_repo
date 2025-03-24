@@ -30,16 +30,17 @@ logger = logging.getLogger(__name__)
 
 class ErrorManager:
     _instance = None
+    _initialized = False
 
     def __new__(cls, *args, **kwargs):
         if cls._instance is None:
             cls._instance = super(ErrorManager, cls).__new__(cls)
-            cls._instance._initialized = False
         return cls._instance
 
     def __init__(self, error_log_dir: str = "logs/errors",
                  max_log_files: int = 10,
                  keep_in_memory: int = 100):
+        # Check if already initialized
         if self._initialized:
             return
 
@@ -246,8 +247,6 @@ class ErrorManager:
         self.recent_errors.clear()
 
     def get_error_stats(self) -> Dict[str, Any]:
-        stats = {}
-
         if not self.recent_errors:
             return {
                 "total_errors": 0,
