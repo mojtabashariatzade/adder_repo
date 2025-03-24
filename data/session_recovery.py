@@ -182,7 +182,8 @@ class StateBasedRecoveryStrategy(RecoveryStrategy):
             return has_source and has_destination and has_progress
 
         # For more general cases, check for some progress indicator
-        return "progress" in session.state or ("processed" in session.state and "total" in session.state)
+        return "progress" in session.state or (
+            "processed" in session.state and "total" in session.state)
 
     def recover(self, session: Session) -> bool:
         """
@@ -345,7 +346,9 @@ class SessionRecoveryManager:
             "recoverable": False,
             "recommended_strategy": None,
             "has_recovery_point": session.recovery_point is not None,
-            "has_checkpoints": "checkpoints" in session.custom_data and len(session.custom_data["checkpoints"]) > 0,
+            "has_checkpoints":
+            "checkpoints" in session.custom_data and len(
+                session.custom_data["checkpoints"]) > 0,
             "has_state_history": len(session.state_history) > 0,
             "recovery_options": []
         }

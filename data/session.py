@@ -21,7 +21,9 @@ import uuid
 from datetime import datetime
 from typing import Dict, Optional, Any, Union
 
-from .session_types import SessionStatus, SESSION_FIELDS, DEFAULT_AUTO_SAVE_INTERVAL, DEFAULT_MAX_HISTORY_SIZE
+from .session_types import (
+    SessionStatus, SESSION_FIELDS, DEFAULT_AUTO_SAVE_INTERVAL, DEFAULT_MAX_HISTORY_SIZE
+)
 
 # Setup logger
 logger = logging.getLogger(__name__)
@@ -144,8 +146,9 @@ class Session:
                         except ImportError:
                             # SessionManager might not be available during development/testing
                             logger.warning(
-                                "SessionManager not available for auto-save of session %s", self.session_id)
-            except Exception as e:
+                                "SessionManager not available for auto-save of session %s",
+                                self.session_id)
+            except (IOError, ValueError, TypeError, AttributeError) as e:
                 logger.error("Error in auto-save worker: %s", e)
                 # Don't crash the thread, just continue
 
@@ -429,9 +432,9 @@ class Session:
             "error_count": len(self.errors)
         }
 
-        if format.lower() == 'json':
+        if output_format.lower() == 'json':
             return data
-        elif format.lower() == 'text':
+        elif output_format.lower() == 'text':
             lines = [
                 f"Session ID: {self.session_id}",
                 f"Type: {self.session_type}",
@@ -444,7 +447,7 @@ class Session:
             ]
             return "\n".join(lines)
         else:
-            raise ValueError(f"Unsupported format: {format}")
+            raise ValueError(f"Unsupported format: {output_format}")
 
     def add_state_checkpoint(self, name: str) -> None:
         """
