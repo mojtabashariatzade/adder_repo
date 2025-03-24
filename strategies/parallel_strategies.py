@@ -58,13 +58,10 @@ Usage:
     save_users_to_file(valid_users, "valid_users.json")
 """
 
-import json
 import logging
-import uuid
-import time
 from datetime import datetime, timedelta
 from enum import Enum, auto
-from typing import Any, Dict, List, Optional, Set, Union, Callable, Tuple
+from typing import Any, Dict, List, Optional, Union, Callable
 from pathlib import Path
 import re
 
@@ -77,7 +74,7 @@ except ImportError:
         def __init__(self, base_dir=None):
             pass
 
-        def read_json(self, path, default=None):
+        def read_json(self, default=None):
             return default
 
         def write_json(self, path, data, make_backup=False):
@@ -161,16 +158,16 @@ class User:
     """
 
     def __init__(self,
-                user_id: int,
-                username: Optional[str] = None,
-                first_name: Optional[str] = None,
-                last_name: Optional[str] = None,
-                phone: Optional[str] = None,
-                status: UserStatus = UserStatus.UNKNOWN,
-                last_seen: Optional[datetime] = None,
-                is_bot: bool = False,
-                is_verified: bool = False,
-                has_photo: bool = False):
+                 user_id: int,
+                 username: Optional[str] = None,
+                 first_name: Optional[str] = None,
+                 last_name: Optional[str] = None,
+                 phone: Optional[str] = None,
+                 status: UserStatus = UserStatus.UNKNOWN,
+                 last_seen: Optional[datetime] = None,
+                 is_bot: bool = False,
+                 is_verified: bool = False,
+                 has_photo: bool = False):
         """
         Initialize a User object with provided data.
 
@@ -315,7 +312,7 @@ class User:
 
             # Check for random-looking username with no recognizable words
             if (re.match(r'[a-zA-Z0-9]{10,}$', self.username) and
-                not re.match(r'[a-z]+', self.username.lower())):
+                    not re.match(r'[a-z]+', self.username.lower())):
                 self.fake_score += 1
                 self.fake_reasons.append("Username appears randomly generated")
 
@@ -334,7 +331,8 @@ class User:
         self.analysis_results["fake_score"] = self.fake_score
         self.analysis_results["fake_reasons"] = self.fake_reasons
 
-    def update_status(self, status: Union[UserStatus, str], last_seen: Optional[datetime] = None) -> None:
+    def update_status(self, status: Union[UserStatus, str], last_seen:
+                      Optional[datetime] = None) -> None:
         """
         Update the user's status and last seen timestamp.
 
@@ -352,7 +350,8 @@ class User:
         if last_seen is not None:
             self.last_seen = last_seen
 
-        logger.debug(f"Updated user {self.user_id} status to {UserStatus.to_str(status)}")
+        logger.debug("Updated user %s status to %s",
+                     self.user_id, UserStatus.to_str(status))
 
         # Re-analyze legitimacy as status can affect it
         self._analyze_legitimacy()
@@ -393,7 +392,8 @@ class User:
                 self.status = UserStatus.RECENTLY
             elif hasattr(status, "__class__") and "UserStatusLastWeek" in status.__class__.__name__:
                 self.status = UserStatus.LAST_WEEK
-            elif hasattr(status, "__class__") and "UserStatusLastMonth" in status.__class__.__name__:
+            elif hasattr(
+                    status, "__class__") and "UserStatusLastMonth" in status.__class__.__name__:
                 self.status = UserStatus.LAST_MONTH
             elif hasattr(status, "__class__") and "UserStatusOffline" in status.__class__.__name__:
                 self.status = UserStatus.OFFLINE
@@ -406,7 +406,7 @@ class User:
         # Re-analyze legitimacy with updated data
         self._analyze_legitimacy()
 
-        logger.debug(f"Updated user {self.user_id} from Telegram user data")
+        logger.debug("Updated user %s from Telegram user data", self.user_id)
 
     def to_dict(self) -> Dict[str, Any]:
         """
@@ -477,14 +477,17 @@ class User:
             try:
                 user.last_seen = datetime.fromisoformat(data["last_seen"])
             except (ValueError, TypeError):
-                logger.warning(f"Invalid last_seen format in user data: {data['last_seen']}")
+                logger.warning(
+                    "Invalid last_seen format in user data: %s", data['last_seen'])
 
         # Set collected_at if available
         if data.get("collected_at"):
             try:
-                user.collected_at = datetime.fromisoformat(data["collected_at"])
+                user.collected_at = datetime.fromisoformat(
+                    data["collected_at"])
             except (ValueError, TypeError):
-                logger.warning(f"Invalid collected_at format in user data: {data['collected_at']}")
+                logger.warning(
+                    "Invalid collected_at format in user data: %s", data['collected_at'])
 
         # Set analysis data
         user.analysis_results = data.get("analysis_results", {})
@@ -497,7 +500,8 @@ class User:
             try:
                 user.joined_at = datetime.fromisoformat(data["joined_at"])
             except (ValueError, TypeError):
-                logger.warning(f"Invalid joined_at format in user data: {data['joined_at']}")
+                logger.warning(
+                    "Invalid joined_at format in user data: %s", data['joined_at'])
 
         user.tags = set(data.get("tags", []))
         user.notes = data.get("notes", [])
@@ -505,9 +509,11 @@ class User:
 
         if data.get("last_contact"):
             try:
-                user.last_contact = datetime.fromisoformat(data["last_contact"])
+                user.last_contact = datetime.fromisoformat(
+                    data["last_contact"])
             except (ValueError, TypeError):
-                logger.warning(f"Invalid last_contact format in user data: {data['last_contact']}")
+                logger.warning(
+                    "Invalid last_contact format in user data: %s", data['last_contact'])
 
         user.response_rate = data.get("response_rate", 0.0)
 
@@ -526,7 +532,8 @@ class User:
         """
         # Extract user_id, which is required
         if not hasattr(telegram_user, "id"):
-            raise ValueError("Telegram user object must have an 'id' attribute")
+            raise ValueError(
+                "Telegram user object must have an 'id' attribute")
 
         user_id = telegram_user.id
 
@@ -577,7 +584,8 @@ class User:
         Returns:
             str: Detailed representation including ID and status.
         """
-        return f"User(id={self.user_id}, name='{self.full_name}', status={UserStatus.to_str(self.status)})"
+        return f"User(id={self.user_id}, name='{
+            self.full_name}', status={UserStatus.to_str(self.status)})"
 
 
 class UserCollection:
@@ -691,7 +699,8 @@ class UserCollection:
         Filter users based on a predicate function.
 
         Args:
-            predicate (Callable[[User], bool]): Function that takes a User and returns True to include.
+            predicate (Callable[[User], bool]):
+            Function that takes a User and returns True to include.
 
         Returns:
             UserCollection: New collection with filtered users.
@@ -702,7 +711,8 @@ class UserCollection:
 
             # Get all non-bot users who were active in the last week
             recent_real_users = collection.filter(
-                lambda user: not user.is_bot and user.status in [UserStatus.ONLINE, UserStatus.RECENTLY]
+                lambda user: not user.is_bot and user.status in
+                [UserStatus.ONLINE, UserStatus.RECENTLY]
             )
         """
         filtered_users = [user for user in self._users if predicate(user)]
@@ -728,7 +738,7 @@ class UserCollection:
         for user in self._users:
             if (user.username and query in user.username.lower() or
                 user.first_name and query in user.first_name.lower() or
-                user.last_name and query in user.last_name.lower()):
+                    user.last_name and query in user.last_name.lower()):
                 matches.append(user)
 
         return UserCollection(matches)
@@ -778,11 +788,12 @@ class UserCollection:
 
             # Save to file
             self.file_manager.write_json(file_path, data)
-            logger.info(f"Saved {len(users_data)} users to {file_path}")
+            logger.info("Saved %d users to %s", len(users_data), file_path)
             return True
 
         except (FileWriteError, Exception) as e:
-            logger.error(f"Failed to save user collection to {file_path}: {e}")
+            logger.error(
+                "Failed to save user collection to %s: %s", file_path, e)
             return False
 
     @classmethod
@@ -805,7 +816,8 @@ class UserCollection:
             data = file_manager.read_json(file_path)
 
             if not data or "users" not in data:
-                raise ValueError(f"Invalid user collection data in {file_path}")
+                raise ValueError(
+                    f"Invalid user collection data in {file_path}")
 
             # Create users from data
             users = []
@@ -814,17 +826,18 @@ class UserCollection:
                     user = User.from_dict(user_data)
                     users.append(user)
                 except (ValueError, KeyError) as e:
-                    logger.warning(f"Skipping invalid user data: {e}")
+                    logger.warning("Skipping invalid user data: %s", e)
 
             collection = cls(users)
-            logger.info(f"Loaded {len(users)} users from {file_path}")
+            logger.info("Loaded %d users from %s", len(users), file_path)
             return collection
 
         except FileReadError as e:
-            logger.error(f"Failed to read user collection from {file_path}: {e}")
+            logger.error(
+                "Failed to read user collection from %s: %s", file_path, e)
             raise
         except Exception as e:
-            logger.error(f"Error loading user collection: {e}")
+            logger.error("Error loading user collection: %s", e)
             raise ValueError(f"Invalid user collection data: {e}")
 
     def merge(self, other: 'UserCollection', overwrite: bool = True) -> int:
@@ -954,6 +967,7 @@ class UserAnalytics:
             for status, count in status_counts.items()
         }
 
+
 def get_users_from_file(file_path: Union[str, Path]) -> UserCollection:
     """
     Load users from a file and create a UserCollection.
@@ -1005,7 +1019,7 @@ def filter_active_legitimate_users(collection: UserCollection) -> UserCollection
 
 
 def add_tag_to_users(collection: UserCollection, tag: str,
-                   predicate: Optional[Callable[[User], bool]] = None) -> int:
+                     predicate: Optional[Callable[[User], bool]] = None) -> int:
     """
     Add a tag to users in a collection, optionally filtering with a predicate.
 
@@ -1082,7 +1096,8 @@ def add_tag_to_users(collection: UserCollection, tag: str,
 
         # Sort by frequency
         common_reasons = sorted(
-            [{"reason": reason, "count": count} for reason, count in reason_counts.items()],
+            [{"reason": reason, "count": count}
+                for reason, count in reason_counts.items()],
             key=lambda x: x["count"],
             reverse=True
         )
@@ -1151,7 +1166,9 @@ def add_tag_to_users(collection: UserCollection, tag: str,
                 "is_fake": user.is_fake,
                 "fake_reasons": user.fake_reasons,
                 "assessment": "Legitimate" if not user.is_fake else "Suspicious",
-                "confidence": "High" if user.fake_score > 3 or user.fake_score < -2 else "Medium" if user.fake_score >= 2 or user.fake_score <= -1 else "Low"
+                "confidence":
+                "High" if user.fake_score > 3 or user.fake_score < -
+                    2 else "Medium" if user.fake_score >= 2 or user.fake_score <= -1 else "Low"
             },
             "metadata": user.metadata,
             "generated_at": now.isoformat()
@@ -1217,7 +1234,8 @@ def add_tag_to_users(collection: UserCollection, tag: str,
 
     @staticmethod
     def compare_collections(collection1: UserCollection, collection2: UserCollection,
-                          name1: str = "Collection 1", name2: str = "Collection 2") -> Dict[str, Any]:
+                            name1: str =
+                            "Collection 1", name2: str = "Collection 2") -> Dict[str, Any]:
         """
         Compare two user collections and generate comparative statistics.
 
@@ -1251,11 +1269,15 @@ def add_tag_to_users(collection: UserCollection, tag: str,
                 name1: len(collection1),
                 name2: len(collection2),
                 "difference": len(collection1) - len(collection2),
-                "ratio": len(collection1) / len(collection2) if len(collection2) > 0 else float('inf')
+                "ratio":
+                len(collection1) /
+                    len(collection2) if len(collection2) > 0 else float('inf')
             },
             "overlap": {
                 "common_users": len(common_ids),
-                "overlap_percentage": (len(common_ids) / len(ids1.union(ids2)) * 100) if ids1.union(ids2) else 0,
+                "overlap_percentage":
+                (len(common_ids) / len(ids1.union(ids2))
+                 * 100) if ids1.union(ids2) else 0,
                 "only_in_first": len(only_in_1),
                 "only_in_second": len(only_in_2)
             },
@@ -1281,7 +1303,9 @@ def add_tag_to_users(collection: UserCollection, tag: str,
                     "fake_percentage": legit_stats2["fake_percentage"],
                     "bot_percentage": legit_stats2["bot_percentage"]
                 },
-                "legitimacy_difference": legit_stats1["legitimate_percentage"] - legit_stats2["legitimate_percentage"]
+                "legitimacy_difference":
+                legit_stats1["legitimate_percentage"] -
+                    legit_stats2["legitimate_percentage"]
             },
             "compared_at": datetime.now().isoformat()
         }

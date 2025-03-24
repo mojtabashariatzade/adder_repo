@@ -15,10 +15,10 @@ Features:
 - Backup state for recovery in case of interruptions
 """
 
-import logging
 import time
 import asyncio
-from typing import Dict, List, Tuple, Union, Any, Optional, Callable
+import random
+from typing import Optional, Callable
 import unittest.mock  # برای MagicMock
 from datetime import datetime, timedelta
 
@@ -31,6 +31,7 @@ except ImportError:
     # Mock BaseStrategy class for development
     class BaseStrategy:
         """Mock BaseStrategy class for development purposes."""
+
         def __init__(self, **kwargs):
             self.name = "BaseStrategy"
             self.description = "Base class for all strategies"
@@ -43,11 +44,11 @@ from core.constants import (
     DEFAULT_DELAY, MAX_DELAY, MAX_RETRY_COUNT, ACCOUNT_CHANGE_DELAY
 )
 from core.exceptions import (
-    TelegramAdderError, AccountError, APIError, NetworkError,
-    OperationError, StrategyError, StrategyExecutionError
+    AccountError, APIError, NetworkError,
+    StrategyExecutionError
 )
 from logging_.logging_manager import get_logger
-from data.session_manager import SessionManager, Session, SessionStatus
+from data.session_manager import SessionManager, SessionStatus
 
 # Get logger
 logger = get_logger("SequentialStrategy")
@@ -133,12 +134,13 @@ class SequentialStrategy(BaseStrategy):
             # Try to retrieve existing session
             self.session = session_manager.get_session(session_id)
             if self.session:
-                logger.info(f"Resumed session with ID: {session_id}")
+                logger.info("Resumed session with ID: %s", session_id)
 
                 # Restore state from session
                 self._restore_state_from_session()
             else:
-                logger.warning(f"Session ID {session_id} not found, creating new session")
+                logger.warning(
+                    "Session ID %s not found, creating new session", session_id)
                 self._create_new_session()
         else:
             # Create new session
@@ -147,7 +149,8 @@ class SequentialStrategy(BaseStrategy):
     def _create_new_session(self):
         """Create a new session for this operation."""
         session_manager = SessionManager()
-        self.session = session_manager.create_session(session_type="sequential_strategy")
+        self.session = session_manager.create_session(
+            session_type="sequential_strategy")
 
         # Initialize session state
         self.session.update_state({
@@ -169,7 +172,7 @@ class SequentialStrategy(BaseStrategy):
         # Set status to created
         self.session.set_status(SessionStatus.CREATED)
 
-        logger.info(f"Created new session with ID: {self.session.session_id}")
+        logger.info("Created new session with ID: %s", self.session.session_id)
 
     def _restore_state_from_session(self):
         """Restore operation state from the session."""
@@ -192,7 +195,10 @@ class SequentialStrategy(BaseStrategy):
             # برای سازگاری با نام‌های متفاوت کلیدها در جلسات قدیمی
             if not self.processed_items and "processed" in state:
                 processed_count = state.get("processed", 0)
-                logger.info(f"Found {processed_count} processed items in session but no details. Using count only.")
+                logger.info(
+                    "Found %d processed items in session but no details. Using count only.",
+                    processed_count
+                )
 
             # Restore error counts
             self.error_counts = state.get("error_counts", {})
@@ -206,15 +212,19 @@ class SequentialStrategy(BaseStrategy):
             if start_time_str:
                 try:
                     self.start_time = datetime.fromisoformat(start_time_str)
-                    logger.debug(f"Restored start time: {self.start_time}")
+                    logger.debug("Restored start time: %s", self.start_time)
                 except (ValueError, TypeError):
                     self.start_time = None
 
             # Set appropriate status for resumed session
             self.session.set_status(SessionStatus.RECOVERED)
 
-            logger.info(f"Restored state from session {self.session.session_id}")
-            logger.debug(f"Restored progress: {self.progress:.1f}%, Success: {self.success_count}/{self.total_count}")
+            logger.info("Restored state from session %s",
+                        self.session.session_id)
+            logger.debug(
+                "Restored progress: %.1f%%, Success: %d/%d",
+                self.progress, self.success_count, self.total_count
+            )
 
     def _save_state_to_session(self):
         """Save current operation state to the session."""
@@ -248,7 +258,8 @@ class SequentialStrategy(BaseStrategy):
             # session_manager = SessionManager()
             # session_manager.save_session(self.session)
 
-            logger.debug(f"Saved operation state to session {self.session.session_id}")
+            logger.debug("Saved operation state to session %s",
+                         self.session.session_id)
 
     async def execute(self, target_group, members, **kwargs):
         """
@@ -263,7 +274,8 @@ class SequentialStrategy(BaseStrategy):
             dict: Execution results and statistics
         """
         if self.operation_active:
-            logger.warning("Operation already active, cannot start another execution")
+            logger.warning(
+                "Operation already active, cannot start another execution")
             raise StrategyExecutionError("Operation already active")
 
         try:
@@ -287,7 +299,8 @@ class SequentialStrategy(BaseStrategy):
                 self.session.set_status(SessionStatus.RUNNING)
 
             # Log start of operation
-            logger.info(f"Starting sequential execution with {len(self.queue)} members to process")
+            logger.info(
+                "Starting sequential execution with %d members to process", len(self.queue))
 
             # Process the queue
             result = await self._process_queue(target_group, **kwargs)
@@ -299,7 +312,7 @@ class SequentialStrategy(BaseStrategy):
             return result
 
         except Exception as e:
-            logger.error(f"Error during sequential execution: {e}")
+            logger.error("Error during sequential execution: %s", e)
 
             # Log error to session
             if self.session:
@@ -320,7 +333,7 @@ class SequentialStrategy(BaseStrategy):
             if self.current_client and hasattr(self.current_client, 'disconnect'):
                 try:
                     await self.current_client.disconnect()
-                except:
+                except (ValueError, TypeError, StopIteration):
                     pass
 
             self.operation_active = False
@@ -355,7 +368,8 @@ class SequentialStrategy(BaseStrategy):
 
         # Additional control parameters
         max_consecutive_errors = kwargs.get('max_consecutive_errors', 5)
-        max_consecutive_account_switches = kwargs.get('max_consecutive_account_switches', 3)
+        max_consecutive_account_switches = kwargs.get(
+            'max_consecutive_account_switches', 3)
         batch_size = kwargs.get('batch_size', 10)
 
         # Tracking variables
@@ -368,12 +382,14 @@ class SequentialStrategy(BaseStrategy):
         while self.queue:
             # Get next member from queue
             item = self.queue[0]
-            member_id, member_info = item if isinstance(item, tuple) else (item, "No info")
+            member_id, member_info = item if isinstance(
+                item, tuple) else (item, "No info")
 
             # Log progress
             processed = len(self.processed_items)
             remaining = len(self.queue)
-            self.progress = (processed / self.total_count) * 100 if self.total_count > 0 else 0
+            self.progress = (processed / self.total_count) * \
+                100 if self.total_count > 0 else 0
 
             # Send progress updates at intervals
             current_time = time.time()
@@ -390,7 +406,8 @@ class SequentialStrategy(BaseStrategy):
                     logger.error("No available accounts. Operation paused.")
 
                     if self.session:
-                        self.session.log_event("No available accounts, operation paused")
+                        self.session.log_event(
+                            "No available accounts, operation paused")
                         self.session.set_status(SessionStatus.PAUSED)
 
                     # Save state for future resume
@@ -407,18 +424,21 @@ class SequentialStrategy(BaseStrategy):
                 self.current_account_index = account_index
 
                 # Log account switch
-                logger.info(f"Switched to account {self.current_account_index}")
+                logger.info("Switched to account %s",
+                            self.current_account_index)
 
                 # Update session state
                 if self.session:
                     self.session.update_state({
                         "current_account_index": self.current_account_index
                     })
-                    self.session.log_event(f"Switched to account {self.current_account_index}")
+                    self.session.log_event(
+                        f"Switched to account {self.current_account_index}")
 
             # Try to add the member
             try:
-                logger.info(f"Adding member {member_id} ({member_info}) to group")
+                logger.info("Adding member %s (%s) to group",
+                            member_id, member_info)
 
                 # Call account manager to add the member
                 # This would be something like:
@@ -440,13 +460,14 @@ class SequentialStrategy(BaseStrategy):
 
                 # Update delay if needed
                 if new_delay != self.current_delay:
-                    logger.info(f"Adjusting delay from {self.current_delay}s to {new_delay}s")
+                    logger.info("Adjusting delay from %ds to %ds",
+                                self.current_delay, new_delay)
                     self.current_delay = new_delay
 
                 # Process result
                 if success:
                     # Member added successfully
-                    logger.info(f"Successfully added member {member_id}")
+                    logger.info("Successfully added member %s", member_id)
 
                     # Pop the member from the queue and add to processed items
                     self.queue.pop(0)
@@ -457,13 +478,14 @@ class SequentialStrategy(BaseStrategy):
                     # Update account stats
                     account_id = str(self.current_account_index)
                     if account_id not in results["account_stats"]:
-                        results["account_stats"][account_id] = {"success": 0, "failure": 0}
+                        results["account_stats"][account_id] = {
+                            "success": 0, "failure": 0}
                     results["account_stats"][account_id]["success"] += 1
 
                     # Reset retry count
                     self.retry_count = 0
 
-                        # Save state periodically (every batch_size successful operations)
+                    # Save state periodically (every batch_size successful operations)
                     if self.success_count % batch_size == 0:
                         self._save_state_to_session()
 
@@ -476,8 +498,8 @@ class SequentialStrategy(BaseStrategy):
                     # If max retries exceeded, mark as permanent failure
                     if self.retry_count >= self.max_retry_count:
                         logger.warning(
-                            f"Max retries ({self.max_retry_count}) exceeded for member {member_id}, "
-                            f"skipping to next member"
+                            "Max retries (%d) exceeded for member %s, skipping to next member",
+                            self.max_retry_count, member_id
                         )
 
                         # Pop the member from the queue and add to failed items
@@ -488,13 +510,15 @@ class SequentialStrategy(BaseStrategy):
                         # Log to session
                         if self.session:
                             self.session.log_event(
-                                f"Permanently failed to add member {member_id} after {self.max_retry_count} retries"
+                                f"Permanently failed to add member {
+                                    member_id} after {self.max_retry_count} retries"
                             )
 
                         # Update account stats
                         account_id = str(self.current_account_index)
                         if account_id not in results["account_stats"]:
-                            results["account_stats"][account_id] = {"success": 0, "failure": 0}
+                            results["account_stats"][account_id] = {
+                                "success": 0, "failure": 0}
                         results["account_stats"][account_id]["failure"] += 1
 
                         # Reset retry count for next member
@@ -502,8 +526,8 @@ class SequentialStrategy(BaseStrategy):
                     else:
                         # Will retry with current member
                         logger.info(
-                            f"Failed to add member {member_id}, will retry "
-                            f"(attempt {self.retry_count} of {self.max_retry_count})"
+                            "Failed to add member %s, will retry (attempt %d of %d)",
+                            member_id, self.retry_count, self.max_retry_count
                         )
 
                         # Take a short break before retry
@@ -513,7 +537,10 @@ class SequentialStrategy(BaseStrategy):
                 account_status = await self._check_account_status(self.current_account_index)
 
                 if account_status != "active":
-                    logger.info(f"Account {self.current_account_index} status changed to {account_status}, switching accounts")
+                    logger.info(
+                        "Account %s status changed to %s, switching accounts",
+                        self.current_account_index, account_status
+                    )
 
                     # Disconnect current client
                     if self.current_client:
@@ -530,13 +557,15 @@ class SequentialStrategy(BaseStrategy):
                     # Check if we've switched accounts too many times in a row
                     if consecutive_account_switches >= max_consecutive_account_switches:
                         logger.warning(
-                            f"Too many consecutive account switches ({consecutive_account_switches}). "
-                            f"Pausing operation for extended period."
+                            "Too many consecutive account switches (%d)."
+                            "Pausing operation for extended period.",
+                            consecutive_account_switches
                         )
                         # Log to session
                         if self.session:
                             self.session.log_event(
-                                f"Pausing due to {consecutive_account_switches} consecutive account switches"
+                                f"Pausing due to {
+                                    consecutive_account_switches} consecutive account switches"
                             )
 
                         # Take an extended break
@@ -547,8 +576,10 @@ class SequentialStrategy(BaseStrategy):
                         await asyncio.sleep(self.account_change_delay)
 
                 # Take a short break between operations
-                jitter = min(5, self.current_delay * 0.1)  # 10% jitter up to 5 seconds max
-                wait_time = self.current_delay + (jitter * (2 * (0.5 - kwargs.get("jitter_factor", 0.5))))
+                # 10% jitter up to 5 seconds max
+                jitter = min(5, self.current_delay * 0.1)
+                wait_time = self.current_delay + \
+                    (jitter * (2 * (0.5 - kwargs.get("jitter_factor", 0.5))))
                 await asyncio.sleep(wait_time)
 
                 # Reset consecutive account switches counter after successful operation
@@ -562,12 +593,14 @@ class SequentialStrategy(BaseStrategy):
 
             except Exception as e:
                 # Handle unexpected errors
-                logger.error(f"Error processing member {member_id}: {e}")
+                logger.error("Error processing member %s: %s", member_id, e)
 
                 # Track error counts
                 error_type = type(e).__name__
-                self.error_counts[error_type] = self.error_counts.get(error_type, 0) + 1
-                results["errors"][error_type] = results["errors"].get(error_type, 0) + 1
+                self.error_counts[error_type] = self.error_counts.get(
+                    error_type, 0) + 1
+                results["errors"][error_type] = results["errors"].get(
+                    error_type, 0) + 1
 
                 # Log to session
                 if self.session:
@@ -580,7 +613,8 @@ class SequentialStrategy(BaseStrategy):
                 # Handle different error types
                 if self._is_account_error(e):
                     # If it's an account-related issue, switch accounts
-                    logger.warning(f"Account error detected: {e}, switching accounts")
+                    logger.warning(
+                        "Account error detected: %s, switching accounts", e)
 
                     # Disconnect current client
                     if self.current_client:
@@ -596,20 +630,21 @@ class SequentialStrategy(BaseStrategy):
 
                 elif self._is_network_error(e):
                     # For network errors, wait a bit and retry
-                    logger.warning(f"Network error detected: {e}, waiting before retry")
+                    logger.warning(
+                        "Network error detected: %s, waiting before retry", e)
                     await asyncio.sleep(30)  # Longer wait for network issues
 
                 elif self._is_api_error(e):
                     # For API errors, increase delay and continue
                     new_delay = min(self.current_delay * 2, self.max_delay)
                     logger.warning(
-                        f"API error detected: {e}, increasing delay to {new_delay}"
-                    )
+                        "API error detected: %s, increasing delay to %d", e, new_delay)
                     self.current_delay = new_delay
                     await asyncio.sleep(new_delay)
                 else:
                     # For other errors, add short delay and continue
-                    logger.warning(f"Unexpected error: {e}, continuing with short delay")
+                    logger.warning(
+                        "Unexpected error: %s, continuing with short delay", e)
                     await asyncio.sleep(10)
 
                 # Increment consecutive error counter
@@ -617,11 +652,13 @@ class SequentialStrategy(BaseStrategy):
 
                 # Check if we've had too many consecutive errors
                 if consecutive_errors >= max_consecutive_errors:
-                    logger.error(f"Too many consecutive errors ({consecutive_errors}). Pausing operation.")
+                    logger.error(
+                        "Too many consecutive errors (%d). Pausing operation.", consecutive_errors)
 
                     # Log to session
                     if self.session:
-                        self.session.log_event(f"Pausing due to {consecutive_errors} consecutive errors")
+                        self.session.log_event(
+                            f"Pausing due to {consecutive_errors} consecutive errors")
                         self.session.set_status(SessionStatus.PAUSED)
 
                     # Save state for future resume
@@ -640,7 +677,8 @@ class SequentialStrategy(BaseStrategy):
         # Calculate final statistics
         elapsed_time = (datetime.now() - self.start_time).total_seconds()
         results["elapsed_time"] = elapsed_time
-        results["speed"] = self.success_count / elapsed_time if elapsed_time > 0 else 0
+        results["speed"] = self.success_count / \
+            elapsed_time if elapsed_time > 0 else 0
         results["status"] = "completed"
 
         return results
@@ -665,7 +703,7 @@ class SequentialStrategy(BaseStrategy):
         # If connection failed
         if client is None:
             # Log the failure
-            logger.error(f"Failed to connect to account {account_index}")
+            logger.error("Failed to connect to account %s", account_index)
 
             # Try next account recursively
             return await self._get_next_account()
@@ -767,10 +805,9 @@ class SequentialStrategy(BaseStrategy):
 
         # Log progress
         logger.info(
-            f"Progress: {self.progress:.1f}% ({processed}/{total}) - "
-            f"Success: {self.success_count} - "
-            f"Account: {self.current_account_index} - "
-            f"Delay: {self.current_delay}s"
+            "Progress: %.1f%% (%d/%d) - Success: %d - Account: %s - Delay: %ds",
+            self.progress, processed, total, self.success_count,
+            self.current_account_index, self.current_delay
         )
 
         # Update session state
@@ -787,7 +824,7 @@ class SequentialStrategy(BaseStrategy):
             try:
                 self.on_progress_callback(progress_data)
             except Exception as e:
-                logger.error(f"Error in progress callback: {e}")
+                logger.error("Error in progress callback: %s", e)
 
     def _finalize_operation(self, result):
         """
@@ -827,8 +864,10 @@ class SequentialStrategy(BaseStrategy):
 
         # Log completion
         logger.info(
-            f"Operation finalized with status '{result.get('status', 'completed')}'. "
-            f"Added {result['success_count']} out of {result['total_count']} members."
+            "Operation finalized with status '%s'. Added %d out of %d members.",
+            result.get('status', 'completed'),
+            result['success_count'],
+            result['total_count']
         )
 
     async def pause(self):
@@ -875,14 +914,18 @@ class SequentialStrategy(BaseStrategy):
             logger.error("Cannot resume: no session available")
             return {"status": "failed", "reason": "no_session"}
 
-        logger.info(f"Resuming operation from session {self.session.session_id}")
+        logger.info(
+            "Resuming operation from session %s",
+            self.session.session_id
+        )
 
         # Set status to running
         self.session.set_status(SessionStatus.RUNNING)
         self.session.log_event("Operation resumed")
 
         # Execute the operation with current queue
-        return await self.execute(target_group, [])  # Empty list since queue is already loaded
+        # Empty list since queue is already loaded
+        return await self.execute(target_group, [])
 
     async def stop(self):
         """
@@ -929,7 +972,11 @@ class SequentialStrategy(BaseStrategy):
         self.current_client = None
         self.operation_active = False
 
-        logger.info(f"Operation stopped. Processed {len(self.processed_items)} items with {self.success_count} successes.")
+        logger.info(
+            "Operation stopped. Processed %d items with %d successes.",
+            len(self.processed_items),
+            self.success_count
+        )
         return True
 
     # The following methods are for development and testing
@@ -949,17 +996,18 @@ class SequentialStrategy(BaseStrategy):
         # For development, return a mock client
         return MagicMock()  # Mock Telegram client
 
-    async def _simulate_add_member(self, client, member_id, target_group, account_index, retry_count=0):
+    async def _simulate_add_member(
+            self, client, member_id, target_group, account_index, retry_count=0):
         """Simulate adding a member to a group."""
         # In production, this would call the Telegram API to add a member
         # For development, simulate success/failure based on probability
-        import random
 
         # Higher success rate on later retries
         success_probability = 0.8 + (retry_count * 0.05)
 
         # Simulate random delays
-        new_delay = min(self.current_delay * random.uniform(0.8, 1.2), self.max_delay)
+        new_delay = min(self.current_delay *
+                        random.uniform(0.8, 1.2), self.max_delay)
 
         # Simulate API call
         await asyncio.sleep(random.uniform(0.1, 0.5))

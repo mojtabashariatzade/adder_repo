@@ -174,7 +174,7 @@ class AccountManager:
                 try:
                     self.encryptor = Encryptor(
                         key_file=self.encryption_key_file)
-                except Exception as e:
+                except (ValueError, TypeError, AttributeError):
                     logger.error("Error initializing encryption: %s", e)
                     self.encryption_enabled = False
 

@@ -1185,7 +1185,9 @@ def add_tag_to_users(collection: UserCollection, tag: str,
                 "is_fake": user.is_fake,
                 "fake_reasons": user.fake_reasons,
                 "assessment": "Legitimate" if not user.is_fake else "Suspicious",
-                "confidence": "High" if user.fake_score > 3 or user.fake_score < -2 else "Medium" if user.fake_score >= 2 or user.fake_score <= -1 else "Low"
+                "confidence": ("High" if user.fake_score > 3 or user.fake_score < -2
+                               else "Medium" if user.fake_score >= 2 or user.fake_score <= -1
+                               else "Low")
             },
             "metadata": user.metadata,
             "generated_at": now.isoformat()
@@ -1251,7 +1253,8 @@ def add_tag_to_users(collection: UserCollection, tag: str,
 
     @staticmethod
     def compare_collections(collection1: UserCollection, collection2: UserCollection,
-                            name1: str = "Collection 1", name2: str = "Collection 2") -> Dict[str, Any]:
+                            name1: str = "Collection 1",
+                            name2: str = "Collection 2") -> Dict[str, Any]:
         """
         Compare two user collections and generate comparative statistics.
 
@@ -1285,11 +1288,15 @@ def add_tag_to_users(collection: UserCollection, tag: str,
                 name1: len(collection1),
                 name2: len(collection2),
                 "difference": len(collection1) - len(collection2),
-                "ratio": len(collection1) / len(collection2) if len(collection2) > 0 else float('inf')
+                "ratio": (len(collection1) / len(collection2) if len(collection2) > 0
+                          else float('inf'))
             },
             "overlap": {
                 "common_users": len(common_ids),
-                "overlap_percentage": (len(common_ids) / len(ids1.union(ids2)) * 100) if ids1.union(ids2) else 0,
+                "overlap_percentage": (
+                    (len(common_ids) / len(ids1.union(ids2))
+                     * 100) if ids1.union(ids2) else 0
+                ),
                 "only_in_first": len(only_in_1),
                 "only_in_second": len(only_in_2)
             },
@@ -1315,7 +1322,10 @@ def add_tag_to_users(collection: UserCollection, tag: str,
                     "fake_percentage": legit_stats2["fake_percentage"],
                     "bot_percentage": legit_stats2["bot_percentage"]
                 },
-                "legitimacy_difference": legit_stats1["legitimate_percentage"] - legit_stats2["legitimate_percentage"]
+                "legitimacy_difference": (
+                    legit_stats1["legitimate_percentage"] -
+                    legit_stats2["legitimate_percentage"]
+                )
             },
             "compared_at": datetime.now().isoformat()
         }

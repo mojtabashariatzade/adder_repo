@@ -360,7 +360,7 @@ class ProxyManager:
                 self.proxies_file, default={})
 
             if not proxies_data:
-                logger.info(f"No proxies found in {self.proxies_file}")
+                logger.info("No proxies found in %s", self.proxies_file)
                 return False
 
             # Convert loaded data to internal format
@@ -389,14 +389,17 @@ class ProxyManager:
                 self.current_proxy_id = sorted_proxies[0][0]
 
             logger.info(
-                f"Loaded {len(self.proxies)} proxies from {self.proxies_file}")
+                "Loaded %d proxies from %s",
+                len(self.proxies),
+                self.proxies_file
+            )
             return True
 
         except FileReadError as e:
-            logger.warning(f"Could not load proxies file: {e}")
+            logger.warning("Could not load proxies file: %s", e)
             return False
         except Exception as e:
-            logger.error(f"Error loading proxies: {e}")
+            logger.error("Error loading proxies: %s", e)
             return False
 
     def _save_proxies(self):
@@ -430,14 +433,17 @@ class ProxyManager:
             self.file_manager.write_json(
                 self.proxies_file, proxies_data, make_backup=True)
             logger.debug(
-                f"Saved {len(self.proxies)} proxies to {self.proxies_file}")
+                "Saved %d proxies to %s",
+                len(self.proxies),
+                self.proxies_file
+            )
             return True
 
         except FileWriteError as e:
-            logger.error(f"Could not save proxies file: {e}")
+            logger.error("Could not save proxies file: %s", e)
             return False
         except Exception as e:
-            logger.error(f"Error saving proxies: {e}")
+            logger.error("Error saving proxies: %s", e)
             return False
 
     def add_proxy(self, proxy_type: Union[ProxyType, str], host: str, port: int,
@@ -509,13 +515,23 @@ class ProxyManager:
             self._save_proxies()
 
         logger.info(
-            f"Added new proxy {proxy_id}: {host}:{port} ({ProxyType.to_str(proxy_type)})")
+            "Added new proxy %s: %s:%s (%s)",
+            proxy_id,
+            host,
+            port,
+            ProxyType.to_str(proxy_type)
+        )
 
         # Test the proxy if requested
         if test:
             is_working, latency = self.test_proxy(proxy_id)
-            logger.info(f"Tested proxy {proxy_id}: {'Success' if is_working else 'Failed'}" +
-                        (f", latency: {latency}ms" if is_working else ""))
+            logger.info(
+                "Tested proxy %s: %s" +
+                (", latency: %sms" if is_working else ""),
+                proxy_id,
+                "Success" if is_working else "Failed",
+                latency if is_working else None
+            )
 
         return proxy_id
 
@@ -531,7 +547,7 @@ class ProxyManager:
         """
         with self._lock:
             if proxy_id not in self.proxies:
-                logger.warning(f"Proxy {proxy_id} not found for removal")
+                logger.warning("Proxy %s not found for removal", proxy_id)
                 return False
 
             # If this is the current proxy, clear it
@@ -549,7 +565,7 @@ class ProxyManager:
             # Save changes
             self._save_proxies()
 
-            logger.info(f"Removed proxy {proxy_id}: {host}:{port}")
+            logger.info("Removed proxy %s: %s:%s", proxy_id, host, port)
             return True
 
     def get_proxy(self, proxy_id: str) -> Optional[Dict[str, Any]]:
@@ -664,11 +680,11 @@ class ProxyManager:
                     await writer.wait_closed()
 
         except (asyncio.TimeoutError, ConnectionRefusedError, ConnectionError, socket.error) as e:
-            logger.debug(f"Proxy test failed for {host}:{port}: {e}")
+            logger.debug("Proxy test failed for %s:%s: %s", host, port, e)
             return False, None
 
         except Exception as e:
-            logger.error(f"Error testing proxy {host}:{port}: {e}")
+            logger.error("Error testing proxy %s:%s: %s", host, port, e)
             return False, None
 
     def test_proxy(self, proxy_id: str) -> Tuple[bool, Optional[float]]:
@@ -706,7 +722,8 @@ class ProxyManager:
                     self._test_proxy_async(proxy_data)
                 )
             except Exception as e:
-                logger.error(f"Error during proxy test for {host}:{port}: {e}")
+                logger.error(
+                    "Error during proxy test for %s:%s: %s", host, port, e)
                 is_working, latency = False, None
 
             # Update proxy status based on test results
@@ -763,7 +780,7 @@ class ProxyManager:
                 success, latency = self.test_proxy(proxy_id)
                 results[proxy_id] = (success, latency)
             except Exception as e:
-                logger.error(f"Error testing proxy {proxy_id}: {e}")
+                logger.error("Error testing proxy %s: %s", proxy_id, e)
                 results[proxy_id] = (False, None)
 
         return results
@@ -826,7 +843,7 @@ class ProxyManager:
                 proxy_data = self.proxies.get(proxy_id)
                 if not proxy_data:
                     logger.warning(
-                        f"Proxy {proxy_id} not found, using best available")
+                        "Proxy %s not found, using best available", proxy_id)
                     proxy_data = self.get_best_proxy()
             else:
                 proxy_data = self.get_best_proxy()
@@ -865,8 +882,8 @@ class ProxyManager:
                     proxy_args['password'] = password
 
                 client.proxy = proxy_args
-                logger.info(
-                    f"Applied proxy {proxy_id} ({host}:{port}) to client")
+                logger.info("Applied proxy %s (%s:%s) to client",
+                            proxy_id, host, port)
                 return True
 
             elif hasattr(client, 'session') and hasattr(client.session, 'proxy'):
@@ -879,7 +896,7 @@ class ProxyManager:
                     'password': password
                 }
                 logger.info(
-                    f"Applied proxy {proxy_id} ({host}:{port}) to client session")
+                    "Applied proxy %s (%s:%s) to client session", proxy_id, host, port)
                 return True
 
             else:
@@ -887,7 +904,7 @@ class ProxyManager:
                 return False
 
         except Exception as e:
-            logger.error(f"Error applying proxy to client: {e}")
+            logger.error("Error applying proxy to client: %s", e)
             return False
 
     def enable_auto_rotation(self, interval_minutes: int = 60) -> bool:
@@ -922,7 +939,7 @@ class ProxyManager:
             self.rotation_thread.start()
 
             logger.info(
-                f"Enabled automatic proxy rotation every {interval_minutes} minutes")
+                "Enabled automatic proxy rotation every %s minutes", interval_minutes)
 
             # Update config
             self.config.set("proxy_rotation_enabled", True)
@@ -976,7 +993,7 @@ class ProxyManager:
                 self.rotate_proxy()
 
             except Exception as e:
-                logger.error(f"Error in proxy rotation worker: {e}")
+                logger.error("Error in proxy rotation worker: %s", e)
                 # Don't crash the thread on error, just continue
 
     def rotate_proxy(self) -> Optional[str]:
@@ -1036,8 +1053,8 @@ class ProxyManager:
             # Update current proxy
             self.current_proxy_id = new_proxy_id
 
-            logger.info(
-                f"Rotated proxy from {current_id or 'None'} to {new_proxy_id}")
+            logger.info("Rotated proxy from %s to %s",
+                        current_id or 'None', new_proxy_id)
             return new_proxy_id
 
     def import_proxies_from_file(self, file_path: str, format_type: str = "json") -> Tuple[int, int]:
@@ -1086,7 +1103,7 @@ class ProxyManager:
 
                             if not host or not port:
                                 logger.warning(
-                                    f"Skipping proxy with missing host or port: {proxy_id}")
+                                    "Skipping proxy with missing host or port: %s", proxy_id)
                                 continue
 
                             # Add proxy
@@ -1104,7 +1121,7 @@ class ProxyManager:
 
                         except Exception as e:
                             logger.error(
-                                f"Error importing proxy {proxy_id}: {e}")
+                                "Error importing proxy %s: %s", proxy_id, e)
 
                 elif isinstance(proxies_data, list):
                     # Handle list format [proxy_data, proxy_data, ...]
@@ -1241,7 +1258,7 @@ class ProxyManager:
                                     port = int(row[port_col])
                                 except ValueError:
                                     logger.warning(
-                                        f"Invalid port value in row: {row}")
+                                        "Invalid port value in row: %s", row)
                                     continue
                             else:
                                 continue  # Port is required
@@ -1256,7 +1273,7 @@ class ProxyManager:
                                 row) else None
 
                             if not host:
-                                logger.warning(f"Missing host in row: {row}")
+                                logger.warning("Missing host in row: %s", row)
                                 continue
 
                             # Add proxy
@@ -1274,7 +1291,7 @@ class ProxyManager:
 
                         except Exception as e:
                             logger.error(
-                                f"Error importing proxy from row '{row}': {e}")
+                                "Error importing proxy from row '%s': %s", row, e)
 
             else:
                 raise ValidationError(
@@ -1284,11 +1301,15 @@ class ProxyManager:
             self._save_proxies()
 
             logger.info(
-                f"Imported {imported_count}/{total_count} proxies from {file_path}")
+                "Imported %d/%d proxies from %s",
+                imported_count,
+                total_count,
+                file_path
+            )
             return total_count, imported_count
 
         except Exception as e:
-            logger.error(f"Error importing proxies from {file_path}: {e}")
+            logger.error("Error importing proxies from %s: %s", file_path, e)
             raise
 
     def export_proxies_to_file(self, file_path: str, format_type: str = "json",

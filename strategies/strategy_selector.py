@@ -33,7 +33,7 @@ Usage:
 """
 
 import logging
-from typing import Dict, List, Optional, Union, Any, Type
+from typing import Dict, List, Optional, Any
 
 # Import strategy classes
 try:
@@ -117,19 +117,22 @@ class StrategyFactory:
 
         # Check if the requested strategy type is supported
         if strategy_type not in strategy_map:
-            logger.error(f"Strategy '{strategy_type}' not found")
-            raise StrategyNotFoundError(f"Strategy '{strategy_type}' not found")
+            logger.error("Strategy '%s' not found", strategy_type)
+            raise StrategyNotFoundError(
+                f"Strategy '{strategy_type}' not found")
 
         # Get the strategy class
         strategy_class = strategy_map[strategy_type]
 
         try:
             # Create and return an instance of the strategy
-            logger.debug(f"Creating strategy: {strategy_type}")
+            logger.debug("Creating strategy: %s", strategy_type)
             return strategy_class(**config)
         except Exception as e:
-            logger.error(f"Failed to create strategy '{strategy_type}': {e}")
-            raise StrategyExecutionError(f"Failed to create strategy '{strategy_type}': {e}")
+            logger.error("Failed to create strategy '%s': %s",
+                         strategy_type, e)
+            raise StrategyExecutionError(
+                f"Failed to create strategy '{strategy_type}': {e}")
 
 
 class ParallelLevel:
@@ -159,10 +162,10 @@ class StrategySelector:
         logger.debug("StrategySelector initialized")
 
     def select_strategy(self,
-                       available_accounts: int,
-                       preferred_strategy: str = StrategyType.SEQUENTIAL,
-                       parallel_level: str = ParallelLevel.LOW,
-                       **kwargs) -> BaseStrategy:
+                        available_accounts: int,
+                        preferred_strategy: str = StrategyType.SEQUENTIAL,
+                        parallel_level: str = ParallelLevel.LOW,
+                        **kwargs) -> BaseStrategy:
         """
         Select a strategy based on available accounts and user preferences.
 
@@ -182,7 +185,8 @@ class StrategySelector:
         """
         # Validate inputs
         if available_accounts <= 0:
-            logger.warning("No available accounts, defaulting to sequential strategy")
+            logger.warning(
+                "No available accounts, defaulting to sequential strategy")
             return self.factory.create_strategy(StrategyType.SEQUENTIAL, kwargs)
 
         # Normalize strategy type
@@ -207,22 +211,30 @@ class StrategySelector:
                 if available_accounts >= 2:
                     strategy_type = 'parallel_low'
                 else:
-                    logger.info("Insufficient accounts for parallel strategy, using sequential")
+                    logger.info(
+                        "Insufficient accounts for parallel strategy, using sequential")
                     strategy_type = StrategyType.SEQUENTIAL
         else:
             # Default to sequential if strategy type is not recognized
-            logger.warning(f"Unrecognized strategy type: {preferred_strategy}, defaulting to sequential")
+            logger.warning(
+                "Unrecognized strategy type: %s, defaulting to sequential",
+                preferred_strategy
+            )
             strategy_type = StrategyType.SEQUENTIAL
 
         # Create and return the strategy
-        logger.info(f"Selected strategy: {strategy_type} (available accounts: {available_accounts})")
+        logger.info(
+            "Selected strategy: %s (available accounts: %s)",
+            strategy_type,
+            available_accounts
+        )
         return self.factory.create_strategy(strategy_type, kwargs)
 
     def select_optimal_strategy(self,
-                               available_accounts: int,
-                               target_count: int,
-                               system_resources: Optional[Dict[str, Any]] = None,
-                               **kwargs) -> BaseStrategy:
+                                available_accounts: int,
+                                target_count: int,
+                                system_resources: Optional[Dict[str, Any]] = None,
+                                **kwargs) -> BaseStrategy:
         """
         Automatically select the optimal strategy based on context.
 
@@ -270,9 +282,12 @@ class StrategySelector:
                 strategy_type = StrategyType.PARALLEL
 
                 # Calculate a resource score (simplified version)
-                cpu_score = min(system_resources.get('cpu_cores', 2) / 2, 3)  # 0.5 to 3
-                memory_score = min(system_resources.get('available_memory', 1024) / 1024, 2)  # 0.5 to 2
-                network_score = min(system_resources.get('network_speed', 1) / 5, 1)  # 0.2 to 1
+                cpu_score = min(system_resources.get(
+                    'cpu_cores', 2) / 2, 3)  # 0.5 to 3
+                memory_score = min(system_resources.get(
+                    'available_memory', 1024) / 1024, 2)  # 0.5 to 2
+                network_score = min(system_resources.get(
+                    'network_speed', 1) / 5, 1)  # 0.2 to 1
 
                 resource_score = (cpu_score + memory_score + network_score) / 3
 
@@ -285,8 +300,12 @@ class StrategySelector:
                     parallel_level = ParallelLevel.LOW
 
         # Log the decision factors and selected strategy
-        logger.info(f"Optimal strategy selection based on: accounts={available_accounts}, "
-                  f"target={target_count}, resources={system_resources}")
+        logger.info(
+            "Optimal strategy selection based on: accounts=%s, target=%s, resources=%s",
+            available_accounts,
+            target_count,
+            system_resources
+        )
 
         # Select the strategy with the determined parameters
         return self.select_strategy(
@@ -326,18 +345,21 @@ class StrategySelector:
         """
         descriptions = {
             StrategyType.SEQUENTIAL: "Sequential strategy: Uses one account at a time, "
-                                   "minimizing risk of detection but potentially slower.",
+            "minimizing risk of detection but potentially slower.",
 
-            f"{StrategyType.PARALLEL} ({ParallelLevel.LOW})": "Low parallel strategy: Uses 2-3 accounts "
-                                                            "simultaneously, balancing speed and safety.",
+            f"{StrategyType.PARALLEL} ({ParallelLevel.LOW})":
+            "Low parallel strategy: Uses 2-3 accounts "
+            "simultaneously, balancing speed and safety.",
 
-            f"{StrategyType.PARALLEL} ({ParallelLevel.MEDIUM})": "Medium parallel strategy: Uses 4-6 accounts "
-                                                               "simultaneously, emphasizing speed with "
-                                                               "moderate safety measures.",
+            f"{StrategyType.PARALLEL} ({ParallelLevel.MEDIUM})":
+            "Medium parallel strategy: Uses 4-6 accounts "
+            "simultaneously, emphasizing speed with "
+            "moderate safety measures.",
 
-            f"{StrategyType.PARALLEL} ({ParallelLevel.HIGH})": "High parallel strategy: Uses 7+ accounts "
-                                                             "simultaneously, maximizing speed but with "
-                                                             "increased risk of detection."
+            f"{StrategyType.PARALLEL} ({ParallelLevel.HIGH})":
+            "High parallel strategy: Uses 7+ accounts "
+            "simultaneously, maximizing speed but with "
+            "increased risk of detection."
         }
 
         # Handle specific parallel types
@@ -349,8 +371,9 @@ class StrategySelector:
             strategy_type = f"{StrategyType.PARALLEL} ({ParallelLevel.HIGH})"
 
         if strategy_type not in descriptions:
-            logger.error(f"Strategy description not found: {strategy_type}")
-            raise StrategyNotFoundError(f"Strategy '{strategy_type}' not found")
+            logger.error("Strategy description not found: %s", strategy_type)
+            raise StrategyNotFoundError(
+                f"Strategy '{strategy_type}' not found")
 
         return descriptions[strategy_type]
 
