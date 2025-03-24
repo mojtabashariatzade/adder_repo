@@ -416,7 +416,7 @@ class Session:
         Export a summary of the session in the specified format.
 
         Args:
-            format (str): Output format ('json' or 'text')
+            output_format (str): Output format ('json' or 'text')
 
         Returns:
             Union[str, Dict[str, Any]]: Session summary
