@@ -18,6 +18,7 @@ import logging
 import threading
 import time
 import uuid
+import importlib
 from datetime import datetime
 from typing import Dict, Optional, Any, Union
 
@@ -88,6 +89,24 @@ class Session:
         if self.auto_save:
             self._start_auto_save()
 
+    def _get_session_manager(self):
+        """Get the session manager without causing circular imports."""
+        try:
+            # Use a function to get session manager
+            return self._lazy_get_session_manager()
+        except ImportError:
+            logger.warning(
+                "SessionManager not available for session %s", self.session_id)
+            return None
+
+    @staticmethod
+    def _lazy_get_session_manager():
+        """Lazy import of session_manager to avoid circular imports."""
+        # This import statement will only be evaluated when the function is called
+        # not when the module is loaded
+        module = importlib.import_module('.session_manager', package='data')
+        return module.get_session_manager()
+
     def _start_auto_save(self):
         """Start the auto-save background thread."""
         if self._auto_save_thread is not None and self._auto_save_thread.is_alive():
@@ -128,12 +147,9 @@ class Session:
 
                 if current_time - self._last_save_time >= self.auto_save_interval:
                     with self._auto_save_lock:
-                        # This will be handled by the session_manager
-                        # The manager will be imported here to avoid circular imports
-                        try:
-                            # Dynamically import to avoid circular imports
-                            from session_manager import get_session_manager
-                            session_manager = get_session_manager()
+                        # Get session manager and save
+                        session_manager = self._get_session_manager()
+                        if session_manager:
                             session_manager.save_session(self)
 
                             try:
@@ -143,11 +159,6 @@ class Session:
 
                             logger.debug("Auto-saved session %s",
                                          self.session_id)
-                        except ImportError:
-                            # SessionManager might not be available during development/testing
-                            logger.warning(
-                                "SessionManager not available for auto-save of session %s",
-                                self.session_id)
             except (IOError, ValueError, TypeError, AttributeError) as e:
                 logger.error("Error in auto-save worker: %s", e)
                 # Don't crash the thread, just continue
@@ -411,7 +422,7 @@ class Session:
         # Return False to let the exception propagate
         return False
 
-    def export_summary(self, format: str = 'json') -> Union[str, Dict[str, Any]]:
+    def export_summary(self, output_format: str = 'json') -> Union[str, Dict[str, Any]]:
         """
         Export a summary of the session in the specified format.
 
