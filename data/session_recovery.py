@@ -91,7 +91,7 @@ class CheckpointRecoveryStrategy(RecoveryStrategy):
             # First try to use the recovery point if available
             if session.recovery_point is not None:
                 logger.info(
-                    f"Recovering session {session.session_id} using recovery point")
+                    "Recovering session %s using recovery point", session.session_id)
 
                 # Get recovery data
                 recovery_data = session.recovery_point.get("data", {})
@@ -114,7 +114,7 @@ class CheckpointRecoveryStrategy(RecoveryStrategy):
             checkpoints = session.custom_data.get("checkpoints", [])
             if not checkpoints:
                 logger.warning(
-                    f"No checkpoints available for recovery of session {session.session_id}")
+                    "No checkpoints available for recovery of session %s", session.session_id)
                 return False
 
             # Get the latest checkpoint
@@ -124,7 +124,8 @@ class CheckpointRecoveryStrategy(RecoveryStrategy):
             )
 
             logger.info(
-                f"Recovering session {session.session_id} using checkpoint: {latest_checkpoint.get('name')}"
+                "Recovering session %s using checkpoint: %s",
+                session.session_id, latest_checkpoint.get('name')
             )
 
             # Update session state with checkpoint data
@@ -145,7 +146,9 @@ class CheckpointRecoveryStrategy(RecoveryStrategy):
 
         except Exception as e:
             logger.error(
-                f"Error recovering session {session.session_id} from checkpoint: {e}")
+                "Error recovering session %s from checkpoint: %s",
+                session.session_id, e
+            )
             return False
 
 
@@ -193,7 +196,9 @@ class StateBasedRecoveryStrategy(RecoveryStrategy):
         """
         try:
             logger.info(
-                f"Recovering session {session.session_id} based on state analysis")
+                "Recovering session %s based on state analysis",
+                session.session_id
+            )
 
             # Record original state for reference
             recovery_info = {
@@ -228,7 +233,9 @@ class StateBasedRecoveryStrategy(RecoveryStrategy):
 
         except Exception as e:
             logger.error(
-                f"Error recovering session {session.session_id} from state: {e}")
+                "Error recovering session %s from state: %s",
+                session.session_id, e
+            )
             return False
 
 
@@ -312,9 +319,10 @@ class SessionRecoveryManager:
                 interrupted_sessions.append(session_id)
 
             except Exception as e:
-                logger.warning(f"Error checking session file {file_path}: {e}")
+                logger.warning(
+                    "Error checking session file %s: %s", file_path, e)
 
-        logger.info(f"Found {len(interrupted_sessions)} interrupted sessions")
+        logger.info("Found %d interrupted sessions", len(interrupted_sessions))
         return interrupted_sessions
 
     def analyze_session(self, session: Session) -> Dict[str, Any]:
@@ -369,12 +377,14 @@ class SessionRecoveryManager:
         Returns:
             bool: True if recovery was successful
         """
-        logger.info(f"Attempting to recover session {session.session_id}")
+        logger.info("Attempting to recover session %s", session.session_id)
 
         # If session is already in a completed state, no recovery needed
         if session.status in [SessionStatus.COMPLETED, SessionStatus.RECOVERED]:
             logger.info(
-                f"Session {session.session_id} is already in {SessionStatus.to_str(session.status)} state, no recovery needed")
+                "Session %s is already in %s state, no recovery needed",
+                session.session_id, SessionStatus.to_str(session.status)
+            )
             return True
 
         # Update status to reflect we're working with an interrupted session
@@ -386,11 +396,13 @@ class SessionRecoveryManager:
             strategy_name = strategy.__class__.__name__
 
             if strategy.can_recover(session):
-                logger.info(f"Attempting recovery with {strategy_name}")
+                logger.info("Attempting recovery with %s", strategy_name)
 
                 if strategy.recover(session):
                     logger.info(
-                        f"Successfully recovered session {session.session_id} with {strategy_name}")
+                        "Successfully recovered session %s with %s",
+                        session.session_id, strategy_name
+                    )
 
                     # Save the recovered session
                     self.storage.save_session(session)
@@ -398,10 +410,14 @@ class SessionRecoveryManager:
                     return True
                 else:
                     logger.warning(
-                        f"Recovery with {strategy_name} failed for session {session.session_id}")
+                        "Recovery with %s failed for session %s",
+                        strategy_name, session.session_id
+                    )
 
         logger.error(
-            f"All recovery strategies failed for session {session.session_id}")
+            "All recovery strategies failed for session %s",
+            session.session_id
+        )
         return False
 
     def recover_sessions(self, session_ids: List[str]) -> Dict[str, bool]:
@@ -423,7 +439,9 @@ class SessionRecoveryManager:
 
                 if not session_data:
                     logger.warning(
-                        f"Could not load data for session {session_id}")
+                        "Could not load data for session %s",
+                        session_id
+                    )
                     results[session_id] = False
                     continue
 
@@ -437,13 +455,13 @@ class SessionRecoveryManager:
 
             except Exception as e:
                 logger.error(
-                    f"Error during recovery of session {session_id}: {e}")
+                    "Error during recovery of session %s: %s", session_id, e)
                 results[session_id] = False
 
         # Log summary
         success_count = sum(1 for result in results.values() if result)
-        logger.info(
-            f"Recovered {success_count} out of {len(session_ids)} sessions")
+        logger.info("Recovered %d out of %d sessions",
+                    success_count, len(session_ids))
 
         return results
 
@@ -467,7 +485,7 @@ class SessionRecoveryManager:
 
         except Exception as e:
             logger.error(
-                f"Error creating checkpoint for session {session.session_id}: {e}")
+                "Error creating checkpoint for session %s: %s", session.session_id, e)
             return False
 
     def set_recovery_point(self, session: Session, data: Dict[str, Any]) -> bool:
@@ -490,7 +508,7 @@ class SessionRecoveryManager:
 
         except Exception as e:
             logger.error(
-                f"Error setting recovery point for session {session.session_id}: {e}")
+                "Error setting recovery point for session %s: %s", session.session_id, e)
             return False
 
     def generate_recovery_report(self, session_ids: List[str]) -> Dict[str, Any]:
@@ -552,7 +570,7 @@ class SessionRecoveryManager:
 
             except Exception as e:
                 # Handle errors
-                logger.error(f"Error analyzing session {session_id}: {e}")
+                logger.error("Error analyzing session %s: %s", session_id, e)
                 report["sessions"].append({
                     "session_id": session_id,
                     "status": "error",

@@ -19,6 +19,7 @@ import logging
 import threading
 import time
 import shutil
+import zipfile
 from datetime import datetime
 from typing import Dict, List, Optional, Any, Union
 
@@ -495,7 +496,7 @@ class SessionManager:
         )
         try:
             cutoff_time = cutoff_time.timestamp() - (older_than_days * 86400)
-        except:
+        except (ValueError, TypeError, AttributeError):
             # Fixed timestamp as fallback
             cutoff_time = 0
 
@@ -541,7 +542,7 @@ class SessionManager:
 
                 # Move or compress the file
                 if compress:
-                    import zipfile
+
                     zip_path = f"{archive_path}.zip"
                     with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zip_file:
                         zip_file.write(
