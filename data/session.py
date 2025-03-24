@@ -21,7 +21,7 @@ import uuid
 from datetime import datetime
 from typing import Dict, Optional, Any, Union
 
-from session_types import SessionStatus, SESSION_FIELDS, DEFAULT_AUTO_SAVE_INTERVAL, DEFAULT_MAX_HISTORY_SIZE
+from .session_types import SessionStatus, SESSION_FIELDS, DEFAULT_AUTO_SAVE_INTERVAL, DEFAULT_MAX_HISTORY_SIZE
 
 # Setup logger
 logger = logging.getLogger(__name__)
@@ -139,14 +139,14 @@ class Session:
                             except StopIteration:
                                 self._last_save_time = 0
 
-                            logger.debug(
-                                f"Auto-saved session {self.session_id}")
+                            logger.debug("Auto-saved session %s",
+                                         self.session_id)
                         except ImportError:
                             # SessionManager might not be available during development/testing
                             logger.warning(
-                                f"SessionManager not available for auto-save of session {self.session_id}")
+                                "SessionManager not available for auto-save of session %s", self.session_id)
             except Exception as e:
-                logger.error(f"Error in auto-save worker: {e}")
+                logger.error("Error in auto-save worker: %s", e)
                 # Don't crash the thread, just continue
 
     def update_state(self, new_state: Dict[str, Any], track_history: bool = True) -> None:

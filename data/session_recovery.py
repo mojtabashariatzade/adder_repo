@@ -144,7 +144,7 @@ class CheckpointRecoveryStrategy(RecoveryStrategy):
 
             return True
 
-        except Exception as e:
+        except (ValueError, TypeError, AttributeError) as e:
             logger.error(
                 "Error recovering session %s from checkpoint: %s",
                 session.session_id, e
@@ -231,7 +231,7 @@ class StateBasedRecoveryStrategy(RecoveryStrategy):
 
             return True
 
-        except Exception as e:
+        except (ValueError, TypeError, AttributeError) as e:
             logger.error(
                 "Error recovering session %s from state: %s",
                 session.session_id, e
@@ -318,7 +318,7 @@ class SessionRecoveryManager:
                 # This session appears to be interrupted
                 interrupted_sessions.append(session_id)
 
-            except Exception as e:
+            except (ValueError, TypeError, AttributeError) as e:
                 logger.warning(
                     "Error checking session file %s: %s", file_path, e)
 
@@ -446,14 +446,13 @@ class SessionRecoveryManager:
                     continue
 
                 # Create session object
-                from session import Session
                 session = Session.from_dict(session_data)
 
                 # Attempt recovery
                 result = self.recover_session(session)
                 results[session_id] = result
 
-            except Exception as e:
+            except (ValueError, TypeError, AttributeError) as e:
                 logger.error(
                     "Error during recovery of session %s: %s", session_id, e)
                 results[session_id] = False
@@ -483,7 +482,7 @@ class SessionRecoveryManager:
             # Save the session to persist the checkpoint
             return self.storage.save_session(session)
 
-        except Exception as e:
+        except (ValueError, TypeError, AttributeError) as e:
             logger.error(
                 "Error creating checkpoint for session %s: %s", session.session_id, e)
             return False
@@ -506,7 +505,7 @@ class SessionRecoveryManager:
             # Save the session to persist the recovery point
             return self.storage.save_session(session)
 
-        except Exception as e:
+        except (ValueError, TypeError, AttributeError) as e:
             logger.error(
                 "Error setting recovery point for session %s: %s", session.session_id, e)
             return False
@@ -543,7 +542,6 @@ class SessionRecoveryManager:
                     }
                 else:
                     # Create session object
-                    from session import Session
                     session = Session.from_dict(session_data)
 
                     # Analyze session
@@ -568,7 +566,7 @@ class SessionRecoveryManager:
                 # Add to sessions list
                 report["sessions"].append(session_report)
 
-            except Exception as e:
+            except (ValueError, TypeError, AttributeError) as e:
                 # Handle errors
                 logger.error("Error analyzing session %s: %s", session_id, e)
                 report["sessions"].append({
