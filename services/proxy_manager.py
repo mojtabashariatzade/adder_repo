@@ -44,6 +44,7 @@ Usage:
 
 import os
 import json
+import csv
 import time
 import random
 import logging
@@ -525,13 +526,8 @@ class ProxyManager:
         # Test the proxy if requested
         if test:
             is_working, latency = self.test_proxy(proxy_id)
-            logger.info(
-                "Tested proxy %s: %s" +
-                (", latency: %sms" if is_working else ""),
-                proxy_id,
-                "Success" if is_working else "Failed",
-                latency if is_working else None
-            )
+            logger.info("Tested proxy %s: %s" + (", latency: %sms" if is_working else ""),
+                        proxy_id, "Success" if is_working else "Failed", latency if is_working else None)
 
         return proxy_id
 
@@ -1025,8 +1021,9 @@ class ProxyManager:
                         success, _ = self.test_proxy(proxy_id)
                         if success:
                             # Found a working proxy, update active proxies list
-                            active_proxies = [p for p in self.list_proxies(status=ProxyStatus.ACTIVE)
-                                              if p.get("id") != current_id]
+                            active_proxies = [
+                                p for p in self.list_proxies(status=ProxyStatus.ACTIVE)
+                                if p.get("id") != current_id]
                             break
                     except Exception:
                         continue
@@ -1057,7 +1054,8 @@ class ProxyManager:
                         current_id or 'None', new_proxy_id)
             return new_proxy_id
 
-    def import_proxies_from_file(self, file_path: str, format_type: str = "json") -> Tuple[int, int]:
+    def import_proxies_from_file(
+            self, file_path: str, format_type: str = "json") -> Tuple[int, int]:
         """
         Import proxies from a file.
 
@@ -1156,7 +1154,7 @@ class ProxyManager:
                             imported_count += 1
 
                         except Exception as e:
-                            logger.error(f"Error importing proxy: {e}")
+                            logger.error("Error importing proxy: %s", e)
 
             elif format_type == "txt":
                 # Import from plain text format (one proxy per line)
@@ -1206,18 +1204,17 @@ class ProxyManager:
 
                             except ValueError:
                                 logger.warning(
-                                    f"Invalid port number in proxy entry: {line}")
+                                    "Invalid port number in proxy entry: %s", line)
                         else:
                             logger.warning(
-                                f"Invalid proxy format (missing port): {line}")
+                                "Invalid proxy format (missing port): %s", line)
 
                     except Exception as e:
                         logger.error(
-                            f"Error importing proxy from line '{line}': {e}")
+                            "Error importing proxy from line '%s': %s", line, e)
 
             elif format_type == "csv":
                 # Import from CSV format
-                import csv
 
                 with open(file_path, 'r', newline='') as f:
                     reader = csv.reader(f)
@@ -1399,7 +1396,6 @@ class ProxyManager:
 
             elif format_type == "csv":
                 # Export to CSV format
-                import csv
 
                 with open(file_path, 'w', newline='') as f:
                     # Define CSV columns
@@ -1438,12 +1434,12 @@ class ProxyManager:
                 raise ValidationError(
                     "format_type", f"Unsupported export format: {format_type}")
 
-            logger.info(
-                f"Exported {len(proxies_to_export)} proxies to {file_path}")
+            logger.info("Exported %d proxies to %s",
+                        len(proxies_to_export), file_path)
             return len(proxies_to_export)
 
         except Exception as e:
-            logger.error(f"Error exporting proxies to {file_path}: {e}")
+            logger.error("Error exporting proxies to %s: %s", file_path, e)
             raise
 
     def set_proxy_status(self, proxy_id: str, status: Union[ProxyStatus, str]) -> bool:
@@ -1459,7 +1455,8 @@ class ProxyManager:
         """
         with self._lock:
             if proxy_id not in self.proxies:
-                logger.warning(f"Proxy {proxy_id} not found for status update")
+                logger.warning(
+                    "Proxy %s not found for status update", proxy_id)
                 return False
 
             # Convert string status to enum if needed
@@ -1470,8 +1467,8 @@ class ProxyManager:
             self.proxies[proxy_id]["status"] = status
             self._save_proxies()
 
-            logger.info(
-                f"Updated proxy {proxy_id} status to {ProxyStatus.to_str(status)}")
+            logger.info("Updated proxy %s status to %s",
+                        proxy_id, ProxyStatus.to_str(status))
             return True
 
     def cleanup(self):

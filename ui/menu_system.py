@@ -143,7 +143,8 @@ class MenuItem:
         self.toggle_callback = toggle_callback
         self.description = description
         self.confirm = confirm
-        self.confirm_message = confirm_message or f"Are you sure you want to {title.lower()}? (y/n): "
+        self.confirm_message = confirm_message or f"Are you sure you want to {
+            title.lower()}? (y/n): "
 
         # Validate the item configuration based on its type
         self._validate()
@@ -193,7 +194,7 @@ class MenuItem:
                 return self.action()
             except Exception as e:
                 logger.error(
-                    f"Error executing menu action '{self.title}': {e}")
+                    "Error executing menu action '%s': %s", self.title, e)
                 print_error(f"Error executing '{self.title}': {e}")
                 time.sleep(2)  # Longer delay for errors
                 return None
@@ -207,7 +208,7 @@ class MenuItem:
                 return self.toggle_value
             except Exception as e:
                 logger.error(
-                    f"Error executing toggle callback '{self.title}': {e}")
+                    "Error executing toggle callback '%s': %s", self.title, e)
                 print_error(f"Error toggling '{self.title}': {e}")
                 # Revert the toggle
                 self.toggle_value = not self.toggle_value
@@ -330,7 +331,7 @@ class Menu:
         for existing_item in self.items:
             if existing_item.key == item.key:
                 logger.warning(
-                    f"Duplicate menu item key '{item.key}' in menu '{self.title}'")
+                    "Duplicate menu item key '%s' in menu '%s'", item.key, self.title)
                 # Don't raise an exception, just log a warning
 
         self.items.append(item)
