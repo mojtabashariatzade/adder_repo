@@ -1,446 +1,509 @@
-#!/usr/bin/env python3
 """
-Telegram Account Manager - Main Module
+Colors Module
 
-This is the entry point for the Telegram Account Manager application.
-It initializes all necessary components and starts the application.
+This module provides utilities for managing console colors and styles in the Telegram
+Account Manager application. It offers a simple interface for applying colors to text,
+creating styled messages, and managing color themes.
+
+Features:
+- ANSI color support for terminal output
+- Color themes for different UI elements
+- Helper functions for creating colored and styled text
+- Cross-platform compatibility with colorama
+- Support for terminal capability detection
+
+Usage:
+    from ui.colors import Colors, Styles, colorize, styled_text
+
+    # Simple color application
+    colored_text = Colors.GREEN + "Success!" + Colors.RESET
+
+    # Using helper functions
+    error_message = colorize("Error occurred!", Colors.RED)
+
+    # Using styles
+    highlighted_text = styled_text("Important", fg=Colors.YELLOW, style=Styles.BOLD)
+
+    # Print with colors directly
+    print_colored("Status:", "Running", color=Colors.GREEN)
 """
 
 import os
 import sys
-import time
-import logging
-import argparse
-import asyncio
-from typing import Optional, Dict, Any
+import platform
+from typing import Optional, Dict
 
-# Set up path for imports
-current_dir = os.path.dirname(os.path.abspath(__file__))
-if current_dir not in sys.path:
-    sys.path.insert(0, current_dir)
-
-# Import core modules
+# Try to import colorama for cross-platform color support
 try:
-    from core.config import Config
-    from core.constants import Constants
-    from core.exceptions import TelegramAdderError as ApplicationError
-except ImportError as e:
-    print(f"Error importing core modules: {e}")
-    # For development, provide fallbacks or mock objects
-
-    class Config:
-        def __init__(self):
-            self._config_data = {}
-
-        def get(self, key, default=None):
-            return self._config_data.get(key, default)
-
-        def set(self, key, value):
-            self._config_data[key] = value
-
-    class Constants:
-        class TimeDelays:
-            DEFAULT = 20
-            MAXIMUM = 300
-            ACCOUNT_CHANGE = 60
-
-        class Limits:
-            MAX_MEMBERS_PER_DAY = 20
-            MAX_RETRY = 3
-            MAX_FAILURES = 5
-            MAX_MEMORY_RECORDS = 1000
-
-    class ApplicationError(Exception):
-        pass
-
-# Import UI modules
-try:
-    from ui.colors import Colors, ColorTheme, enable_colors, disable_colors
-    from ui.display import Display, clear_screen, print_banner
-except ImportError as e:
-    print(f"Error importing UI base modules: {e}")
-    # Fallbacks
-    def enable_colors(): pass
-    def disable_colors(): pass
-    def clear_screen(): os.system('cls' if os.name == 'nt' else 'clear')
-    def print_banner(text): print(f"\n{'='*50}\n{text}\n{'='*50}")
-
-    class Colors:
-        pass
-
-    class ColorTheme:
-        @staticmethod
-        def use_dark_mode(): pass
-        @staticmethod
-        def use_default_mode(): pass
-
-    class Display:
-        @staticmethod
-        def clear_screen(): clear_screen()
-        @staticmethod
-        def print_header(title): print(f"\n{title}\n{'='*len(title)}")
-        @staticmethod
-        def print_error(message): print(f"ERROR: {message}")
-        @staticmethod
-        def print_success(message): print(f"SUCCESS: {message}")
-        @staticmethod
-        def print_info(message): print(message)
-        @staticmethod
-        def get_input(prompt): return input(prompt)
-
-# Import menu system
-try:
-    from ui.menu_system import Menu, MenuItem
-except ImportError as e:
-    print(f"Error importing menu system: {e}")
-    # Fallbacks
-
-    class Menu:
-        def __init__(self, title, parent=None):
-            self.title = title
-            self.parent = parent
-            self.items = []
-
-        def add_item(self, item):
-            self.items.append(item)
-            return self
-
-    class MenuItem:
-        def __init__(self, key, title, callback=None, item_type="action"):
-            self.key = key
-            self.title = title
-            self.callback = callback
-            self.item_type = item_type
-
-# Import data management
-try:
-    from data.session_manager import SessionManager
-except ImportError as e:
-    print(f"Error importing data management: {e}")
-    # Fallbacks
-
-    class SessionManager:
-        _instance = None
-
-        @classmethod
-        def get_session_manager(cls):
-            if cls._instance is None:
-                cls._instance = SessionManager()
-            return cls._instance
-
-# Import services
-try:
-    from services.account_manager import AccountManager
-except ImportError as e:
-    print(f"Error importing services: {e}")
-    # Fallback
-
-    class AccountManager:
-        def __init__(self):
-            self.accounts = []
-
-        def get_all_accounts(self):
-            return []
-
-# Import strategies
-try:
-    from strategies.strategy_selector import StrategySelector
-except ImportError as e:
-    print(f"Error importing strategies: {e}")
-    # Fallback
-
-    class StrategySelector:
-        def get_strategy(self, strategy_type, accounts=None):
-            return None
-
-# Set up logging
-try:
-    from logging_.logging_manager import setup_logging, get_logger
-    logger = get_logger("Main")
+    from colorama import init as colorama_init, Fore, Back, Style
+    COLORAMA_AVAILABLE = True
+    # Don't auto-reset, we'll handle it manually
+    colorama_init(autoreset=False)
 except ImportError:
-    # Fallback logging
-    logging.basicConfig(
-        level=logging.INFO,
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-        handlers=[
-            logging.StreamHandler(),
-            logging.FileHandler("telegram_adder.log", encoding="utf-8")
-        ]
-    )
-    logger = logging.getLogger("Main")
+    COLORAMA_AVAILABLE = False
 
-    def setup_logging(debug=False):
-        log_level = logging.DEBUG if debug else logging.INFO
-        logger.setLevel(log_level)
+# Check if we're in a terminal that supports colors
 
 
-class TelegramAccountManager:
+def _supports_color() -> bool:
     """
-    Main application class for the Telegram Account Manager.
+    Check if the current terminal supports colors.
 
-    This class initializes all required components and provides
-    the main entry point for the application.
+    Returns:
+        bool: True if the terminal supports colors, False otherwise
     """
+    # If colorama is available, we can use colors on Windows
+    if COLORAMA_AVAILABLE:
+        return True
 
-    def __init__(self, args: argparse.Namespace):
+    # Check if we're on a platform that supports colors
+    plat = platform.system().lower()
+    supported_platform = plat != 'windows' or 'ANSICON' in os.environ
+
+    # isatty is not always implemented, so we need to handle the exception
+    is_a_tty = hasattr(sys.stdout, 'isatty') and sys.stdout.isatty()
+
+    # Check if NO_COLOR environment variable is set (respecting the no-color.org standard)
+    no_color = 'NO_COLOR' in os.environ
+
+    # ANSI colors are supported if we're on a supported platform, outputting to a TTY,
+    # and the NO_COLOR environment variable is not set
+    return supported_platform and is_a_tty and not no_color
+
+
+# Flag for color support
+COLOR_SUPPORTED = _supports_color()
+
+
+class Colors:
+    """
+    ANSI color codes for terminal output.
+
+    This class provides constants for ANSI color codes, making it easy to apply
+    colors to text output. If color is not supported, empty strings are used.
+    """
+    # Only define colors if they're supported
+    if COLOR_SUPPORTED:
+        # Foreground colors
+        BLACK = '\033[30m' if not COLORAMA_AVAILABLE else Fore.BLACK
+        RED = '\033[31m' if not COLORAMA_AVAILABLE else Fore.RED
+        GREEN = '\033[32m' if not COLORAMA_AVAILABLE else Fore.GREEN
+        YELLOW = '\033[33m' if not COLORAMA_AVAILABLE else Fore.YELLOW
+        BLUE = '\033[34m' if not COLORAMA_AVAILABLE else Fore.BLUE
+        MAGENTA = '\033[35m' if not COLORAMA_AVAILABLE else Fore.MAGENTA
+        CYAN = '\033[36m' if not COLORAMA_AVAILABLE else Fore.CYAN
+        WHITE = '\033[37m' if not COLORAMA_AVAILABLE else Fore.WHITE
+
+        # Background colors
+        BG_BLACK = '\033[40m' if not COLORAMA_AVAILABLE else Back.BLACK
+        BG_RED = '\033[41m' if not COLORAMA_AVAILABLE else Back.RED
+        BG_GREEN = '\033[42m' if not COLORAMA_AVAILABLE else Back.GREEN
+        BG_YELLOW = '\033[43m' if not COLORAMA_AVAILABLE else Back.YELLOW
+        BG_BLUE = '\033[44m' if not COLORAMA_AVAILABLE else Back.BLUE
+        BG_MAGENTA = '\033[45m' if not COLORAMA_AVAILABLE else Back.MAGENTA
+        BG_CYAN = '\033[46m' if not COLORAMA_AVAILABLE else Back.CYAN
+        BG_WHITE = '\033[47m' if not COLORAMA_AVAILABLE else Back.WHITE
+
+        # Reset code
+        RESET = '\033[0m' if not COLORAMA_AVAILABLE else Style.RESET_ALL
+    else:
+        # Define empty strings if colors are not supported
+        BLACK = RED = GREEN = YELLOW = BLUE = MAGENTA = CYAN = WHITE = ''
+        BG_BLACK = BG_RED = BG_GREEN = BG_YELLOW = BG_BLUE = BG_MAGENTA = BG_CYAN = BG_WHITE = ''
+        RESET = ''
+
+
+class Styles:
+    """
+    ANSI style codes for terminal output.
+
+    This class provides constants for ANSI style codes, making it easy to apply
+    styles to text output. If styling is not supported, empty strings are used.
+    """
+    # Only define styles if they're supported
+    if COLOR_SUPPORTED:
+        BOLD = '\033[1m' if not COLORAMA_AVAILABLE else Style.BRIGHT
+        DIM = '\033[2m' if not COLORAMA_AVAILABLE else Style.DIM
+        ITALIC = '\033[3m'  # Not supported by colorama
+        UNDERLINE = '\033[4m'  # Not supported by colorama directly
+        BLINK = '\033[5m'  # Not supported by colorama directly
+        REVERSE = '\033[7m'  # Not supported by colorama directly
+        NORMAL = '\033[22m' if not COLORAMA_AVAILABLE else Style.NORMAL
+    else:
+        # Define empty strings if styles are not supported
+        BOLD = DIM = ITALIC = UNDERLINE = BLINK = REVERSE = NORMAL = ''
+
+
+class ColorTheme:
+    """
+    Color theme for the application.
+
+    This class defines color schemes for different UI elements, making it easy
+    to maintain a consistent look and feel across the application.
+    """
+    # Default color theme
+    DEFAULT = {
+        'header': Colors.CYAN,
+        'title': Colors.MAGENTA + Styles.BOLD,
+        'success': Colors.GREEN,
+        'error': Colors.RED,
+        'warning': Colors.YELLOW,
+        'info': Colors.BLUE,
+        'prompt': Colors.CYAN + Styles.BOLD,
+        'input': Colors.WHITE,
+        'menu_item': Colors.WHITE,
+        'menu_selected': Colors.BLACK + Colors.BG_CYAN,
+        'menu_header': Colors.YELLOW + Styles.BOLD,
+        'menu_footer': Colors.CYAN,
+        'status_active': Colors.GREEN,
+        'status_inactive': Colors.RED,
+        'progress_bar': Colors.CYAN,
+        'progress_text': Colors.WHITE,
+        'highlight': Colors.YELLOW,
+        'normal': Colors.RESET
+    }
+
+    # Dark mode theme
+    DARK = {
+        'header': Colors.BLUE,
+        'title': Colors.CYAN + Styles.BOLD,
+        'success': Colors.GREEN,
+        'error': Colors.RED,
+        'warning': Colors.YELLOW,
+        'info': Colors.BLUE,
+        'prompt': Colors.GREEN + Styles.BOLD,
+        'input': Colors.WHITE,
+        'menu_item': Colors.WHITE,
+        'menu_selected': Colors.BLACK + Colors.BG_GREEN,
+        'menu_header': Colors.CYAN + Styles.BOLD,
+        'menu_footer': Colors.BLUE,
+        'status_active': Colors.GREEN,
+        'status_inactive': Colors.RED,
+        'progress_bar': Colors.GREEN,
+        'progress_text': Colors.WHITE,
+        'highlight': Colors.YELLOW,
+        'normal': Colors.RESET
+    }
+
+    # Current theme (defaults to DEFAULT)
+    CURRENT = DEFAULT.copy()
+
+    @classmethod
+    def get(cls, element: str) -> str:
         """
-        Initialize the application.
+        Get the color for a UI element from the current theme.
 
         Args:
-            args: Command line arguments
+            element (str): The name of the UI element
+
+        Returns:
+            str: The color code for the element, or empty string if not found
         """
-        self.args = args
-        self.config = Config()
+        return cls.CURRENT.get(element, Colors.RESET)
 
-        # Initialize display components
-        self.display = Display()
+    @classmethod
+    def set_theme(cls, theme: Dict[str, str]) -> None:
+        """
+        Set the current theme.
 
-        # Initialize data layer
-        self.session_manager = SessionManager.get_session_manager()
+        Args:
+            theme (Dict[str, str]): The theme dictionary
+        """
+        cls.CURRENT = theme.copy()
 
-        # Initialize services
-        self.account_manager = AccountManager()
-        self.strategy_selector = StrategySelector()
+    @classmethod
+    def use_dark_mode(cls) -> None:
+        """Set the current theme to dark mode."""
+        cls.set_theme(cls.DARK)
 
-        # Menu-related objects
-        self.main_menu = None
-        self.account_menu = None
-        self.operation_menu = None
-        self.settings_menu = None
+    @classmethod
+    def use_default_mode(cls) -> None:
+        """Set the current theme to the default theme."""
+        cls.set_theme(cls.DEFAULT)
 
-        # Application state
-        self.running = False
+    @classmethod
+    def is_dark_mode(cls) -> bool:
+        """
+        Check if dark mode is currently active.
 
-        # Configure based on args
-        self._apply_args()
+        Returns:
+            bool: True if dark mode is active, False otherwise
+        """
+        return cls.CURRENT == cls.DARK
 
-        logger.info("Telegram Account Manager initialized")
 
-    def _apply_args(self):
-        """Apply command line arguments to the application configuration."""
-        if self.args.no_color:
+def colorize(text: str, color: str, reset: bool = True) -> str:
+    """
+    Apply a color to text.
+
+    Args:
+        text (str): The text to colorize
+        color (str): The color code to apply
+        reset (bool): Whether to reset the color after the text
+
+    Returns:
+        str: The colorized text
+    """
+    if not COLOR_SUPPORTED:
+        return text
+
+    if reset:
+        return f"{color}{text}{Colors.RESET}"
+    else:
+        return f"{color}{text}"
+
+
+def styled_text(text: str, fg: Optional[str] = None, bg: Optional[str] = None,
+                style: Optional[str] = None) -> str:
+    """
+    Apply a combination of foreground color, background color, and style to text.
+
+    Args:
+        text (str): The text to style
+        fg (str, optional): The foreground color
+        bg (str, optional): The background color
+        style (str, optional): The style
+
+    Returns:
+        str: The styled text
+    """
+    if not COLOR_SUPPORTED:
+        return text
+
+    result = ""
+    if style:
+        result += style
+    if fg:
+        result += fg
+    if bg:
+        result += bg
+
+    result += text
+
+    if style or fg or bg:
+        result += Colors.RESET
+
+    return result
+
+
+def theme_styled(text: str, element: str) -> str:
+    """
+    Apply theme colors to text based on a UI element.
+
+    Args:
+        text (str): The text to style
+        element (str): The name of the UI element
+
+    Returns:
+        str: The themed text
+    """
+    color = ColorTheme.get(element)
+    return colorize(text, color)
+
+
+def print_colored(label: str, value: str, color: Optional[str] = None,
+                  label_color: Optional[str] = None) -> None:
+    """
+    Print a label and value with colors.
+
+    Args:
+        label (str): The label to print
+        value (str): The value to print
+        color (str, optional): The color for the value (defaults to normal text)
+        label_color (str, optional): The color for the label (defaults to theme 'info')
+    """
+    label_color = label_color or ColorTheme.get('info')
+    color = color or Colors.RESET
+
+    colored_label = colorize(f"{label}: ", label_color)
+    colored_value = colorize(value, color)
+
+    print(f"{colored_label}{colored_value}")
+
+
+def print_status(message: str, status: bool) -> None:
+    """
+    Print a status message with color indicating success or failure.
+
+    Args:
+        message (str): The message to print
+        status (bool): True for success (green), False for failure (red)
+    """
+    status_color = ColorTheme.get(
+        'success') if status else ColorTheme.get('error')
+    status_text = "✓ Success" if status else "✗ Failed"
+
+    print(f"{colorize(message, Colors.RESET)} {colorize(status_text, status_color)}")
+
+
+def get_color_support_info() -> Dict[str, bool]:
+    """
+    Get information about color support.
+
+    Returns:
+        Dict[str, bool]: Dictionary with color support information
+    """
+    return {
+        'color_supported': COLOR_SUPPORTED,
+        'colorama_available': COLORAMA_AVAILABLE,
+        'is_a_tty': hasattr(sys.stdout, 'isatty') and sys.stdout.isatty(),
+        'no_color_env': 'NO_COLOR' in os.environ,
+        'platform': platform.system().lower()
+    }
+
+
+def disable_colors() -> None:
+    """
+    Disable color output globally.
+
+    This function sets the COLOR_SUPPORTED flag to False, which will make
+    all color functions return uncolored text.
+    """
+    global COLOR_SUPPORTED
+    COLOR_SUPPORTED = False
+
+
+def enable_colors() -> None:
+    """
+    Try to enable color output globally.
+
+    This function checks if color is actually supported, and if so, sets
+    the COLOR_SUPPORTED flag to True.
+    """
+    global COLOR_SUPPORTED
+    COLOR_SUPPORTED = _supports_color()
+
+
+def create_progress_bar(current: int, total: int, width: int = 40,
+                        filled_char: str = '█', empty_char: str = '░') -> str:
+    """
+    Create a colored progress bar.
+
+    Args:
+        current (int): Current progress value
+        total (int): Total progress value
+        width (int): Width of the progress bar in characters
+        filled_char (str): Character for filled portion
+        empty_char (str): Character for empty portion
+
+    Returns:
+        str: Formatted progress bar
+    """
+    if total <= 0:
+        total = 1  # Avoid division by zero
+
+    progress = min(current / total, 1.0)
+    filled_length = int(width * progress)
+
+    bar = filled_char * filled_length + empty_char * (width - filled_length)
+    percentage = progress * 100
+
+    bar_colored = colorize(bar, ColorTheme.get('progress_bar'))
+    percentage_text = colorize(
+        f" {percentage:6.2f}%", ColorTheme.get('progress_text'))
+
+    return f"[{bar_colored}]{percentage_text}"
+
+
+def print_progress(current: int, total: int, prefix: str = "Progress:",
+                   suffix: str = "", width: int = 40) -> None:
+    """
+    Print a progress bar with prefix and suffix.
+
+    Args:
+        current (int): Current progress value
+        total (int): Total progress value
+        prefix (str): Text to display before the progress bar
+        suffix (str): Text to display after the progress bar
+        width (int): Width of the progress bar in characters
+    """
+    bar = create_progress_bar(current, total, width)
+    prefix_colored = colorize(prefix, ColorTheme.get('info'))
+    suffix_colored = colorize(
+        suffix, ColorTheme.get('normal')) if suffix else ""
+
+    # Use \r to return to the beginning of the line and overwrite
+    print(f"\r{prefix_colored} {bar} {suffix_colored}", end='', flush=True)
+
+
+# If this module is run directly, perform a color test
+if __name__ == "__main__":
+    print("Color Support Test")
+    print("-----------------")
+    print(f"Color supported: {COLOR_SUPPORTED}")
+    print(f"Colorama available: {COLORAMA_AVAILABLE}")
+
+    print("\nColor Samples:")
+    for name, value in vars(Colors).items():
+        if not name.startswith('_') and isinstance(value, str):
+            print(f"{name:10}: {colorize('This text is colored', value)}")
+
+    print("\nStyle Samples:")
+    for name, value in vars(Styles).items():
+        if not name.startswith('_') and isinstance(value, str):
+            print(f"{name:10}: {colorize('This text is styled', value)}")
+
+    print("\nTheme Samples:")
+    for name in ColorTheme.DEFAULT.keys():
+        print(f"{name:15}: {theme_styled('This text uses theme styling', name)}")
+
+    print("\nProgress Bar Test:")
+    for i in range(11):
+        print_progress(i, 10, "Progress:", f"Step {i}/10")
+        # Add a small delay for effect (only for demonstration)
+        import time
+        time.sleep(0.2)
+    print()  # Add a newline after the progress bar
+
+
+class ColorManager:
+    """
+    Color Manager for the application.
+
+    This class provides a unified interface for all color operations in the application,
+    wrapping the functionality of other color-related classes and functions.
+    """
+
+    def __init__(self, enabled=True):
+        """
+        Initialize the color manager.
+
+        Args:
+            enabled (bool): Whether colors should be enabled
+        """
+        self.enabled = enabled
+
+        # Set up colors based on enabled flag
+        if not self.enabled:
             disable_colors()
-            logger.info("Colors disabled")
         else:
             enable_colors()
 
-        if self.args.dark_mode:
-            ColorTheme.use_dark_mode()
-            logger.info("Dark mode enabled")
-        else:
-            ColorTheme.use_default_mode()
+    def style_text(self, text, color='WHITE', bright=False):
+        """
+        Style text with the specified color and brightness.
 
-        if self.args.debug:
-            self.config.set("debug_mode", True)
-            logger.setLevel(logging.DEBUG)
-            logger.debug("Debug mode enabled")
+        Args:
+            text (str): Text to style
+            color (str): Color name (one of the Colors constants)
+            bright (bool): Whether to apply bold/bright styling
 
-    def _setup_menus(self):
-        """Set up the menu system for the application."""
-        # Create main menu
-        self.main_menu = Menu("Telegram Account Manager")
+        Returns:
+            str: Styled text
+        """
+        if not self.enabled:
+            return text
 
-        # Add menu items to main menu
-        self._setup_main_menu()
+        if not COLOR_SUPPORTED:
+            return text
 
-        logger.debug("Menu system created")
+        # Get the color code
+        color_code = getattr(Colors, color, Colors.WHITE)
 
-    def _setup_main_menu(self):
-        """Set up the main menu."""
-        # Create main menu items
-        self.main_menu.add_item(MenuItem("1", "Account Management",
-                                         self._show_account_menu, "action"))
-        self.main_menu.add_item(MenuItem("2", "Member Transfer Operations",
-                                         self._show_operation_menu, "action"))
-        self.main_menu.add_item(MenuItem("3", "Settings",
-                                         self._show_settings_menu, "action"))
-        self.main_menu.add_item(MenuItem("4", "About",
-                                         self._show_about, "action"))
-        self.main_menu.add_item(MenuItem("q", "Quit",
-                                         self._quit, "exit"))
+        # Apply brightness if requested
+        style_code = Styles.BOLD if bright else ""
 
-    def _show_account_menu(self):
-        """Show the account management menu."""
-        # Here you'd initialize and display the account menu
-        # For now, we'll just simulate it
-        clear_screen()
-        print_banner("Account Management")
-        print("\nAccount menu functionality is not yet implemented.")
-        input("\nPress Enter to return to the main menu...")
+        # Apply color and style
+        styled = f"{style_code}{color_code}{text}{Colors.RESET}"
 
-    def _show_operation_menu(self):
-        """Show the operation menu."""
-        # Here you'd initialize and display the operation menu
-        # For now, we'll just simulate it
-        clear_screen()
-        print_banner("Member Transfer Operations")
-        print("\nOperation menu functionality is not yet implemented.")
-        input("\nPress Enter to return to the main menu...")
-
-    def _show_settings_menu(self):
-        """Show the settings menu."""
-        # Here you'd initialize and display the settings menu
-        # For now, we'll just simulate it
-        clear_screen()
-        print_banner("Settings")
-        print("\nSettings menu functionality is not yet implemented.")
-        input("\nPress Enter to return to the main menu...")
-
-    def _show_about(self):
-        """Display information about the application."""
-        clear_screen()
-        print_banner("About Telegram Account Manager")
-
-        # Application info
-        app_name = self.config.get("app_name", "Telegram Account Manager")
-        app_version = self.config.get("app_version", "1.0.0")
-
-        print(f"\nApplication: {app_name}")
-        print(f"Version: {app_version}")
-        print(f"\nA modular tool for managing Telegram accounts and transferring members between groups.")
-
-        print("\nFeatures:")
-        print("  - Multi-account support")
-        print("  - Daily limits for each account")
-        print("  - Blocked or restricted account detection")
-        print("  - Centralized logging")
-        print("  - Interactive user interface")
-
-        input("\nPress Enter to return to the main menu...")
-
-    def _quit(self):
-        """Exit the application."""
-        self.running = False
-        logger.info("User requested application exit")
-        print("\nExiting application...")
-
-    def _display_menu(self, menu):
-        """Display a menu and handle user input."""
-        self.display.clear_screen()
-        self.display.print_header(menu.title)
-
-        # Display menu items
-        for item in menu.items:
-            print(f"{item.key}. {item.title}")
-
-        # Get user choice
-        choice = input("\nEnter your choice: ").strip().lower()
-
-        # Process choice
-        for item in menu.items:
-            if item.key.lower() == choice:
-                if item.callback:
-                    return item.callback()
-                break
-
-        print("Invalid choice. Please try again.")
-        time.sleep(1)
-
-    async def start(self):
-        """Start the application."""
-        self.running = True
-
-        try:
-            # Display welcome message
-            clear_screen()
-            print_banner("Telegram Account Manager")
-            print("\nInitializing application...")
-
-            # Set up menus
-            self._setup_menus()
-
-            print("Done. Starting application...")
-            time.sleep(1)  # Short delay to show the message
-
-            # Main application loop
-            while self.running:
-                self._display_menu(self.main_menu)
-
-        except KeyboardInterrupt:
-            logger.info("Application terminated by user (KeyboardInterrupt)")
-            print("\nApplication terminated by user.")
-        except ApplicationError as e:
-            logger.error(f"Application error: {e}")
-            print(f"\nApplication error: {e}")
-        except Exception as e:
-            logger.exception(f"Unexpected error: {e}")
-            print(f"\nUnexpected error: {e}")
-        finally:
-            self.running = False
-            logger.info("Application shut down")
-
-    def stop(self):
-        """Stop the application."""
-        self.running = False
-        logger.info("Application stop requested")
-
-
-def parse_arguments():
-    """Parse command line arguments."""
-    parser = argparse.ArgumentParser(
-        description="Telegram Account Manager - A modular tool for managing Telegram accounts."
-    )
-
-    parser.add_argument(
-        "--no-color",
-        action="store_true",
-        help="Disable colored output"
-    )
-
-    parser.add_argument(
-        "--dark-mode",
-        action="store_true",
-        help="Enable dark mode for the UI"
-    )
-
-    parser.add_argument(
-        "--debug",
-        action="store_true",
-        help="Enable debug mode"
-    )
-
-    parser.add_argument(
-        "--version",
-        action="version",
-        version="%(prog)s 1.0.0",
-        help="Show program's version number and exit"
-    )
-
-    return parser.parse_args()
-
-
-async def main_async():
-    """Async entry point for the application."""
-    args = parse_arguments()
-
-    # Set up logging
-    try:
-        setup_logging(debug=args.debug)
-    except NameError:
-        # Fallback if setup_logging is not available
-        pass
-
-    # Create and start the application
-    app = TelegramAccountManager(args)
-    await app.start()
-
-
-def main():
-    """Main entry point for the application."""
-    try:
-        if sys.platform == 'win32':
-            asyncio.set_event_loop_policy(
-                asyncio.WindowsSelectorEventLoopPolicy())
-
-        # Run the async main function
-        asyncio.run(main_async())
-    except KeyboardInterrupt:
-        print("\nProgram terminated by user.")
-        sys.exit(0)
-    except Exception as e:
-        print(f"Fatal error: {e}")
-        sys.exit(1)
-
-
-if __name__ == "__main__":
-    main()
+        return styled
