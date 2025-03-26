@@ -75,6 +75,10 @@ def _supports_color() -> bool:
 COLOR_SUPPORTED = _supports_color()
 
 
+class ColorConfig:
+    COLOR_SUPPORTED = _supports_color()
+
+
 class Colors:
     """
     ANSI color codes for terminal output.
@@ -359,8 +363,7 @@ def disable_colors() -> None:
     This function sets the COLOR_SUPPORTED flag to False, which will make
     all color functions return uncolored text.
     """
-    global COLOR_SUPPORTED
-    COLOR_SUPPORTED = False
+    ColorConfig.COLOR_SUPPORTED = False
 
 
 def enable_colors() -> None:
@@ -370,8 +373,7 @@ def enable_colors() -> None:
     This function checks if color is actually supported, and if so, sets
     the COLOR_SUPPORTED flag to True.
     """
-    global COLOR_SUPPORTED
-    COLOR_SUPPORTED = _supports_color()
+    ColorConfig.COLOR_SUPPORTED = _supports_color()
 
 
 def create_progress_bar(current: int, total: int, width: int = 40,
@@ -439,9 +441,9 @@ if __name__ == "__main__":
             print(f"{name:10}: {colorize('This text is colored', value)}")
 
     print("\nStyle Samples:")
-    for name, value in vars(Styles).items():
-        if not name.startswith('_') and isinstance(value, str):
-            print(f"{name:10}: {colorize('This text is styled', value)}")
+    for name, style_value in vars(Styles).items():
+        if not name.startswith('_') and isinstance(style_value, str):
+            print(f"{name:10}: {colorize('This text is styled', style_value)}")
 
     print("\nTheme Samples:")
     for name in ColorTheme.DEFAULT.keys():
