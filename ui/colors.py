@@ -456,12 +456,12 @@ if __name__ == "__main__":
     print()  # Add a newline after the progress bar
 
     class ColorManager:
-    """
-    Color Manager for the application.
+        """
+        Color Manager for the application.
 
-    This class provides a unified interface for all color operations in the application,
-    wrapping the functionality of other color-related classes and functions.
-    """
+        This class provides a unified interface for all color operations in the application,
+        wrapping the functionality of other color-related classes and functions.
+        """
 
     def __init__(self, enabled=True):
         """

@@ -67,7 +67,6 @@ class AccountManager:
         with cls._lock:
             if cls._instance is None:
                 cls._instance = super(AccountManager, cls).__new__(cls)
-                cls._instance._initialized = False
             return cls._instance
 
     def __init__(self, app_context: Optional[AppContext] = None):
@@ -82,13 +81,11 @@ class AccountManager:
             if self._initialized:
                 return
 
-            self.app_context = app_context
-            self.config = app_context.get(
-                'config') if app_context else Config()
+            self.app_context = get_app_context()
+            self.config = self.app_context.get_service('config')
 
             # Use file manager from context or create a new one
-            self.file_manager = app_context.get(
-                'file_manager') if app_context else FileManager()
+            self.file_manager = self.app_context.get_service('file_manager')
 
             # Path to the accounts file
             self.accounts_file = self.config.get(
