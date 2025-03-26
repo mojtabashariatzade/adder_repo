@@ -1,0 +1,55 @@
+├── Class: EncryptedFileManager (inherits from FileManager)
+│   │
+│   ├── Attributes:
+│   │   ├── encryptor: Instance of the Encryptor class for encryption/decryption operations.
+│   │   └── base_dir: Base directory for relative paths (inherited from FileManager).
+│   │
+│   ├── Methods:
+│   │   ├── Initialization
+│   │   │   └── __init__(self, encryptor: Encryptor, base_dir: Optional[str
+] = None)
+│   │   │           - Initializes the EncryptedFileManager with an Encryptor instance and optional base directory.
+│   │   │           - Validates that the provided encryptor is an instance of Encryptor.
+│   │   │
+│   │   ├── Encrypted File Operations
+│   │   │   ├── read_encrypted(self, path: Union[str, Path
+]) -> str
+│   │   │   │       - Reads and decrypts an encrypted file.
+│   │   │   │       - Returns the decrypted content as a string.
+│   │   │   │       - Raises FileReadError or DecryptionError on failure.
+│   │   │   │
+│   │   │   ├── write_encrypted(self, path: Union[str, Path
+], content: str, make_backup: bool = False) -> None
+│   │   │   │       - Encrypts and writes content to a file.
+│   │   │   │       - Optionally creates a backup of the existing file.
+│   │   │   │       - Raises FileWriteError or EncryptionError on failure.
+│   │   │   │
+│   │   │   ├── read_encrypted_json(self, path: Union[str, Path
+], default: Optional[Dict[str, Any
+    ]
+] = None) -> Dict[str, Any
+]
+│   │   │   │       - Reads and decrypts an encrypted JSON file.
+│   │   │   │       - Parses the decrypted content into a Python dictionary.
+│   │   │   │       - Returns a default value if the file doesn't exist.
+│   │   │   │       - Raises FileReadError, DecryptionError, or FileFormatError on failure.
+│   │   │   │
+│   │   │   └── write_encrypted_json(self, path: Union[str, Path
+], data: Dict[str, Any
+], indent: int = 4, make_backup: bool = False) -> None
+│   │   │           - Encrypts and writes JSON data to a file.
+│   │   │           - Formats the JSON output with specified indentation.
+│   │   │           - Optionally creates a backup of the existing file.
+│   │   │           - Raises FileWriteError, EncryptionError, or TypeError on failure.
+│   │   │
+│   │   └── Error Handling
+│   │       - Handles specific exceptions related to encryption operations:
+│   │           ├── FileReadError: Raised when a file cannot be read.
+│   │           ├── FileWriteError: Raised when a file cannot be written.
+│   │           ├── DecryptionError: Raised when decryption fails.
+│   │           ├── EncryptionError: Raised when encryption fails.
+│   │           ├── FileFormatError: Raised when decrypted content is not valid JSON.
+│   │           └── TypeError: Raised when data is not JSON-serializable.
+│   │
+└── Logger:
+        - Logs detailed information about file operations and errors using the `logging` module.

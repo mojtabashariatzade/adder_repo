@@ -85,13 +85,13 @@ Files and Folders :
 
 END: AI Claude.ai INSTRUCTION
 # -----------------------------------------------------------------------------------------------------------------------------------------
-F:\adder_repo
+F:\ADDER_REPO
 |   .env.encrypted
 |   .gitignore
 |   main.py
-|   module_status.json
 |   README.md
 |   requirements.txt
+|   run_config_tests.py
 |   run_tests.sh
 |   setup.py
 |   test_stats_runner
@@ -108,9 +108,11 @@ F:\adder_repo
 |   |   encrypted_file_manager.py
 |   |   encryption.py
 |   |   file_factory.py
-|   |   file_manager.py
 |   |   json_file_manager.py
+|   |   session.py
 |   |   session_manager.py
+|   |   session_recovery.py
+|   |   session_types.py
 |   |   __init__.py
 |
 +---error_handling
@@ -118,13 +120,6 @@ F:\adder_repo
 |   |   error_manager.py
 |   |   fallback.py
 |   |   __init__.py
-|
-+---json
-|       error_handlers.json
-|       error_manager.json
-|       fallback.json
-|       file_manager.json
-|       session_manager.json
 |
 +---logging_
 |   |   formatters.py
@@ -163,7 +158,6 @@ F:\adder_repo
 |   |   operation_menu.py
 |   |   settings_menu.py
 |   |   __init__.py
-|   |
 |
 \---utils
     |   app_context.py
@@ -172,67 +166,6 @@ F:\adder_repo
     |   __init__.py
 
 # -----------------------------------------------------------------------------------------------------------------------------------------
-
-Project Structure:
-# This project structures are stored on the local drive, specifically in the directory `F:\ADDER_REPO`. All files and folders are currently located on the local machine and are organized within this path.
-Project_Test Structure:
-F:\ADDER_REPO
-└── tests/
-    ├── test_core/
-    │   ├── test_config.py          # Tests for configuration
-    │   ├── test_constants.py       # Tests for constants
-    │   ├── test_exceptions.py      # Tests for exceptions
-    │   └── __init__.py             # Package initializer
-    ├── test_data/
-    │   ├── test_encryption.py      # Tests for encryption
-    │   ├── test_file_manager.py    # Tests for file manager
-    │   ├── test_session_manager.py # Tests for session manager
-    │   └── __init__.py             # Package initializer
-    ├── test_error_handling/
-    │   ├── test_error_handlers.py  # Tests for error handlers
-    │   ├── test_error_manager.py   # Tests for error manager
-    │   ├── test_fallback.py        # Tests for fallback mechanisms
-    │   └── __init__.py             # Package initializer
-    ├── test_logging_/
-    │   ├── test_formatters.py      # Tests for logging formatters
-    │   ├── test_handlers.py        # Tests for logging handlers
-    │   ├── test_logging_manager.py # Tests for logging manager
-    │   └── __init__.py             # Package initializer
-    ├── test_models/
-    │   ├── test_account.py         # Tests for account model
-    │   ├── test_stats.py           # Tests for statistics model
-    │   ├── test_user.py            # Tests for user model
-    │   └── __init__.py             # Package initializer
-    ├── test_services/
-    │   ├── test_account_manager.py # Tests for account manager
-    │   ├── test_analytics.py       # Tests for analytics service
-    │   ├── test_group_manager.py   # Tests for group manager
-    │   ├── test_proxy_manager.py   # Tests for proxy manager
-    │   └── __init__.py             # Package initializer
-    ├── test_strategies/
-    │   ├── test_base_strategy.py       # Tests for base strategy
-    │   ├── test_parallel_strategies.py # Tests for parallel strategies
-    │   ├── test_sequential_strategy.py # Tests for sequential strategy
-    │   ├── test_strategy_selector.py   # Tests for strategy selector
-    │   └── __init__.py                # Package initializer
-    ├── test_ui/
-    │   ├── test_account_menu.py    # Tests for account menu
-    │   ├── test_colors.py          # Tests for colors
-    │   ├── test_display.py         # Tests for display utilities
-    │   ├── test_menu_system.py     # Tests for menu system
-    │   ├── test_operation_menu.py  # Tests for operation menu
-    │   ├── test_settings_menu.py   # Tests for settings menu
-    │   └── __init__.py             # Package initializer
-    ├── test_utils/
-    │   ├── test_app_context.py     # Tests for app context
-    │   ├── test_helpers.py         # Tests for helper utilities
-    │   ├── test_validators.py      # Tests for validators
-    │   └── __init__.py             # Package initializer
-    ├── test_framework.py           # Test framework setup
-    ├── test_init.py               # Initialization tests
-    └── __init__.py                # Package initializer
-├── run_tests.py                   # Script to run tests
-└── run_tests.sh                   # Shell script to run tests
 
 # -----------------------------------------------------------------------------------------------------------------------------------------
 

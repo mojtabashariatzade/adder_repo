@@ -1,0 +1,115 @@
+├── Class: FileManager
+│   │
+│   ├── Attributes:
+│   │   ├── base_dir: Base directory for relative paths (default: current working directory)
+│   │
+│   ├── Methods:
+│   │   ├── Initialization
+│   │   │   └── __init__(self, base_dir: Optional[str
+] = None)
+│   │   │           - Initializes the FileManager with a base directory.
+│   │   │
+│   │   ├── Path Resolution
+│   │   │   └── _resolve_path(self, path: Union[str, Path
+]) -> Path
+│   │   │           - Resolves a path to an absolute path.
+│   │   │
+│   │   ├── Existence Checks
+│   │   │   ├── exists(self, path: Union[str, Path
+]) -> bool
+│   │   │   │       - Checks if a file or directory exists.
+│   │   │   ├── is_file(self, path: Union[str, Path
+]) -> bool
+│   │   │   │       - Checks if a path is a file.
+│   │   │   └── is_dir(self, path: Union[str, Path
+]) -> bool
+│   │   │           - Checks if a path is a directory.
+│   │   │
+│   │   ├── Directory Management
+│   │   │   ├── ensure_dir(self, path: Union[str, Path
+]) -> Path
+│   │   │   │       - Ensures a directory exists; creates it if it doesn't.
+│   │   │   └── ensure_parent_dir(self, path: Union[str, Path
+]) -> Path
+│   │   │           - Ensures the parent directory of a file exists.
+│   │   │
+│   │   ├── File Operations
+│   │   │   ├── read_text(self, path: Union[str, Path
+], encoding: str = "utf-8") -> str
+│   │   │   │       - Reads text content from a file.
+│   │   │   ├── read_binary(self, path: Union[str, Path
+]) -> bytes
+│   │   │   │       - Reads binary content from a file.
+│   │   │   ├── write_text(self, path: Union[str, Path
+], content: str, encoding: str = "utf-8", make_backup: bool = False) -> None
+│   │   │   │       - Writes text content to a file; optionally creates a backup.
+│   │   │   ├── write_binary(self, path: Union[str, Path
+], content: bytes, make_backup: bool = False) -> None
+│   │   │   │       - Writes binary content to a file; optionally creates a backup.
+│   │   │   ├── _atomic_write(self, path: Path, content: Union[str, bytes
+], mode: str, encoding: Optional[str
+] = None) -> None
+│   │   │   │       - Writes content to a file atomically using a temporary file.
+│   │   │   ├── make_backup(self, path: Union[str, Path
+], backup_suffix: Optional[str
+] = None) -> Path
+│   │   │   │       - Creates a backup of a file with an optional suffix.
+│   │   │   ├── delete(self, path: Union[str, Path
+], missing_ok: bool = False) -> bool
+│   │   │   │       - Deletes a file or directory; optionally ignores missing files.
+│   │   │   ├── copy(self, src: Union[str, Path
+], dst: Union[str, Path
+], overwrite: bool = False) -> Path
+│   │   │   │       - Copies a file or directory; optionally overwrites the destination.
+│   │   │   ├── move(self, src: Union[str, Path
+], dst: Union[str, Path
+], overwrite: bool = False) -> Path
+│   │   │   │       - Moves a file or directory; optionally overwrites the destination.
+│   │   │   ├── list_dir(self, path: Union[str, Path
+], pattern: Optional[str
+] = None) -> List[Path
+]
+│   │   │   │       - Lists files and directories in a directory; optionally filters by pattern.
+│   │   │   ├── get_file_info(self, path: Union[str, Path
+]) -> Dict[str, Any
+]
+│   │   │   │       - Retrieves detailed information about a file or directory.
+│   │   │   ├── calculate_file_hash(self, path: Union[str, Path
+], algorithm: str = "sha256") -> str
+│   │   │   │       - Calculates a hash of the file content.
+│   │   │   ├── get_temp_file(self, suffix: Optional[str
+] = None, prefix: Optional[str
+] = None, dir: Optional[Union[str, Path
+    ]
+] = None) -> tuple[Path, Callable[
+        [], None
+    ]
+]
+│   │   │   │       - Creates a temporary file and provides a cleanup function.
+│   │   │   └── get_temp_dir(self, suffix: Optional[str
+] = None, prefix: Optional[str
+] = None, dir: Optional[Union[str, Path
+    ]
+] = None) -> tuple[Path, Callable[
+        [], None
+    ]
+│   │   │           - Creates a temporary directory and provides a cleanup function.
+│   │   │
+│   │   └── Error Handling
+│   │       - Methods raise custom exceptions like FileReadError and FileWriteError.
+│   │
+└── Class: SafeFileWriter
+    │
+    ├── Attributes:
+    │   ├── _file_locks: Dictionary of file locks for thread-safe operations.
+    │   └── _lock: Thread lock for managing file locks.
+    │
+    ├── Methods:
+    │   ├── get_lock(cls, file_path: str) -> threading.RLock
+    │   │       - Retrieves or creates a lock for a specific file path.
+    │   │
+    │   └── safe_write(cls, path: Union[str, Path
+    ], content: Union[str, bytes
+    ], mode: str = "w", encoding: Optional[str
+    ] = "utf-8", make_backup: bool = False) -> None
+    │           - Writes content to a file safely with locking; optionally creates a backup.

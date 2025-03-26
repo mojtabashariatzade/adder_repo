@@ -29,7 +29,7 @@ logger = logging.getLogger(__name__)
 class RecoveryStrategy:
     """Base class for session recovery strategies."""
 
-    def can_recover(self, session: Session) -> bool:
+    def can_recover(self, __session: Session) -> bool:
         """
         Check if the session has valid checkpoints for recovery.
 
@@ -41,7 +41,7 @@ class RecoveryStrategy:
         """
         return False
 
-    def recover(self, session: Session) -> bool:
+    def recover(self, __session: Session) -> bool:
         """
         Attempt to recover the session.
 

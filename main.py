@@ -25,6 +25,18 @@ import asyncio
 import threading
 from datetime import datetime
 from typing import Dict, List, Optional, Any, Tuple, Union
+from ui.colors import ColorManager
+from ui.display import Display
+from ui.menu_system import MenuSystem
+from utils.validators import validate_environment
+from utils.helpers import get_platform_info, setup_signal_handlers, clear_console
+from utils.app_context import AppContext
+from logging_.logging_manager import LoggingManager, get_logger
+from core.exceptions import TelegramAdderError, ConfigError
+from core.constants import Constants
+from core.config import Config
+from data.session_manager import SessionManager
+
 
 # Add project root to Python path to ensure imports work correctly
 project_root = os.path.abspath(os.path.dirname(__file__))
@@ -32,22 +44,12 @@ if project_root not in sys.path:
     sys.path.insert(0, project_root)
 
 # Import core modules
-from core.config import Config
-from core.constants import Constants
-from core.exceptions import TelegramAdderError, ConfigError
 
 # Import logging modules
-from logging_.logging_manager import LoggingManager, get_logger
 
 # Import utility modules
-from utils.app_context import AppContext
-from utils.helpers import get_platform_info, setup_signal_handlers, clear_console
-from utils.validators import validate_environment
 
 # Import UI modules
-from ui.menu_system import MenuSystem
-from ui.display import Display
-from ui.colors import ColorManager
 
 # Global variables
 logger = None  # Will be initialized properly during setup
@@ -65,7 +67,8 @@ def setup_logging(config: Config) -> logging.Logger:
     Returns:
         logging.Logger: Configured logger for the main module.
     """
-    log_level = logging.DEBUG if config.get('debug_mode', False) else logging.INFO
+    log_level = logging.DEBUG if config.get(
+        'debug_mode', False) else logging.INFO
     log_file = config.get_file_path('log_file')
 
     # Initialize the logging manager
@@ -78,7 +81,7 @@ def setup_logging(config: Config) -> logging.Logger:
 
     # Get the main logger
     main_logger = log_manager.get_logger("Main")
-    main_logger.info(f"Logging system initialized. Log file: {log_file}")
+    main_logger.info("Logging system initialized. Log file: %s", log_file)
 
     return main_logger
 
@@ -223,7 +226,8 @@ def show_welcome_message(color_manager: ColorManager):
     app_version = config.get('app_version', '1.0.0')
 
     print(color_manager.style_text(f" {app_name} v{app_version}", 'GREEN'))
-    print(color_manager.style_text(f" {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}", 'GREEN'))
+    print(color_manager.style_text(
+        f" {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}", 'GREEN'))
     print(color_manager.style_text(" " + "="*70, 'GREEN'))
     print()
 
@@ -265,7 +269,7 @@ def handle_signal(sig, frame):
     global exit_event
 
     if logger:
-        logger.info(f"Received signal {sig}, initiating shutdown")
+        logger.info("Received signal %s, initiating shutdown", sig)
 
     # Set the exit event to signal all threads to terminate
     exit_event.set()
@@ -286,7 +290,8 @@ def handle_exceptions(exc_type, exc_value, exc_traceback):
         return
 
     if logger:
-        logger.critical("Uncaught exception", exc_info=(exc_type, exc_value, exc_traceback))
+        logger.critical("Uncaught exception", exc_info=(
+            exc_type, exc_value, exc_traceback))
 
     print("\nFatal error occurred. Check the log file for details.")
 
@@ -303,7 +308,6 @@ async def check_for_interrupted_sessions():
     """
     try:
         # Import session manager
-        from data.session_manager import SessionManager
 
         # Get sessions directory from app context or use default
         sessions_dir = app_context.get('sessions_dir', None)
@@ -316,15 +320,21 @@ async def check_for_interrupted_sessions():
             color_manager = app_context.get('color_manager')
             display = Display(color_manager=color_manager)
 
-            display.print_warning(f"Found {len(incomplete_sessions)} interrupted operation(s).")
+            display.print_warning(
+                f"Found {len(incomplete_sessions)} interrupted operation(s).")
 
             # Ask user if they want to recover
-            recover = display.prompt_yes_no("Do you want to recover interrupted operations?")
+            recover = display.prompt_yes_no(
+                "Do you want to recover interrupted operations?")
 
             if recover:
                 # For now, just log that we would recover
-                logger.info(f"User chose to recover {len(incomplete_sessions)} interrupted operations")
-                display.print_info("Recovery option selected but implementation pending...")
+                logger.info(
+                    "User chose to recover %s interrupted operations", len(
+                        incomplete_sessions)
+                )
+                display.print_info(
+                    "Recovery option selected but implementation pending...")
                 return True
             else:
                 logger.info("User chose not to recover interrupted operations")
@@ -332,7 +342,7 @@ async def check_for_interrupted_sessions():
 
         return True
     except Exception as e:
-        logger.error(f"Error checking for interrupted sessions: {e}")
+        logger.error("Error checking for interrupted sessions: %s", e)
         return False
 
 
@@ -358,12 +368,12 @@ async def main_async():
 
         # Setup logging
         logger = setup_logging(config)
-        logger.info(f"Application startup: {config.get('app_name', 'Telegram Account Manager')} "
-                   f"v{config.get('app_version', '1.0.0')}")
+        logger.info("Application startup: %s v%s", config.get(
+            'app_name', 'Telegram Account Manager'), config.get('app_version', '1.0.0'))
 
         # Log platform information
         platform_info = get_platform_info()
-        logger.info(f"Platform: {platform_info}")
+        logger.info("Platform: %s", platform_info)
 
         # Set up signal handlers
         setup_signal_handlers(handle_signal)

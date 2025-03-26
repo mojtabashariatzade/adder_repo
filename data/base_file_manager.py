@@ -291,7 +291,8 @@ class FileManager:
             if "b" not in mode:  # Text mode
                 # Use utf-8 as default if encoding is None
                 kwargs["encoding"] = encoding or "utf-8"
-            with open(temp_file, mode, **kwargs) as f:
+            with open(
+                    temp_file, mode, encoding="utf-8" if "b" not in mode else None, **kwargs) as f:
                 f.write(content)
                 f.flush()
                 os.fsync(f.fileno())  # Ensure data is written to disk
@@ -596,7 +597,8 @@ class FileManager:
             hasher = getattr(hashlib, algorithm)()
         except AttributeError:
             logger.error("Unsupported hash algorithm: %s", algorithm)
-            raise ValueError(f"Unsupported hash algorithm: {algorithm}")
+            raise ValueError(
+                f"Unsupported hash algorithm: {algorithm}") from AttributeError
 
         try:
             with open(file_path, "rb") as f:
@@ -606,7 +608,8 @@ class FileManager:
             return hasher.hexdigest()
         except Exception as e:
             logger.error("Error calculating hash for %s: %s", file_path, e)
-            raise FileReadError(str(file_path), f"Error calculating hash: {e}")
+            raise FileReadError(
+                str(file_path), f"Error calculating hash: {e}") from e
 
     def get_temp_file(
         self,
