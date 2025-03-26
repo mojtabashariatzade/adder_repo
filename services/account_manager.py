@@ -111,6 +111,7 @@ class AccountManager:
             self._setup_daily_reset()
 
             self._initialized = True
+            logger.info("AccountManager initialized successfully.")
 
     def _load_accounts(self):
         """
