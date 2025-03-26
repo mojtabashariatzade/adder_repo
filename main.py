@@ -1,67 +1,60 @@
+"""
+This module is the main entry point of the application.
+It initializes the application, sets up logging, and runs the main menu.
+"""
 import sys
-from utils.app_context import AppContext
-from ui.menu_system import MenuSystem
-from logging_.logging_manager import LoggingManager
-from error_handling.error_manager import ErrorManager
+import logging
 
+from core.config import Config
+from core.exceptions import TelegramAdderError
+import logging_.logging_manager
+import utils.app_context
+import ui.menu_system
+from services.account_manager import AccountManager
 
-def setup_logging(app_context):
-    logging_manager = LoggingManager(app_context=app_context)
-    app_context.register_service('logging_manager', logging_manager)
-
-
-def setup_error_handling(app_context):
-    error_manager = ErrorManager()
-    app_context.register_service('error_manager', error_manager)
+logger = logging.getLogger(__name__)
 
 
 def main():
-    # Initialize the application context
-    with AppContext() as app_context:
-        try:
-            # Set up logging
-            setup_logging(app_context)
+    """
+    Main entry point of the application.
+    """
+    try:
+        # 1. Configure the application
+        config = Config()
+        config.load()  # Load settings from file
 
-            # Set up error handling
-            setup_error_handling(app_context)
+        # 2. Set up logging system
+        logging_manager = logging_.logging_manager.LoggingManager(config)
+        logging_manager.setup_logging()
+        logger.info("Logging system initialized.")
 
-            # Register services
-            from services.account_manager import AccountManager
-            account_manager = AccountManager(app_context=app_context)
-            app_context.register_service('account_manager', account_manager)
+        # 3. Create Application Context
+        app_context: utils.app_context.AppContext = utils.app_context.AppContext()
+        app_context.register(Config, config)
+        app_context.register("logging_manager", logging_manager)
 
-            from services.group_manager import GroupManager
-            group_manager = GroupManager(app_context=app_context)
-            app_context.register_service('group_manager', group_manager)
+        # 4. Create Account Manager (if needed)
+        account_manager = AccountManager(config, app_context)
+        app_context.register("account_manager", account_manager)
 
-            from services.proxy_manager import ProxyManager
-            proxy_manager = ProxyManager(app_context=app_context)
-            app_context.register_service('proxy_manager', proxy_manager)
+        # 5. Initialize main menu
+        menu_system = ui.menu_system.MenuSystem(config, app_context)
+        app_context.register("menu_system", menu_system)
 
-            from strategies.strategy_selector import StrategySelector
-            strategy_selector = StrategySelector()
-            app_context.register_service(
-                'strategy_selector', strategy_selector)
+        # 6. Display main menu and run the application
+        menu_system.run()
 
-            from models.stats import MetricsCollector
-            metrics_collector = MetricsCollector(app_context=app_context)
-            app_context.register_service(
-                'metrics_collector', metrics_collector)
-
-            # Initialize services
-            app_context.initialize()
-
-            # Display the main menu
-            menu_system = MenuSystem(app_context)
-            menu_system.run()
-
-        except Exception as e:
-            error_manager = app_context.get_service('error_manager')
-            error_manager.handle(e)
-            sys.exit(1)
-        finally:
-            # Clean up resources
-            app_context.shutdown()
+    except TelegramAdderError as e:
+        logger.error("Critical application error: %s", e)
+        print(f"Critical error: {e}. Please check the log file.")
+        sys.exit(1)
+    except Exception as e:
+        logger.exception("Unexpected application error: %s", e)
+        print("Unexpected error. Please check the log file.")
+        sys.exit(1)
+    finally:
+        logger.info("Application finished.")
 
 
 if __name__ == "__main__":
