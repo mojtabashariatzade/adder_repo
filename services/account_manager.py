@@ -18,6 +18,7 @@ import time
 import logging
 import threading
 from datetime import datetime, timedelta
+from utils.app_context import get_app_context
 from typing import Dict, List, Optional, Tuple, Any, Union
 
 from core.config import Config

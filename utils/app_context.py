@@ -105,7 +105,7 @@ class AppContext:
         """
         # Skip initialization if already initialized (Singleton pattern)
         with self._lock:
-            if hasattr(self, '_initialized') and self._initialized:
+            if getattr(self, '_initialized', False):
                 return
 
             self._initialized = False
