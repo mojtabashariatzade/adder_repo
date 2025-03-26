@@ -454,3 +454,55 @@ if __name__ == "__main__":
         import time
         time.sleep(0.2)
     print()  # Add a newline after the progress bar
+
+    class ColorManager:
+    """
+    Color Manager for the application.
+
+    This class provides a unified interface for all color operations in the application,
+    wrapping the functionality of other color-related classes and functions.
+    """
+
+    def __init__(self, enabled=True):
+        """
+        Initialize the color manager.
+
+        Args:
+            enabled (bool): Whether colors should be enabled
+        """
+        self.enabled = enabled
+
+        # Set up colors based on enabled flag
+        if not self.enabled:
+            disable_colors()
+        else:
+            enable_colors()
+
+    def style_text(self, text, color='WHITE', bright=False):
+        """
+        Style text with the specified color and brightness.
+
+        Args:
+            text (str): Text to style
+            color (str): Color name (one of the Colors constants)
+            bright (bool): Whether to apply bold/bright styling
+
+        Returns:
+            str: Styled text
+        """
+        if not self.enabled:
+            return text
+
+        if not COLOR_SUPPORTED:
+            return text
+
+        # Get the color code
+        color_code = getattr(Colors, color, Colors.WHITE)
+
+        # Apply brightness if requested
+        style_code = Styles.BOLD if bright else ""
+
+        # Apply color and style
+        styled = f"{style_code}{color_code}{text}{Colors.RESET}"
+
+        return styled

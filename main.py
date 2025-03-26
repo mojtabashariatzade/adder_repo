@@ -1,485 +1,446 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
+#!/usr/bin/env python3
 """
-Telegram Account Manager - Main Entry Point
+Telegram Account Manager - Main Module
 
-This module serves as the main entry point for the Telegram Account Manager application.
-It initializes all necessary components, sets up logging, error handling,
-and manages the application lifecycle.
-
-Features:
-- Application initialization and configuration
-- Main menu presentation and navigation
-- Command-line argument processing
-- Application context setup and resource management
-- Graceful shutdown handling
+This is the entry point for the Telegram Account Manager application.
+It initializes all necessary components and starts the application.
 """
 
 import os
 import sys
-import argparse
+import time
 import logging
-import signal
+import argparse
 import asyncio
-import threading
-from datetime import datetime
-from typing import Dict, List, Optional, Any, Tuple, Union
-from ui.colors import ColorManager
-from ui.display import Display
-from ui.menu_system import MenuSystem
-from utils.validators import validate_environment
-from utils.helpers import get_platform_info, setup_signal_handlers, clear_console
-from utils.app_context import AppContext
-from logging_.logging_manager import LoggingManager, get_logger
-from core.exceptions import TelegramAdderError, ConfigError
-from core.constants import Constants
-from core.config import Config
-from data.session_manager import SessionManager
+from typing import Optional, Dict, Any
 
-
-# Add project root to Python path to ensure imports work correctly
-project_root = os.path.abspath(os.path.dirname(__file__))
-if project_root not in sys.path:
-    sys.path.insert(0, project_root)
+# Set up path for imports
+current_dir = os.path.dirname(os.path.abspath(__file__))
+if current_dir not in sys.path:
+    sys.path.insert(0, current_dir)
 
 # Import core modules
+try:
+    from core.config import Config
+    from core.constants import Constants
+    from core.exceptions import TelegramAdderError as ApplicationError
+except ImportError as e:
+    print(f"Error importing core modules: {e}")
+    # For development, provide fallbacks or mock objects
 
-# Import logging modules
+    class Config:
+        def __init__(self):
+            self._config_data = {}
 
-# Import utility modules
+        def get(self, key, default=None):
+            return self._config_data.get(key, default)
+
+        def set(self, key, value):
+            self._config_data[key] = value
+
+    class Constants:
+        class TimeDelays:
+            DEFAULT = 20
+            MAXIMUM = 300
+            ACCOUNT_CHANGE = 60
+
+        class Limits:
+            MAX_MEMBERS_PER_DAY = 20
+            MAX_RETRY = 3
+            MAX_FAILURES = 5
+            MAX_MEMORY_RECORDS = 1000
+
+    class ApplicationError(Exception):
+        pass
 
 # Import UI modules
+try:
+    from ui.colors import Colors, ColorTheme, enable_colors, disable_colors
+    from ui.display import Display, clear_screen, print_banner
+except ImportError as e:
+    print(f"Error importing UI base modules: {e}")
+    # Fallbacks
+    def enable_colors(): pass
+    def disable_colors(): pass
+    def clear_screen(): os.system('cls' if os.name == 'nt' else 'clear')
+    def print_banner(text): print(f"\n{'='*50}\n{text}\n{'='*50}")
 
-# Global variables
-logger = None  # Will be initialized properly during setup
-app_context = None  # Application context singleton
-exit_event = threading.Event()  # Event to signal clean exit
+    class Colors:
+        pass
+
+    class ColorTheme:
+        @staticmethod
+        def use_dark_mode(): pass
+        @staticmethod
+        def use_default_mode(): pass
+
+    class Display:
+        @staticmethod
+        def clear_screen(): clear_screen()
+        @staticmethod
+        def print_header(title): print(f"\n{title}\n{'='*len(title)}")
+        @staticmethod
+        def print_error(message): print(f"ERROR: {message}")
+        @staticmethod
+        def print_success(message): print(f"SUCCESS: {message}")
+        @staticmethod
+        def print_info(message): print(message)
+        @staticmethod
+        def get_input(prompt): return input(prompt)
+
+# Import menu system
+try:
+    from ui.menu_system import Menu, MenuItem
+except ImportError as e:
+    print(f"Error importing menu system: {e}")
+    # Fallbacks
+
+    class Menu:
+        def __init__(self, title, parent=None):
+            self.title = title
+            self.parent = parent
+            self.items = []
+
+        def add_item(self, item):
+            self.items.append(item)
+            return self
+
+    class MenuItem:
+        def __init__(self, key, title, callback=None, item_type="action"):
+            self.key = key
+            self.title = title
+            self.callback = callback
+            self.item_type = item_type
+
+# Import data management
+try:
+    from data.session_manager import SessionManager
+except ImportError as e:
+    print(f"Error importing data management: {e}")
+    # Fallbacks
+
+    class SessionManager:
+        _instance = None
+
+        @classmethod
+        def get_session_manager(cls):
+            if cls._instance is None:
+                cls._instance = SessionManager()
+            return cls._instance
+
+# Import services
+try:
+    from services.account_manager import AccountManager
+except ImportError as e:
+    print(f"Error importing services: {e}")
+    # Fallback
+
+    class AccountManager:
+        def __init__(self):
+            self.accounts = []
+
+        def get_all_accounts(self):
+            return []
+
+# Import strategies
+try:
+    from strategies.strategy_selector import StrategySelector
+except ImportError as e:
+    print(f"Error importing strategies: {e}")
+    # Fallback
+
+    class StrategySelector:
+        def get_strategy(self, strategy_type, accounts=None):
+            return None
+
+# Set up logging
+try:
+    from logging_.logging_manager import setup_logging, get_logger
+    logger = get_logger("Main")
+except ImportError:
+    # Fallback logging
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+        handlers=[
+            logging.StreamHandler(),
+            logging.FileHandler("telegram_adder.log", encoding="utf-8")
+        ]
+    )
+    logger = logging.getLogger("Main")
+
+    def setup_logging(debug=False):
+        log_level = logging.DEBUG if debug else logging.INFO
+        logger.setLevel(log_level)
 
 
-def setup_logging(config: Config) -> logging.Logger:
+class TelegramAccountManager:
     """
-    Set up the logging system.
+    Main application class for the Telegram Account Manager.
 
-    Args:
-        config (Config): Application configuration.
-
-    Returns:
-        logging.Logger: Configured logger for the main module.
+    This class initializes all required components and provides
+    the main entry point for the application.
     """
-    log_level = logging.DEBUG if config.get(
-        'debug_mode', False) else logging.INFO
-    log_file = config.get_file_path('log_file')
 
-    # Initialize the logging manager
-    log_manager = LoggingManager(
-        log_dir=os.path.dirname(log_file),
-        log_file=os.path.basename(log_file),
-        default_level=log_level,
-        json_log_enabled=config.get('json_logging_enabled', False)
+    def __init__(self, args: argparse.Namespace):
+        """
+        Initialize the application.
+
+        Args:
+            args: Command line arguments
+        """
+        self.args = args
+        self.config = Config()
+
+        # Initialize display components
+        self.display = Display()
+
+        # Initialize data layer
+        self.session_manager = SessionManager.get_session_manager()
+
+        # Initialize services
+        self.account_manager = AccountManager()
+        self.strategy_selector = StrategySelector()
+
+        # Menu-related objects
+        self.main_menu = None
+        self.account_menu = None
+        self.operation_menu = None
+        self.settings_menu = None
+
+        # Application state
+        self.running = False
+
+        # Configure based on args
+        self._apply_args()
+
+        logger.info("Telegram Account Manager initialized")
+
+    def _apply_args(self):
+        """Apply command line arguments to the application configuration."""
+        if self.args.no_color:
+            disable_colors()
+            logger.info("Colors disabled")
+        else:
+            enable_colors()
+
+        if self.args.dark_mode:
+            ColorTheme.use_dark_mode()
+            logger.info("Dark mode enabled")
+        else:
+            ColorTheme.use_default_mode()
+
+        if self.args.debug:
+            self.config.set("debug_mode", True)
+            logger.setLevel(logging.DEBUG)
+            logger.debug("Debug mode enabled")
+
+    def _setup_menus(self):
+        """Set up the menu system for the application."""
+        # Create main menu
+        self.main_menu = Menu("Telegram Account Manager")
+
+        # Add menu items to main menu
+        self._setup_main_menu()
+
+        logger.debug("Menu system created")
+
+    def _setup_main_menu(self):
+        """Set up the main menu."""
+        # Create main menu items
+        self.main_menu.add_item(MenuItem("1", "Account Management",
+                                         self._show_account_menu, "action"))
+        self.main_menu.add_item(MenuItem("2", "Member Transfer Operations",
+                                         self._show_operation_menu, "action"))
+        self.main_menu.add_item(MenuItem("3", "Settings",
+                                         self._show_settings_menu, "action"))
+        self.main_menu.add_item(MenuItem("4", "About",
+                                         self._show_about, "action"))
+        self.main_menu.add_item(MenuItem("q", "Quit",
+                                         self._quit, "exit"))
+
+    def _show_account_menu(self):
+        """Show the account management menu."""
+        # Here you'd initialize and display the account menu
+        # For now, we'll just simulate it
+        clear_screen()
+        print_banner("Account Management")
+        print("\nAccount menu functionality is not yet implemented.")
+        input("\nPress Enter to return to the main menu...")
+
+    def _show_operation_menu(self):
+        """Show the operation menu."""
+        # Here you'd initialize and display the operation menu
+        # For now, we'll just simulate it
+        clear_screen()
+        print_banner("Member Transfer Operations")
+        print("\nOperation menu functionality is not yet implemented.")
+        input("\nPress Enter to return to the main menu...")
+
+    def _show_settings_menu(self):
+        """Show the settings menu."""
+        # Here you'd initialize and display the settings menu
+        # For now, we'll just simulate it
+        clear_screen()
+        print_banner("Settings")
+        print("\nSettings menu functionality is not yet implemented.")
+        input("\nPress Enter to return to the main menu...")
+
+    def _show_about(self):
+        """Display information about the application."""
+        clear_screen()
+        print_banner("About Telegram Account Manager")
+
+        # Application info
+        app_name = self.config.get("app_name", "Telegram Account Manager")
+        app_version = self.config.get("app_version", "1.0.0")
+
+        print(f"\nApplication: {app_name}")
+        print(f"Version: {app_version}")
+        print(f"\nA modular tool for managing Telegram accounts and transferring members between groups.")
+
+        print("\nFeatures:")
+        print("  - Multi-account support")
+        print("  - Daily limits for each account")
+        print("  - Blocked or restricted account detection")
+        print("  - Centralized logging")
+        print("  - Interactive user interface")
+
+        input("\nPress Enter to return to the main menu...")
+
+    def _quit(self):
+        """Exit the application."""
+        self.running = False
+        logger.info("User requested application exit")
+        print("\nExiting application...")
+
+    def _display_menu(self, menu):
+        """Display a menu and handle user input."""
+        self.display.clear_screen()
+        self.display.print_header(menu.title)
+
+        # Display menu items
+        for item in menu.items:
+            print(f"{item.key}. {item.title}")
+
+        # Get user choice
+        choice = input("\nEnter your choice: ").strip().lower()
+
+        # Process choice
+        for item in menu.items:
+            if item.key.lower() == choice:
+                if item.callback:
+                    return item.callback()
+                break
+
+        print("Invalid choice. Please try again.")
+        time.sleep(1)
+
+    async def start(self):
+        """Start the application."""
+        self.running = True
+
+        try:
+            # Display welcome message
+            clear_screen()
+            print_banner("Telegram Account Manager")
+            print("\nInitializing application...")
+
+            # Set up menus
+            self._setup_menus()
+
+            print("Done. Starting application...")
+            time.sleep(1)  # Short delay to show the message
+
+            # Main application loop
+            while self.running:
+                self._display_menu(self.main_menu)
+
+        except KeyboardInterrupt:
+            logger.info("Application terminated by user (KeyboardInterrupt)")
+            print("\nApplication terminated by user.")
+        except ApplicationError as e:
+            logger.error(f"Application error: {e}")
+            print(f"\nApplication error: {e}")
+        except Exception as e:
+            logger.exception(f"Unexpected error: {e}")
+            print(f"\nUnexpected error: {e}")
+        finally:
+            self.running = False
+            logger.info("Application shut down")
+
+    def stop(self):
+        """Stop the application."""
+        self.running = False
+        logger.info("Application stop requested")
+
+
+def parse_arguments():
+    """Parse command line arguments."""
+    parser = argparse.ArgumentParser(
+        description="Telegram Account Manager - A modular tool for managing Telegram accounts."
     )
 
-    # Get the main logger
-    main_logger = log_manager.get_logger("Main")
-    main_logger.info("Logging system initialized. Log file: %s", log_file)
-
-    return main_logger
-
-
-def parse_arguments() -> argparse.Namespace:
-    """
-    Parse command-line arguments.
-
-    Returns:
-        argparse.Namespace: Parsed arguments.
-    """
-    parser = argparse.ArgumentParser(description="Telegram Account Manager")
-
-    parser.add_argument(
-        "--config",
-        type=str,
-        help="Path to the configuration file"
-    )
-    parser.add_argument(
-        "--debug",
-        action="store_true",
-        help="Enable debug mode"
-    )
-    parser.add_argument(
-        "--recover",
-        action="store_true",
-        help="Attempt to recover from previous interrupted session"
-    )
     parser.add_argument(
         "--no-color",
         action="store_true",
         help="Disable colored output"
     )
+
     parser.add_argument(
-        "--sessions-dir",
-        type=str,
-        help="Directory to store session files"
+        "--dark-mode",
+        action="store_true",
+        help="Enable dark mode for the UI"
+    )
+
+    parser.add_argument(
+        "--debug",
+        action="store_true",
+        help="Enable debug mode"
+    )
+
+    parser.add_argument(
+        "--version",
+        action="version",
+        version="%(prog)s 1.0.0",
+        help="Show program's version number and exit"
     )
 
     return parser.parse_args()
 
 
-def initialize_application(args: argparse.Namespace) -> Tuple[Config, AppContext]:
-    """
-    Initialize the application and its components.
-
-    Args:
-        args (argparse.Namespace): Command-line arguments.
-
-    Returns:
-        Tuple[Config, AppContext]: Configuration and application context.
-
-    Raises:
-        ConfigError: If configuration initialization fails.
-    """
-    # Initialize configuration
-    config = Config()
-
-    # Apply command-line arguments to configuration
-    if args.config:
-        config.load(args.config)
-
-    if args.debug:
-        config.set('debug_mode', True)
-
-    # Create application context
-    context = AppContext()
-
-    # Initialize context with configuration
-    context.register('config', config)
-
-    # Set up sessions directory if specified
-    if args.sessions_dir:
-        context.register('sessions_dir', args.sessions_dir)
-
-    # Set up color manager
-    color_manager = ColorManager(enabled=not args.no_color)
-    context.register('color_manager', color_manager)
-
-    return config, context
-
-
-def setup_environment() -> bool:
-    """
-    Set up the application environment.
-
-    Checks for required dependencies, file permissions, and environment variables.
-
-    Returns:
-        bool: True if environment is valid, False otherwise.
-    """
-    try:
-        # Validate environment
-        valid, issues = validate_environment()
-
-        if not valid:
-            for issue in issues:
-                print(f"Environment issue: {issue}")
-            return False
-
-        # Check Python version
-        min_python_version = (3, 7)
-        current_version = sys.version_info[:2]
-
-        if current_version < min_python_version:
-            print(f"Python {min_python_version[0]}.{min_python_version[1]} or higher is required. "
-                  f"You're using Python {current_version[0]}.{current_version[1]}.")
-            return False
-
-        return True
-    except Exception as e:
-        print(f"Error during environment setup: {e}")
-        return False
-
-
-def show_welcome_message(color_manager: ColorManager):
-    """
-    Display the welcome message and application information.
-
-    Args:
-        color_manager (ColorManager): Color manager for styled output.
-    """
-    clear_console()
-    print(color_manager.style_text("""
-╔════════════════════════════════════════════════════════════════════╗
-║                                                                    ║
-║   ████████╗███████╗██╗     ███████╗ ██████╗ ██████╗  █████╗ ███╗   ███╗ ║
-║   ╚══██╔══╝██╔════╝██║     ██╔════╝██╔════╝ ██╔══██╗██╔══██╗████╗ ████║ ║
-║      ██║   █████╗  ██║     █████╗  ██║  ███╗██████╔╝███████║██╔████╔██║ ║
-║      ██║   ██╔══╝  ██║     ██╔══╝  ██║   ██║██╔══██╗██╔══██║██║╚██╔╝██║ ║
-║      ██║   ███████╗███████╗███████╗╚██████╔╝██║  ██║██║  ██║██║ ╚═╝ ██║ ║
-║      ╚═╝   ╚══════╝╚══════╝╚══════╝ ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝     ╚═╝ ║
-║                                                                    ║
-║                      ACCOUNT MANAGER                               ║
-║                                                                    ║
-╚════════════════════════════════════════════════════════════════════╝
-""", 'CYAN', bright=True))
-
-    # Show version and build info
-    config = app_context.get('config')
-    app_name = config.get('app_name', 'Telegram Account Manager')
-    app_version = config.get('app_version', '1.0.0')
-
-    print(color_manager.style_text(f" {app_name} v{app_version}", 'GREEN'))
-    print(color_manager.style_text(
-        f" {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}", 'GREEN'))
-    print(color_manager.style_text(" " + "="*70, 'GREEN'))
-    print()
-
-
-def clean_shutdown():
-    """
-    Perform a clean shutdown of the application.
-
-    This function handles resource cleanup and proper shutdown procedures.
-    """
-    global logger, app_context
-
-    print("\nShutting down... Please wait.")
-
-    # Log shutdown
-    if logger:
-        logger.info("Application shutdown initiated")
-
-    # Clean up resources
-    if app_context:
-        # Get logging manager and shut it down
-        logging_manager = LoggingManager()
-        logging_manager.shutdown()
-
-        # Perform other cleanup tasks
-        app_context.cleanup()
-
-    print("Shutdown complete. Goodbye!")
-
-
-def handle_signal(sig, frame):
-    """
-    Handle system signals like SIGINT (Ctrl+C).
-
-    Args:
-        sig: Signal number
-        frame: Current stack frame
-    """
-    global exit_event
-
-    if logger:
-        logger.info("Received signal %s, initiating shutdown", sig)
-
-    # Set the exit event to signal all threads to terminate
-    exit_event.set()
-
-
-def handle_exceptions(exc_type, exc_value, exc_traceback):
-    """
-    Global exception handler for uncaught exceptions.
-
-    Args:
-        exc_type: Exception type
-        exc_value: Exception value
-        exc_traceback: Exception traceback
-    """
-    if issubclass(exc_type, KeyboardInterrupt):
-        # Call the original handler for KeyboardInterrupt
-        sys.__excepthook__(exc_type, exc_value, exc_traceback)
-        return
-
-    if logger:
-        logger.critical("Uncaught exception", exc_info=(
-            exc_type, exc_value, exc_traceback))
-
-    print("\nFatal error occurred. Check the log file for details.")
-
-    # Initiate shutdown
-    clean_shutdown()
-
-
-async def check_for_interrupted_sessions():
-    """
-    Check for any interrupted sessions and offer to recover them.
-
-    Returns:
-        bool: True if recovery was successful or not needed, False if failed
-    """
-    try:
-        # Import session manager
-
-        # Get sessions directory from app context or use default
-        sessions_dir = app_context.get('sessions_dir', None)
-        session_manager = SessionManager(sessions_dir=sessions_dir)
-
-        # Find incomplete sessions
-        incomplete_sessions = session_manager.find_incomplete_sessions()
-
-        if incomplete_sessions:
-            color_manager = app_context.get('color_manager')
-            display = Display(color_manager=color_manager)
-
-            display.print_warning(
-                f"Found {len(incomplete_sessions)} interrupted operation(s).")
-
-            # Ask user if they want to recover
-            recover = display.prompt_yes_no(
-                "Do you want to recover interrupted operations?")
-
-            if recover:
-                # For now, just log that we would recover
-                logger.info(
-                    "User chose to recover %s interrupted operations", len(
-                        incomplete_sessions)
-                )
-                display.print_info(
-                    "Recovery option selected but implementation pending...")
-                return True
-            else:
-                logger.info("User chose not to recover interrupted operations")
-                return True
-
-        return True
-    except Exception as e:
-        logger.error("Error checking for interrupted sessions: %s", e)
-        return False
-
-
 async def main_async():
-    """
-    Main asynchronous function that runs the application.
+    """Async entry point for the application."""
+    args = parse_arguments()
 
-    This is the main entry point for the application's business logic.
-    """
-    global logger, app_context, exit_event
-
+    # Set up logging
     try:
-        # Parse command-line arguments
-        args = parse_arguments()
+        setup_logging(debug=args.debug)
+    except NameError:
+        # Fallback if setup_logging is not available
+        pass
 
-        # Check environment
-        if not setup_environment():
-            print("Environment setup failed. Exiting.")
-            return 1
-
-        # Initialize application
-        config, app_context = initialize_application(args)
-
-        # Setup logging
-        logger = setup_logging(config)
-        logger.info("Application startup: %s v%s", config.get(
-            'app_name', 'Telegram Account Manager'), config.get('app_version', '1.0.0'))
-
-        # Log platform information
-        platform_info = get_platform_info()
-        logger.info("Platform: %s", platform_info)
-
-        # Set up signal handlers
-        setup_signal_handlers(handle_signal)
-
-        # Set up global exception handler
-        sys.excepthook = handle_exceptions
-
-        # Get color manager from context
-        color_manager = app_context.get('color_manager')
-
-        # Display welcome message
-        show_welcome_message(color_manager)
-
-        # Check for interrupted sessions if requested
-        if args.recover:
-            if not await check_for_interrupted_sessions():
-                logger.warning("Failed to check for interrupted sessions")
-
-        # Create menu system
-        menu_system = MenuSystem(app_context=app_context)
-        app_context.register('menu_system', menu_system)
-
-        # Create display
-        display = Display(color_manager=color_manager)
-        app_context.register('display', display)
-
-        # Initialize services from other modules
-        # Import and configure account manager
-        from services.account_manager import AccountManager
-        account_manager = AccountManager(app_context=app_context)
-        app_context.register('account_manager', account_manager)
-
-        # Import and configure group manager
-        from services.group_manager import GroupManager
-        group_manager = GroupManager(app_context=app_context)
-        app_context.register('group_manager', group_manager)
-
-        # Import and configure analytics service
-        from services.analytics import AnalyticsService
-        analytics_service = AnalyticsService(app_context=app_context)
-        app_context.register('analytics_service', analytics_service)
-
-        # Import and configure proxy manager if enabled
-        if config.get('use_proxy', False):
-            from services.proxy_manager import ProxyManager
-            proxy_manager = ProxyManager(app_context=app_context)
-            app_context.register('proxy_manager', proxy_manager)
-
-        # Wait for exit signal or completion
-        logger.info("Application initialized and ready")
-
-        # Start the menu system - this is the main application loop
-        await menu_system.start()
-
-        # If we get here, the menu system has completed
-        logger.info("Application completed successfully")
-        return 0
-
-    except ConfigError as e:
-        print(f"Configuration error: {e}")
-        if logger:
-            logger.error(f"Configuration error: {e}")
-        return 1
-
-    except TelegramAdderError as e:
-        print(f"Application error: {e}")
-        if logger:
-            logger.error(f"Application error: {e}")
-        return 1
-
-    except KeyboardInterrupt:
-        print("\nOperation cancelled by user.")
-        if logger:
-            logger.info("Operation cancelled by user (KeyboardInterrupt)")
-        return 0
-
-    except Exception as e:
-        print(f"Unexpected error: {e}")
-        if logger:
-            logger.critical(f"Unexpected error", exc_info=True)
-        return 1
-
-    finally:
-        clean_shutdown()
+    # Create and start the application
+    app = TelegramAccountManager(args)
+    await app.start()
 
 
 def main():
-    """
-    Main function that serves as the entry point for the application.
-
-    This function sets up the asynchronous environment and runs the main_async function.
-    """
+    """Main entry point for the application."""
     try:
-        # Run the asynchronous main function
-        exit_code = asyncio.run(main_async())
-        return exit_code
+        if sys.platform == 'win32':
+            asyncio.set_event_loop_policy(
+                asyncio.WindowsSelectorEventLoopPolicy())
 
+        # Run the async main function
+        asyncio.run(main_async())
     except KeyboardInterrupt:
-        print("\nOperation cancelled by user.")
-        return 0
-
+        print("\nProgram terminated by user.")
+        sys.exit(0)
     except Exception as e:
         print(f"Fatal error: {e}")
-        return 1
+        sys.exit(1)
 
 
 if __name__ == "__main__":
-    exit_code = main()
-    sys.exit(exit_code)
+    main()
