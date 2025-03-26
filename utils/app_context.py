@@ -96,6 +96,7 @@ class AppContext:
         with cls._lock:
             if cls._instance is None:
                 cls._instance = super(AppContext, cls).__new__(cls)
+                cls._instance._initialized = False
             return cls._instance
 
     def __init__(self):
@@ -104,8 +105,10 @@ class AppContext:
         """
         # Skip initialization if already initialized (Singleton pattern)
         with self._lock:
-            if self._initialized:
+            if hasattr(self, '_initialized') and self._initialized:
                 return
+
+            self._initialized = False
 
             # Initialize properties
             self._services = {}

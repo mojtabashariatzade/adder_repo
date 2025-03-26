@@ -13,13 +13,16 @@ import logging
 from error_handling.error_manager import get_error_manager
 from utils.app_context import AppContext
 
-
 # Add the project path to system path if needed
 project_path = os.path.abspath(os.path.dirname(__file__))
 if project_path not in sys.path:
     sys.path.insert(0, project_path)
 
 # Import required modules
+try:
+    from services.account_manager import AccountManager
+except ImportError as e:
+    print(f"Error importing AccountManager: {e}")
 
 # Try to import custom logging module
 try:
@@ -74,6 +77,14 @@ def initialize_application(logger):
     # Register core services
     error_manager = get_error_manager()
     app_context.register_service('error_manager', error_manager)
+
+    # Initialize account manager
+    try:
+        account_manager = AccountManager(app_context)
+        app_context.register_service('account_manager', account_manager)
+        logger.info("Account Manager service registered")
+    except (ValueError, TypeError, AttributeError, ImportError, FileNotFoundError) as e:
+        logger.error(f"Failed to initialize Account Manager: {e}")
 
     # Initialize all services
     app_context.initialize()
@@ -135,8 +146,21 @@ def main():
         # Display welcome message
         display_welcome_message()
 
+        # Access account manager to verify it's working
+        account_manager = app_context.get_service('account_manager')
+        if account_manager:
+            account_count = account_manager.get_account_count()
+            print(f"Account status: {account_count['total']} total accounts")
+            print(f"- Active: {account_count['active']}")
+            print(f"- Blocked: {account_count['blocked']}")
+            print(f"- In cooldown: {account_count['cooldown']}")
+            print(
+                f"- Daily limit reached: {account_count['daily_limit_reached']}")
+            print(f"- Unverified: {account_count['unverified']}")
+            print("=" * 60)
+
         # In the basic version, we'll just wait for user input to exit
-        input("Press Enter to exit...")
+        input("\nPress Enter to exit...")
 
         return 0  # Success exit code
 
