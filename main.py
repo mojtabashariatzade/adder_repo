@@ -71,6 +71,7 @@ def initialize_application(logger):
 
     # Load configuration
     config = app_context.config
+    app_context.register_service('config', config)
     logger.info("Loaded configuration: app_version=%s",
                 config.get('app_version', 'unknown'))
 

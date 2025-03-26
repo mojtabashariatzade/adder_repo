@@ -39,7 +39,7 @@ from core.exceptions import (
 )
 
 from data.base_file_manager import FileManager
-from utils.app_context import AppContext
+from utils.app_context import AppContext, get_app_context
 
 # Setup logger
 logger = logging.getLogger(__name__)
