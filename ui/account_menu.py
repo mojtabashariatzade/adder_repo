@@ -28,11 +28,11 @@ Usage:
     menu_system = MenuSystem(main_menu)
     menu_system.run()
 """
+# pylint: disable=unused-import, unused-argument
 
 import os
 import sys
 import time
-from typing import Dict, List, Optional, Tuple, Any, Callable
 
 # Import menu system components
 from ui.menu_system import (
@@ -42,7 +42,7 @@ from ui.menu_system import (
 
 # Try to import display utilities
 try:
-    from ui.display import clear_screen, print_colored, print_heading, print_error, print_table
+    from ui.display import clear_screen, print_heading, print_error, print_table
 except ImportError:
     # Fallback implementations if display module is not available
     def clear_screen():
