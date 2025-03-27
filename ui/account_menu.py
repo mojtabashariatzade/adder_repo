@@ -437,9 +437,11 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         print("\nProgram terminated by user.")
         sys.exit(0)
-    from ui.display import clear_screen, print_colored, print_heading, print_error, print_table
-except ImportError:
-    # Fallback implementations if display module is not available
+    try:
+        from ui.display import clear_screen, print_colored, print_heading, print_error, print_table
+    except ImportError:
+        # Fallback implementations if display module is not available
+
     def clear_screen():
         """Clear the console screen."""
         os.system('cls' if os.name == 'nt' else 'clear')
