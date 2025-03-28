@@ -78,6 +78,22 @@ except ImportError as e:
         def get_input(prompt):
             return input(prompt)
 
+        @staticmethod
+        def print_error(message):
+            print(f"ERROR: {message}")
+
+        @staticmethod
+        def print_success(message):
+            print(f"SUCCESS: {message}")
+
+        @staticmethod
+        def print_info(message):
+            print(f"INFO: {message}")
+
+        @staticmethod
+        def print_item(message):
+            print(f"- {message}")
+
     class ProgressBar:
         def __init__(self, total, prefix='', suffix='', decimals=1, length=50, fill='█', print_end="\r"):
             self.total = total
@@ -95,7 +111,7 @@ except ImportError as e:
 
         def _print(self):
             percent = ("{0:." + str(self.decimals) + "f}").format(100 *
-                       (self.current / float(self.total)))
+                                                                  (self.current / float(self.total)))
             filled_length = int(self.length * self.current // self.total)
             bar = self.fill * filled_length + \
                 '-' * (self.length - filled_length)
@@ -169,6 +185,7 @@ except ImportError as e:
         def __init__(self):
             self.custom_data = {}
             self.state = {}
+            self.session_id = "test_session"
 
         def update_state(self, state):
             self.state.update(state)
@@ -745,9 +762,9 @@ class OperationMenu:
 
         # Create a progress bar
         progress_bar = ProgressBar(total=self.member_limit,
-                                 prefix='Progress:',
-                                 suffix='Complete',
-                                 length=50)
+                                   prefix='Progress:',
+                                   suffix='Complete',
+                                   length=50)
 
         # Get selected strategy
         strategy = self.strategy_selector.get_strategy(
@@ -809,22 +826,6 @@ class OperationMenu:
             self.display.print_info(
                 f"Completion time: {result.get('completion_time', 0):.2f} seconds")
 
-            logger.info(f"Operation resumed and completed: {result}")
-
-        except Exception as e:
-            logger.error(f"Operation resumption failed: {e}")
-
-            # Update session with error information
-            session.update_state({
-                "status": "failed",
-                "end_time": datetime.now().isoformat(),
-                "error": str(e)
-            })
-
-            self.display.print_error(f"Operation resumption failed: {e}")
-
-        input("\nPress Enter to continue...")0): .2f} seconds")
-
             logger.info(f"Operation completed: {result}")
 
         except Exception as e:
@@ -871,8 +872,10 @@ class OperationMenu:
                 sessions.append(session)
 
                 # Extract session details
-                source_group = session.get_custom_data("source_group", {}).get("title", "Unknown")
-                target_group = session.get_custom_data("target_group", {}).get("title", "Unknown")
+                source_group = session.get_custom_data(
+                    "source_group", {}).get("title", "Unknown")
+                target_group = session.get_custom_data(
+                    "target_group", {}).get("title", "Unknown")
                 progress = session.state.get("progress", 0)
                 processed = session.state.get("processed", 0)
                 total = session.state.get("total", 0)
@@ -880,7 +883,8 @@ class OperationMenu:
 
                 # Format the time
                 try:
-                    start_time = datetime.fromisoformat(start_time).strftime("%Y-%m-%d %H:%M:%S")
+                    start_time = datetime.fromisoformat(
+                        start_time).strftime("%Y-%m-%d %H:%M:%S")
                 except (ValueError, TypeError):
                     pass
 
@@ -898,7 +902,8 @@ class OperationMenu:
             return
 
         # Get user selection
-        selection = self.display.get_input("\nSelect an operation to resume (number) or 0 to cancel: ")
+        selection = self.display.get_input(
+            "\nSelect an operation to resume (number) or 0 to cancel: ")
 
         if selection.isdigit():
             selection = int(selection)
@@ -908,7 +913,8 @@ class OperationMenu:
                 selected_session = sessions[selection - 1]
 
                 # Confirm resumption
-                confirmation = self.display.get_input("\nAre you sure you want to resume this operation? (y/n): ").strip().lower()
+                confirmation = self.display.get_input(
+                    "\nAre you sure you want to resume this operation? (y/n): ").strip().lower()
                 if confirmation != 'y':
                     self.display.print_info("Operation resumption cancelled.")
                     input("\nPress Enter to continue...")
@@ -927,16 +933,120 @@ class OperationMenu:
             self.display.print_error("Please enter a number.")
             input("\nPress Enter to continue...")
 
-            def create_operation_menu(parent_menu: 'Menu') -> 'Menu':
-    """
-    Create and return the operation menu.
+    async def _resume_operation(self, session):
+        """
+        Resume an operation from a session.
 
-    Args:
-        parent_menu (Menu): The parent menu.
+        Args:
+            session: The session to resume from
+        """
+        self.display.clear_screen()
+        self.display.print_header("Resuming Operation")
 
-    Returns:
-        Menu: The operation menu.
-    """
-    # Create the operation menu handler
-    operation_menu_handler = OperationMenu()
-    return operation_menu_handler.create_menu(parent_menu)
+        # Display operation details
+        source_group = session.get_custom_data(
+            "source_group", {}).get("title", "Unknown")
+        target_group = session.get_custom_data(
+            "target_group", {}).get("title", "Unknown")
+        processed = session.state.get("processed", 0)
+        total = session.state.get("total", 0)
+
+        self.display.print_info(
+            f"Resuming operation from {source_group} to {target_group}")
+        self.display.print_info(f"Progress: {processed}/{total} members")
+
+        # Create a progress bar starting from current progress
+        progress_bar = ProgressBar(
+            total=total,
+            prefix='Progress:',
+            suffix='Complete',
+            length=50
+        )
+        progress_bar.update(processed)
+
+        # Get strategy
+        strategy_type = session.get_custom_data("strategy", "sequential")
+        selected_accounts = session.get_custom_data("selected_accounts", [])
+        strategy = self.strategy_selector.get_strategy(
+            strategy_type,
+            accounts=selected_accounts
+        )
+
+        # Confirmation
+        confirmation = self.display.get_input(
+            "\nReady to resume. Continue? (y/n): ").strip().lower()
+        if confirmation != 'y':
+            self.display.print_info("Resumption cancelled.")
+            input("\nPress Enter to continue...")
+            return
+
+        # Update session status
+        session.update_state({
+            "status": "running",
+            "resumed_at": datetime.now().isoformat()
+        })
+
+        try:
+            # Define progress callback
+            def progress_callback(data):
+                processed = data.get("processed", 0)
+                success_count = data.get("success_count", 0)
+
+                # Update progress bar
+                progress_bar.update(processed)
+
+                # Update session state
+                session.update_state({
+                    "progress": (processed / total * 100) if total > 0 else 0,
+                    "processed": processed,
+                    "success_count": success_count,
+                    "current_account": data.get("current_account", "unknown"),
+                    "current_delay": data.get("current_delay", Constants.TimeDelays.DEFAULT)
+                })
+
+            # Resume the operation with the strategy
+            result = await strategy.resume(
+                session=session,
+                progress_callback=progress_callback
+            )
+
+            # Save operation results
+            self.last_operation_results = result
+
+            # Update session with final results
+            session.update_state({
+                "status": "completed",
+                "end_time": datetime.now().isoformat(),
+                "progress": 100.0,
+                "processed": result.get("processed", 0),
+                "success_count": result.get("success_count", 0),
+                "failure_count": result.get("failure_count", 0),
+                "completion_time": result.get("completion_time", 0)
+            })
+
+            # Display operation results
+            self.display.print_success("\nOperation completed successfully!")
+            self.display.print_info(
+                f"Processed: {result.get('processed', 0)} members")
+            self.display.print_info(
+                f"Success: {result.get('success_count', 0)} members")
+            self.display.print_info(
+                f"Failed: {result.get('failure_count', 0)} members")
+            self.display.print_info(
+                f"Completion time: {result.get('completion_time', 0):.2f} seconds")
+
+            logger.info(f"Operation resumed and completed: {result}")
+
+        except Exception as e:
+            logger.error(f"Operation resumption failed: {e}")
+
+            # Update session with error information
+            session.update_state({
+                "status": "failed",
+                "end_time": datetime.now().isoformat(),
+                "error": str(e)
+            })
+
+            self.display.print_error(f"Operation resumption failed: {e}")
+
+        input("\nPress Enter to continue...")
