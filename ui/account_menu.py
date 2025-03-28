@@ -321,26 +321,26 @@ class AccountMenu:
             api_id = input("API ID: ").strip()
             if not api_id:
                 print_error("API ID cannot be empty")
-                time.sleep(1.5)
+                input("\nPress Enter to continue...")
                 return
 
             try:
                 api_id = int(api_id)
             except ValueError:
                 print_error("API ID must be a number")
-                time.sleep(1.5)
+                input("\nPress Enter to continue...")
                 return
 
             api_hash = input("API Hash: ").strip()
             if not api_hash:
                 print_error("API Hash cannot be empty")
-                time.sleep(1.5)
+                input("\nPress Enter to continue...")
                 return
 
             phone = input("Phone Number (with country code): ").strip()
             if not phone:
                 print_error("Phone number cannot be empty")
-                time.sleep(1.5)
+                input("\nPress Enter to continue...")
                 return
 
             # Check if account already exists
@@ -352,18 +352,18 @@ class AccountMenu:
             if existing_index >= 0:
                 print(
                     f"This account already exists at index {existing_index}.")
-                time.sleep(1.5)
+                input("\nPress Enter to continue...")
                 return
 
             # Add the account
             index = self.account_manager.add_account(api_id, api_hash, phone)
             print(f"Account added successfully with index {index}.")
-            time.sleep(1.5)
+            input("\nPress Enter to continue...")
 
         except Exception as e:
             logger.error("Error adding account: %s", e)
             print_error(f"Error adding account: {e}")
-            time.sleep(2)
+            input("\nPress Enter to continue...")
 
     def remove_account(self) -> None:
         """Remove an existing Telegram account from the system."""
@@ -376,14 +376,14 @@ class AccountMenu:
 
             if index_str == "-1":
                 print("Operation cancelled.")
-                time.sleep(1)
+                input("\nPress Enter to continue...")
                 return
 
             try:
                 index = int(index_str)
             except ValueError:
                 print_error("Invalid input. Please enter a number.")
-                time.sleep(1.5)
+                input("\nPress Enter to continue...")
                 return
 
             # Confirm removal
@@ -391,7 +391,7 @@ class AccountMenu:
                 f"Are you sure you want to remove account {index}? (y/n): ").strip().lower()
             if confirm != 'y':
                 print("Operation cancelled.")
-                time.sleep(1)
+                input("\nPress Enter to continue...")
                 return
 
             # Remove the account
@@ -401,12 +401,12 @@ class AccountMenu:
             else:
                 print_error("Invalid account index.")
 
-            time.sleep(1.5)
+            input("\nPress Enter to continue...")
 
         except Exception as e:
             logger.error("Error removing account: %s", e)
             print_error(f"Error removing account: {e}")
-            time.sleep(2)
+            input("\nPress Enter to continue...")
 
     def reset_daily_limits(self) -> None:
         """Reset daily account limits for adding/extracting members."""
@@ -419,7 +419,7 @@ class AccountMenu:
 
             if index_str == "-1":
                 print("Operation cancelled.")
-                time.sleep(1)
+                input("\nPress Enter to continue...")
                 return
 
             if index_str.lower() == "all":
@@ -428,7 +428,7 @@ class AccountMenu:
                     "Are you sure you want to reset limits for ALL accounts? (y/n): ").strip().lower()
                 if confirm != 'y':
                     print("Operation cancelled.")
-                    time.sleep(1)
+                    input("\nPress Enter to continue...")
                     return
 
                 success = self.account_manager.reset_daily_limits()
@@ -443,7 +443,7 @@ class AccountMenu:
                 except ValueError:
                     print_error(
                         "Invalid input. Please enter a number or 'all'.")
-                    time.sleep(1.5)
+                    input("\nPress Enter to continue...")
                     return
 
                 success = self.account_manager.reset_daily_limits(index)
@@ -452,12 +452,12 @@ class AccountMenu:
                 else:
                     print_error("Invalid account index.")
 
-            time.sleep(1.5)
+            input("\nPress Enter to continue...")
 
         except Exception as e:
             logger.error("Error resetting daily limits: %s", e)
             print_error(f"Error resetting daily limits: {e}")
-            time.sleep(2)
+            input("\nPress Enter to continue...")
 
     def test_account(self) -> None:
         """Test the connection to a Telegram account."""
@@ -470,14 +470,14 @@ class AccountMenu:
 
             if index_str == "-1":
                 print("Operation cancelled.")
-                time.sleep(1)
+                input("\nPress Enter to continue...")
                 return
 
             try:
                 index = int(index_str)
             except ValueError:
                 print_error("Invalid input. Please enter a number.")
-                time.sleep(1.5)
+                input("\nPress Enter to continue...")
                 return
 
             # Show testing message
@@ -497,7 +497,7 @@ class AccountMenu:
         except Exception as e:
             logger.error("Error testing account: %s", e)
             print_error(f"Error testing account: {e}")
-            time.sleep(2)
+            input("\nPress Enter to continue...")
 
     def view_account_details(self) -> None:
         """View detailed information about a specific account."""
@@ -510,14 +510,14 @@ class AccountMenu:
 
             if index_str == "-1":
                 print("Operation cancelled.")
-                time.sleep(1)
+                input("\nPress Enter to continue...")
                 return
 
             try:
                 index = int(index_str)
             except ValueError:
                 print_error("Invalid input. Please enter a number.")
-                time.sleep(1.5)
+                input("\nPress Enter to continue...")
                 return
 
             # Get accounts
@@ -525,7 +525,7 @@ class AccountMenu:
 
             if not 0 <= index < len(accounts):
                 print_error("Invalid account index.")
-                time.sleep(1.5)
+                input("\nPress Enter to continue...")
                 return
 
             # Display account details
@@ -559,7 +559,7 @@ class AccountMenu:
         except Exception as e:
             logger.error("Error viewing account details: %s", e)
             print_error(f"Error viewing account details: {e}")
-            time.sleep(2)
+            input("\nPress Enter to continue...")
 
 
 def create_account_menu(parent_menu: Menu) -> Menu:

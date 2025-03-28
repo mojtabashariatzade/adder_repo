@@ -4,11 +4,26 @@
             "phone": 25763123,
             "api_id": "a198453b197449cfb7272322b83742da",
             "api_hash": "+9189054105",
-            "added_on": "2025-03-28T23:35:59.244637",
+            "added_on": "2025-03-28T23:48:38.786670",
             "last_used": null,
             "status": "active",
             "daily_usage": {
-                "date": "2025-03-28",
+                "date": "2025-03-29",
+                "count": 0
+            },
+            "total_usage": 0,
+            "failures": 0,
+            "cooldown_until": null
+        },
+        "25763123": {
+            "phone": 25763123,
+            "api_id": "a198453b197449cfb7272322b83742da",
+            "api_hash": "+989189054105",
+            "added_on": "2025-03-29T00:11:51.513877",
+            "last_used": null,
+            "status": "active",
+            "daily_usage": {
+                "date": "2025-03-29",
                 "count": 0
             },
             "total_usage": 0,
@@ -16,5 +31,5 @@
             "cooldown_until": null
         }
     },
-    "last_updated": "2025-03-28T23:35:59.245635"
+    "last_updated": "2025-03-29T00:11:51.514867"
 }
