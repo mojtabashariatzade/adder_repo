@@ -201,9 +201,17 @@ class AccountMenu:
     user interactions for managing Telegram accounts.
     """
 
-    def __init__(self):
-        """Initialize the AccountMenu component."""
-        self.account_manager = AccountManager()
+    def __init__(self, app_context=None):
+        """Initialize the AccountMenu component.
+        Args:
+        app_context: The application context
+        """
+        self.app_context = app_context
+        # Get account manager from app context if available
+        if app_context and app_context.has_service('account_manager'):
+            self.account_manager = app_context.get_service('account_manager')
+        else:
+            self.account_manager = AccountManager()
 
     def create_menu(self, parent_menu: Menu) -> Menu:
         """

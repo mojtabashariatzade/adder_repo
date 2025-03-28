@@ -195,39 +195,46 @@ def initialize_menus(app_context):
         return None
 
     try:
-        # Create menu system
-        menu_system = MenuSystem(app_context)
+        # Create main menu
+        from ui.menu_system import Menu, create_submenu_item, create_action_item
+        main_menu = Menu("Main Menu")
 
         # Try to import and create account menu
         try:
-            from ui.account_menu import AccountMenu
-            account_menu = AccountMenu(app_context)
-            menu_system.register_menu('account', account_menu)
+            from ui.account_menu import create_account_menu
+            account_menu = create_account_menu(main_menu)
             UI_MODULES_AVAILABLE['account_menu'] = True
+            main_menu.add_item(create_submenu_item(
+                "1", "Account Management", account_menu))
         except (ImportError, SyntaxError) as e:
             LOGGER.warning(f"Account menu not available: {e}")
 
         # Try to import and create operation menu
         try:
-            from ui.operation_menu import OperationMenu
-            operation_menu = OperationMenu(app_context)
-            menu_system.register_menu('operation', operation_menu)
+            from ui.operation_menu import create_operation_menu
+            operation_menu = create_operation_menu(main_menu)
             UI_MODULES_AVAILABLE['operation_menu'] = True
+            main_menu.add_item(create_submenu_item(
+                "2", "Member Operations", operation_menu))
         except (ImportError, SyntaxError) as e:
             LOGGER.warning(f"Operation menu not available: {e}")
 
         # Try to import and create settings menu
         try:
-            from ui.settings_menu import SettingsMenu
-            settings_menu = SettingsMenu(app_context)
-            menu_system.register_menu('settings', settings_menu)
+            from ui.settings_menu import create_settings_menu
+            settings_menu = create_settings_menu(main_menu)
             UI_MODULES_AVAILABLE['settings_menu'] = True
+            main_menu.add_item(create_submenu_item(
+                "3", "Settings", settings_menu))
         except (ImportError, SyntaxError) as e:
             LOGGER.warning(f"Settings menu not available: {e}")
 
-        # Always register the main menu (which we create ourselves)
-        menu_system.register_menu('main', create_main_menu(menu_system))
+        # Add exit option
+        main_menu.add_item(create_action_item(
+            "q", "Exit", lambda: sys.exit(0)))
 
+        # Create menu system with main menu
+        menu_system = MenuSystem(main_menu)
         return menu_system
     except Exception as e:
         LOGGER.error(f"Failed to initialize menu system: {e}")
