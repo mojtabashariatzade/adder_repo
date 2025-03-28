@@ -344,7 +344,11 @@ class AccountMenu:
                 return
 
             # Check if account already exists
-            existing_index = self.account_manager.get_account_by_phone(phone)
+            existing_index = -1
+            for i, acc in enumerate(self.account_manager.get_all_accounts()):
+                if acc.get("phone") == phone:
+                    existing_index = i
+                    break
             if existing_index >= 0:
                 print(
                     f"This account already exists at index {existing_index}.")

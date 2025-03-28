@@ -235,7 +235,6 @@ def initialize_menus(app_context):
 
         # Create menu system with main menu
         menu_system = MenuSystem(main_menu)
-        menu_system.add_menu("main", main_menu)
         return menu_system
     except Exception as e:
         LOGGER.error(f"Failed to initialize menu system: {e}")
@@ -354,7 +353,7 @@ def main():
 
         if menu_system:
             # Show main menu if menu system is available
-            menu_system.show_menu('main')
+            menu_system.run()
         else:
             # Fallback to basic interface if menu system is not available
             clear_screen()

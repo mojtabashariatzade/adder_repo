@@ -291,6 +291,27 @@ class AccountManager:
         """
         return list(self.accounts.values())
 
+    def get_account_by_phone(self, phone: str) -> int:
+        """
+        Find an account index by phone number.
+
+        Args:
+            phone (str): Phone number to search for
+
+        Returns:
+            int: Index of the account if found, -1 otherwise
+        """
+        # Convert accounts dictionary to list for consistent indexing
+        accounts_list = list(self.accounts.values())
+
+        # Search for the phone number
+        for i, account in enumerate(accounts_list):
+            if account.get("phone") == phone:
+                return i
+
+        # Account not found
+        return -1
+
     def get_active_accounts(self) -> List[Dict[str, Any]]:
         """
         Get all active accounts (not blocked, not in cooldown, and within daily limits).
