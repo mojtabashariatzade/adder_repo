@@ -265,26 +265,26 @@ class AccountMenu:
             status_text = account.status
 
             # Format cooldown time if applicable
-            if account.status == AccountStatus.COOLDOWN and account.cooldown_until:
+            if status_text == AccountStatus.COOLDOWN and account.get("cooldown_until"):
                 import datetime
                 try:
                     cooldown_until = datetime.datetime.fromisoformat(
-                        account.cooldown_until)
+                        account.get("cooldown_until"))
                     now = datetime.datetime.now()
                     if cooldown_until > now:
                         minutes_left = (cooldown_until -
                                         now).total_seconds() / 60
-                        status_text = f"{account.status} ({minutes_left:.0f}m left)"
+                        status_text = f"{status_text} ({minutes_left:.0f}m left)"
                 except Exception:
                     pass
 
             # Format last used time
             last_used = "Never"
-            if account.last_used:
+            if account.get("last_used"):
                 try:
                     import datetime
                     last_used_time = datetime.datetime.fromisoformat(
-                        account.last_used)
+                        account.get("last_used"))
                     last_used = last_used_time.strftime("%Y-%m-%d %H:%M")
                 except Exception:
                     last_used = "Invalid date"
@@ -292,10 +292,10 @@ class AccountMenu:
             # Add row
             rows.append([
                 i,
-                account.phone,
+                account.get("phone", "Unknown"),
                 status_text,
-                account.members_added_today,
-                account.members_extracted_today,
+                account.get("daily_usage", {}).get("count", 0),
+                account.get("daily_usage", {}).get("count", 0),
                 last_used
             ])
 
