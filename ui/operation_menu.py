@@ -38,9 +38,11 @@ try:
 except ImportError as e:
     print(f"Error importing dependencies: {e}")
     # For development, provide fallbacks or mock objects
+
     class Config:
         def __init__(self):
             self._config_data = {}
+
         def get(self, key, default=None):
             return self._config_data.get(key, default)
 
@@ -49,6 +51,7 @@ except ImportError as e:
             DEFAULT = 20
             MAXIMUM = 300
             ACCOUNT_CHANGE = 60
+
         class Limits:
             MAX_MEMBERS_PER_DAY = 20
 
@@ -61,13 +64,16 @@ except ImportError as e:
         @staticmethod
         def clear_screen():
             pass
+
         @staticmethod
         def print_header(title):
             print(title)
+
         @staticmethod
         def print_menu(items):
             for i, item in enumerate(items, 1):
                 print(f"{i}. {item}")
+
         @staticmethod
         def get_input(prompt):
             return input(prompt)
@@ -88,10 +94,13 @@ except ImportError as e:
             self._print()
 
         def _print(self):
-            percent = ("{0:." + str(self.decimals) + "f}").format(100 * (self.current / float(self.total)))
+            percent = ("{0:." + str(self.decimals) + "f}").format(100 *
+                       (self.current / float(self.total)))
             filled_length = int(self.length * self.current // self.total)
-            bar = self.fill * filled_length + '-' * (self.length - filled_length)
-            print(f'\r{self.prefix} |{bar}| {percent}% {self.suffix}', end=self.print_end)
+            bar = self.fill * filled_length + \
+                '-' * (self.length - filled_length)
+            print(f'\r{self.prefix} |{bar}| {percent}% {self.suffix}',
+                  end=self.print_end)
             if self.current == self.total:
                 print()
 
@@ -257,23 +266,34 @@ class OperationMenu:
         """Create all menus related to operations."""
         # Main operation menu
         operation_menu = Menu("Member Transfer Operations")
-        operation_menu.add_item("Select Source Group", self.select_source_group)
-        operation_menu.add_item("Select Target Group", self.select_target_group)
-        operation_menu.add_item("Configure Operation Parameters", self.configure_parameters)
-        operation_menu.add_item("Select Transfer Strategy", self.select_strategy)
+        operation_menu.add_item("Select Source Group",
+                                self.select_source_group)
+        operation_menu.add_item("Select Target Group",
+                                self.select_target_group)
+        operation_menu.add_item(
+            "Configure Operation Parameters", self.configure_parameters)
+        operation_menu.add_item(
+            "Select Transfer Strategy", self.select_strategy)
         operation_menu.add_item("Select Accounts", self.select_accounts)
         operation_menu.add_item("Start Operation", self.start_operation)
-        operation_menu.add_item("Resume Interrupted Operation", self.resume_operation)
-        operation_menu.add_item("View Last Operation Results", self.view_results)
+        operation_menu.add_item(
+            "Resume Interrupted Operation", self.resume_operation)
+        operation_menu.add_item(
+            "View Last Operation Results", self.view_results)
         operation_menu.add_item("Back to Main Menu", self.back_to_main_menu)
 
         # Strategy selection menu
         strategy_menu = Menu("Select Transfer Strategy")
-        strategy_menu.add_item("Sequential (One account at a time)", lambda: self._set_strategy("sequential"))
-        strategy_menu.add_item("Parallel Low (2-3 accounts)", lambda: self._set_strategy("parallel_low"))
-        strategy_menu.add_item("Parallel Medium (4-6 accounts)", lambda: self._set_strategy("parallel_medium"))
-        strategy_menu.add_item("Parallel High (7+ accounts)", lambda: self._set_strategy("parallel_high"))
-        strategy_menu.add_item("Back to Operation Menu", lambda: self.menu_system.show_menu("operation_menu"))
+        strategy_menu.add_item(
+            "Sequential (One account at a time)", lambda: self._set_strategy("sequential"))
+        strategy_menu.add_item("Parallel Low (2-3 accounts)",
+                               lambda: self._set_strategy("parallel_low"))
+        strategy_menu.add_item(
+            "Parallel Medium (4-6 accounts)", lambda: self._set_strategy("parallel_medium"))
+        strategy_menu.add_item("Parallel High (7+ accounts)",
+                               lambda: self._set_strategy("parallel_high"))
+        strategy_menu.add_item(
+            "Back to Operation Menu", lambda: self.menu_system.show_menu("operation_menu"))
 
         # Add menus to menu system
         self.menu_system.add_menu("operation_menu", operation_menu)
@@ -322,7 +342,8 @@ class OperationMenu:
 
                 if not groups:
                     status_indicator.stop()
-                    self.display.print_error("No groups or channels found for this account.")
+                    self.display.print_error(
+                        "No groups or channels found for this account.")
                     input("\nPress Enter to continue...")
                     return
 
@@ -332,11 +353,14 @@ class OperationMenu:
                 self.display.print_header("\nAvailable Groups and Channels:")
                 for i, group in enumerate(groups, 1):
                     group_type = "Group" if group.is_group else "Channel"
-                    members_count = getattr(group.entity, 'participants_count', 'Unknown')
-                    self.display.print_item(f"{i}. {group.title} ({group_type}, Members: {members_count})")
+                    members_count = getattr(
+                        group.entity, 'participants_count', 'Unknown')
+                    self.display.print_item(
+                        f"{i}. {group.title} ({group_type}, Members: {members_count})")
 
                 # Get user selection
-                selection = self.display.get_input("\nSelect a source group (number) or 0 to cancel: ")
+                selection = self.display.get_input(
+                    "\nSelect a source group (number) or 0 to cancel: ")
 
                 if selection.isdigit():
                     selection = int(selection)
@@ -344,8 +368,10 @@ class OperationMenu:
                         return
                     elif 1 <= selection <= len(groups):
                         self.source_group = groups[selection - 1]
-                        logger.info(f"Source group selected: {self.source_group.title}")
-                        self.display.print_success(f"Selected source group: {self.source_group.title}")
+                        logger.info(
+                            f"Source group selected: {self.source_group.title}")
+                        self.display.print_success(
+                            f"Selected source group: {self.source_group.title}")
 
                         # Save to session
                         if self.current_operation:
@@ -416,7 +442,8 @@ class OperationMenu:
 
                 if not groups:
                     status_indicator.stop()
-                    self.display.print_error("No groups or channels found for this account.")
+                    self.display.print_error(
+                        "No groups or channels found for this account.")
                     input("\nPress Enter to continue...")
                     return
 
@@ -426,11 +453,14 @@ class OperationMenu:
                 self.display.print_header("\nAvailable Groups and Channels:")
                 for i, group in enumerate(groups, 1):
                     group_type = "Group" if group.is_group else "Channel"
-                    members_count = getattr(group.entity, 'participants_count', 'Unknown')
-                    self.display.print_item(f"{i}. {group.title} ({group_type}, Members: {members_count})")
+                    members_count = getattr(
+                        group.entity, 'participants_count', 'Unknown')
+                    self.display.print_item(
+                        f"{i}. {group.title} ({group_type}, Members: {members_count})")
 
                 # Get user selection
-                selection = self.display.get_input("\nSelect a target group (number) or 0 to cancel: ")
+                selection = self.display.get_input(
+                    "\nSelect a target group (number) or 0 to cancel: ")
 
                 if selection.isdigit():
                     selection = int(selection)
@@ -438,8 +468,10 @@ class OperationMenu:
                         return
                     elif 1 <= selection <= len(groups):
                         self.target_group = groups[selection - 1]
-                        logger.info(f"Target group selected: {self.target_group.title}")
-                        self.display.print_success(f"Selected target group: {self.target_group.title}")
+                        logger.info(
+                            f"Target group selected: {self.target_group.title}")
+                        self.display.print_success(
+                            f"Selected target group: {self.target_group.title}")
 
                         # Save to session
                         if self.current_operation:
@@ -495,7 +527,8 @@ class OperationMenu:
         for param_key, param_desc, param_type in parameters:
             current_value = None
             if self.current_operation:
-                current_value = self.current_operation.get_custom_data(param_key)
+                current_value = self.current_operation.get_custom_data(
+                    param_key)
 
             if param_key == "member_limit":
                 # Direct assignment to instance variable for member_limit
@@ -514,7 +547,8 @@ class OperationMenu:
 
                     # Basic validation
                     if param_key == "member_limit" and value <= 0:
-                        self.display.print_error("Number of members must be greater than zero.")
+                        self.display.print_error(
+                            "Number of members must be greater than zero.")
                         continue
                     elif param_key == "delay" and value < 0:
                         self.display.print_error("Delay cannot be negative.")
@@ -526,12 +560,14 @@ class OperationMenu:
 
                     # Save to session
                     if self.current_operation:
-                        self.current_operation.set_custom_data(param_key, value)
+                        self.current_operation.set_custom_data(
+                            param_key, value)
                         logger.info(f"Parameter {param_key} set to {value}")
 
                     self.display.print_success(f"{param_desc} set to {value}")
                 except ValueError:
-                    self.display.print_error(f"Invalid value. Expected {param_type.__name__}.")
+                    self.display.print_error(
+                        f"Invalid value. Expected {param_type.__name__}.")
 
         # Save operation state
         self._save_operation_state()
@@ -582,7 +618,8 @@ class OperationMenu:
         accounts = self.account_manager.get_all_accounts()
 
         if not accounts:
-            self.display.print_error("No accounts found. Please add accounts first.")
+            self.display.print_error(
+                "No accounts found. Please add accounts first.")
             input("\nPress Enter to continue...")
             return
 
@@ -590,7 +627,8 @@ class OperationMenu:
         self.display.print_header("\nAvailable Accounts:")
         for i, account in enumerate(accounts, 1):
             # Determine if account is already selected
-            selected = "✓" if account.get("id") in self.selected_accounts else " "
+            selected = "✓" if account.get(
+                "id") in self.selected_accounts else " "
             status = account.get("status", "unknown")
             status_color = self._get_status_color(status)
 
@@ -612,12 +650,14 @@ class OperationMenu:
 
         # Get user input
         while True:
-            selection = self.display.get_input("\nEnter your choice: ").strip().upper()
+            selection = self.display.get_input(
+                "\nEnter your choice: ").strip().upper()
 
             if selection == '0':
                 return
             elif selection == 'A':
-                self.selected_accounts = [account.get("id") for account in accounts]
+                self.selected_accounts = [
+                    account.get("id") for account in accounts]
                 self.display.print_success("All accounts selected.")
                 break
             elif selection == 'C':
@@ -632,10 +672,12 @@ class OperationMenu:
                     account_id = accounts[index].get("id")
                     if account_id in self.selected_accounts:
                         self.selected_accounts.remove(account_id)
-                        self.display.print_info(f"Account {accounts[index].get('phone', 'Unknown')} removed from selection.")
+                        self.display.print_info(
+                            f"Account {accounts[index].get('phone', 'Unknown')} removed from selection.")
                     else:
                         self.selected_accounts.append(account_id)
-                        self.display.print_info(f"Account {accounts[index].get('phone', 'Unknown')} added to selection.")
+                        self.display.print_info(
+                            f"Account {accounts[index].get('phone', 'Unknown')} added to selection.")
                 else:
                     self.display.print_error("Invalid account number.")
             else:
@@ -643,10 +685,13 @@ class OperationMenu:
 
         # Save to session
         if self.current_operation:
-            self.current_operation.set_custom_data("selected_accounts", self.selected_accounts)
-            logger.info(f"Selected {len(self.selected_accounts)} accounts for operation")
+            self.current_operation.set_custom_data(
+                "selected_accounts", self.selected_accounts)
+            logger.info(
+                f"Selected {len(self.selected_accounts)} accounts for operation")
 
-        self.display.print_success(f"Selected {len(self.selected_accounts)} accounts for operation.")
+        self.display.print_success(
+            f"Selected {len(self.selected_accounts)} accounts for operation.")
         input("\nPress Enter to continue...")
 
     async def start_operation(self):
@@ -663,7 +708,8 @@ class OperationMenu:
         # Check if everything is configured properly
         validation_result = self._validate_operation_settings()
         if not validation_result[0]:
-            self.display.print_error(f"Cannot start operation: {validation_result[1]}")
+            self.display.print_error(
+                f"Cannot start operation: {validation_result[1]}")
             input("\nPress Enter to continue...")
             return
 
@@ -671,7 +717,8 @@ class OperationMenu:
         self._display_operation_summary()
 
         # Get user confirmation
-        confirmation = self.display.get_input("\nDo you want to start the operation? (y/n): ").strip().lower()
+        confirmation = self.display.get_input(
+            "\nDo you want to start the operation? (y/n): ").strip().lower()
         if confirmation != 'y':
             self.display.print_info("Operation cancelled.")
             input("\nPress Enter to continue...")
@@ -753,10 +800,14 @@ class OperationMenu:
 
             # Display operation results
             self.display.print_success("\nOperation completed successfully!")
-            self.display.print_info(f"Processed: {result.get('processed', 0)} members")
-            self.display.print_info(f"Success: {result.get('success_count', 0)} members")
-            self.display.print_info(f"Failed: {result.get('failure_count', 0)} members")
-            self.display.print_info(f"Completion time: {result.get('completion_time', 0):.2f} seconds")
+            self.display.print_info(
+                f"Processed: {result.get('processed', 0)} members")
+            self.display.print_info(
+                f"Success: {result.get('success_count', 0)} members")
+            self.display.print_info(
+                f"Failed: {result.get('failure_count', 0)} members")
+            self.display.print_info(
+                f"Completion time: {result.get('completion_time', 0):.2f} seconds")
 
             logger.info(f"Operation resumed and completed: {result}")
 
@@ -772,7 +823,7 @@ class OperationMenu:
 
             self.display.print_error(f"Operation resumption failed: {e}")
 
-        input("\nPress Enter to continue...")0):.2f} seconds")
+        input("\nPress Enter to continue...")0): .2f} seconds")
 
             logger.info(f"Operation completed: {result}")
 
@@ -875,3 +926,17 @@ class OperationMenu:
         else:
             self.display.print_error("Please enter a number.")
             input("\nPress Enter to continue...")
+
+            def create_operation_menu(parent_menu: 'Menu') -> 'Menu':
+    """
+    Create and return the operation menu.
+
+    Args:
+        parent_menu (Menu): The parent menu.
+
+    Returns:
+        Menu: The operation menu.
+    """
+    # Create the operation menu handler
+    operation_menu_handler = OperationMenu()
+    return operation_menu_handler.create_menu(parent_menu)

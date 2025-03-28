@@ -235,6 +235,7 @@ def initialize_menus(app_context):
 
         # Create menu system with main menu
         menu_system = MenuSystem(main_menu)
+        menu_system.add_menu("main", main_menu)
         return menu_system
     except Exception as e:
         LOGGER.error(f"Failed to initialize menu system: {e}")
