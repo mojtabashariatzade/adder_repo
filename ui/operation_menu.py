@@ -310,6 +310,8 @@ class OperationMenu:
         strategy_menu.add_item("Parallel High (7+ accounts)",
                                lambda: self._set_strategy("parallel_high"))
         strategy_menu.add_item(
+            "Distributed Cautious (24/7 Operation)", lambda: self._set_strategy("distributed_cautious"))
+        strategy_menu.add_item(
             "Back to Operation Menu", lambda: self.menu_system.show_menu("operation_menu"))
 
         # Add menus to menu system

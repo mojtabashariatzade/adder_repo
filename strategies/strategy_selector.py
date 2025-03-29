@@ -113,7 +113,8 @@ class StrategyFactory:
             'sequential': SequentialStrategy,
             'parallel_low': ParallelLowStrategy,
             'parallel_medium': ParallelMediumStrategy,
-            'parallel_high': ParallelHighStrategy
+            'parallel_high': ParallelHighStrategy,
+            'distributed_cautious': DistributedCautiousStrategy
         }
 
         # Check if the requested strategy type is supported
@@ -327,7 +328,8 @@ class StrategySelector:
             StrategyType.SEQUENTIAL,
             f"{StrategyType.PARALLEL} ({ParallelLevel.LOW})",
             f"{StrategyType.PARALLEL} ({ParallelLevel.MEDIUM})",
-            f"{StrategyType.PARALLEL} ({ParallelLevel.HIGH})"
+            f"{StrategyType.PARALLEL} ({ParallelLevel.HIGH})",
+            "distributed_cautious"
         ]
 
     @staticmethod
@@ -360,7 +362,11 @@ class StrategySelector:
             f"{StrategyType.PARALLEL} ({ParallelLevel.HIGH})":
             "High parallel strategy: Uses 7+ accounts "
             "simultaneously, maximizing speed but with "
-            "increased risk of detection."
+            "increased risk of detection.",
+
+            "distributed_cautious":
+            "Distributed Cautious strategy: Works 24/7 and distributes load across "
+            "multiple accounts while maintaining a cautious approach to avoid restrictions."
         }
 
         # Handle specific parallel types

@@ -15,21 +15,6 @@
             "failures": 0,
             "cooldown_until": null
         },
-        "+9189054105": {
-            "phone": "+9189054105",
-            "api_id": 25763123,
-            "api_hash": "a198453b197449cfb7272322b83742da",
-            "added_on": "2025-03-29T00:45:07.996869",
-            "last_used": null,
-            "status": "active",
-            "daily_usage": {
-                "date": "2025-03-29",
-                "count": 0
-            },
-            "total_usage": 0,
-            "failures": 0,
-            "cooldown_until": null
-        },
         "+989189054105": {
             "phone": "+989189054105",
             "api_id": 25763123,
@@ -44,7 +29,22 @@
             "total_usage": 0,
             "failures": 0,
             "cooldown_until": null
+        },
+        "3213": {
+            "phone": 3213,
+            "api_id": "323232",
+            "api_hash": "323232",
+            "added_on": "2025-03-29T17:11:26.428582",
+            "last_used": null,
+            "status": "active",
+            "daily_usage": {
+                "date": "2025-03-29",
+                "count": 0
+            },
+            "total_usage": 0,
+            "failures": 0,
+            "cooldown_until": null
         }
     },
-    "last_updated": "2025-03-29T00:56:21.343323"
+    "last_updated": "2025-03-29T17:11:26.428582"
 }
