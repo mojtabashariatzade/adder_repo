@@ -370,6 +370,9 @@ class AccountMenu:
         # First, display the list of accounts
         self.list_accounts()
 
+        # Get all accounts
+        accounts = self.account_manager.get_all_accounts()
+
         try:
             index_str = input(
                 "\nEnter the index of the account to remove (-1 to cancel): ").strip()
@@ -386,20 +389,28 @@ class AccountMenu:
                 input("\nPress Enter to continue...")
                 return
 
+            # Check if index is valid
+            if not 0 <= index < len(accounts):
+                print_error("Invalid account index.")
+                input("\nPress Enter to continue...")
+                return
+
+            # Get phone number for this index
+            phone = accounts[index].get("phone")
             # Confirm removal
             confirm = input(
-                f"Are you sure you want to remove account {index}? (y/n): ").strip().lower()
+                f"Are you sure you want to remove account {index} ({phone})? (y/n): ").strip().lower()
             if confirm != 'y':
                 print("Operation cancelled.")
                 input("\nPress Enter to continue...")
                 return
 
             # Remove the account
-            success, phone = self.account_manager.remove_account(index)
-            if 0 <= index < len(accounts):
+            success = self.account_manager.remove_account(phone)
+            if success:
                 print(f"Account {phone} removed successfully.")
             else:
-                print_error("Invalid account index.")
+                print_error(f"Failed to remove account {phone}.")
 
             input("\nPress Enter to continue...")
 
