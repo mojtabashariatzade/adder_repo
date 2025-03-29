@@ -262,7 +262,7 @@ class AccountMenu:
 
         for i, account in enumerate(accounts):
             # Format status
-            status_text = account.status
+            status_text = account.get("status", "unknown")
 
             # Format cooldown time if applicable
             if status_text == AccountStatus.COOLDOWN and account.get("cooldown_until"):
@@ -303,7 +303,7 @@ class AccountMenu:
         print_table(headers, rows)
 
         # Display account stats
-        stats = self.account_manager.get_account_stats()
+        stats = self.account_manager.get_account_count()
         print("\nAccount Statistics:")
         print(f"Total: {stats['total']}, Active: {stats['active']}, Cooldown: {stats['cooldown']}, "
               f"Blocked: {stats['blocked']}, Unverified: {stats['unverified']}, "
@@ -396,7 +396,7 @@ class AccountMenu:
 
             # Remove the account
             success, phone = self.account_manager.remove_account(index)
-            if success:
+            if 0 <= index < len(accounts):
                 print(f"Account {phone} removed successfully.")
             else:
                 print_error("Invalid account index.")
@@ -531,23 +531,26 @@ class AccountMenu:
             # Display account details
             account = accounts[index]
             clear_screen()
-            print_heading(f"Account Details - {account.phone}")
+            print_heading(
+                f"Account Details - {account.get('phone', 'Unknown')}")
 
             # Format account details
             details = [
-                ("API ID", account.api_id),
-                ("API Hash",
-                 f"{account.api_hash[:5]}...{account.api_hash[-5:]}" if account.api_hash else "None"),
-                ("Phone", account.phone),
-                ("Session String",
-                 f"{account.session_string[:10]}...{account.session_string[-10:]}" if account.session_string else "None"),
-                ("Status", account.status),
-                ("Cooldown Until", account.cooldown_until or "N/A"),
-                ("Last Used", account.last_used or "Never"),
-                ("Failure Count", account.failure_count),
-                ("Members Added Today", account.members_added_today),
-                ("Members Extracted Today", account.members_extracted_today),
-                ("Daily Reset Time", account.daily_reset_time or "N/A")
+                ("API ID", account.get("api_id")),
+                ("API Hash", f"{account.get('api_hash', '')[:5]}...{account.get('api_hash', '')[-5:]}" if account.get(
+                    "api_hash") else "None"),
+                ("Phone", account.get("phone", "Unknown")),
+                ("Session String", f"{account.get('session_string', '')[:10]}...{account.get('session_string', '')[-10:]}" if account.get(
+                    "session_string") else "None"),
+                ("Status", account.get("status", "unknown")),
+                ("Cooldown Until", account.get("cooldown_until") or "N/A"),
+                ("Last Used", account.get("last_used") or "Never"),
+                ("Failure Count", account.get("failure_count", 0)),
+                ("Members Added Today", account.get(
+                    "daily_usage", {}).get("count", 0)),
+                ("Members Extracted Today", account.get(
+                    "daily_usage", {}).get("count", 0)),
+                ("Daily Reset Time", account.get("daily_reset_time") or "N/A")
             ]
 
             # Print details
