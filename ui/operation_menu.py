@@ -322,6 +322,37 @@ class OperationMenu:
         """Show the operation menu."""
         return self.menu_system.show_menu("operation_menu")
 
+    def create_menu(self, parent_menu: Menu) -> Menu:
+        """
+        Create the operation menu.
+
+        Args:
+            parent_menu (Menu): The parent menu.
+
+        Returns:
+            Menu: The operation menu.
+        """
+        operation_menu = Menu("Member Transfer Operations", parent=parent_menu)
+
+        operation_menu.add_item(create_action_item(
+            "1", "Select Source Group", self.select_source_group))
+        operation_menu.add_item(create_action_item(
+            "2", "Select Target Group", self.select_target_group))
+        operation_menu.add_item(create_action_item(
+            "3", "Configure Operation Parameters", self.configure_parameters))
+        operation_menu.add_item(create_action_item(
+            "4", "Select Transfer Strategy", self.select_strategy))
+        operation_menu.add_item(create_action_item(
+            "5", "Select Accounts", self.select_accounts))
+        operation_menu.add_item(create_action_item(
+            "6", "Start Operation", self.start_operation))
+        operation_menu.add_item(create_action_item(
+            "7", "Resume Interrupted Operation", self.resume_operation))
+        operation_menu.add_item(create_action_item(
+            "8", "View Last Operation Results", self.view_results))
+
+    return operation_menu
+
     async def select_source_group(self):
         """
         Interactive selection of the source group.
@@ -1052,3 +1083,17 @@ class OperationMenu:
             self.display.print_error(f"Operation resumption failed: {e}")
 
         input("\nPress Enter to continue...")
+
+
+def create_operation_menu(parent_menu: Menu) -> Menu:
+    """
+    Create and return the operation menu.
+
+    Args:
+        parent_menu (Menu): The parent menu.
+
+    Returns:
+        Menu: The operation menu.
+    """
+    operation_menu_handler = OperationMenu()
+    return operation_menu_handler.create_menu(parent_menu)
