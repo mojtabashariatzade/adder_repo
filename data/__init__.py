@@ -10,7 +10,8 @@ from .base_file_manager import FileManager, FileReadError, FileWriteError
 # Then import specific file managers
 from .json_file_manager import JsonFileManager
 
-# Import other modules
-# Uncomment as needed
+# Import other modules as needed based on your project
 # from .encrypted_file_manager import EncryptedFileManager
 # from .file_factory import FileManagerFactory
+# from .session import Session
+# from .session_manager import SessionManager

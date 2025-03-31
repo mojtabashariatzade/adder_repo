@@ -1,22 +1,21 @@
 """
 JSON File Manager Module
 
-This module provides utilities for reading, writing, and managing JSON files within the application.
-It builds on the base FileManager class to provide specific functionality for JSON operations.
-
-Features:
-- Read and write JSON files with validation
-- Merge multiple JSON files
-- JSON schema validation (with optional jsonschema package)
-- Error handling specific to JSON operations
+This module provides a specialized file manager for handling JSON files.
+It extends the base FileManager class with JSON-specific operations.
 """
 
 import os
 import json
-from typing import Dict, Any, Optional, Union
+import logging
+from typing import Dict, Any, Optional, Union, List
 from pathlib import Path
 
+# Import from base_file_manager - IMPORTANT: only import what you need
 from .base_file_manager import FileManager, FileReadError, FileWriteError
+
+# Setup logger
+logger = logging.getLogger(__name__)
 
 
 class JsonFileManager(FileManager):
@@ -26,6 +25,15 @@ class JsonFileManager(FileManager):
     This class extends the base FileManager with specialized methods for
     reading from and writing to JSON files.
     """
+
+    def __init__(self, base_dir: Optional[str] = None):
+        """
+        Initialize the JSON file manager.
+
+        Args:
+            base_dir: Base directory for file operations
+        """
+        super().__init__(base_dir)
 
     def read_json(self, path: Union[str, Path], default: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """
@@ -50,11 +58,17 @@ class JsonFileManager(FileManager):
             with open(full_path, 'r', encoding='utf-8') as file:
                 return json.load(file)
         except json.JSONDecodeError as e:
-            raise FileReadError(path, f"Invalid JSON format: {str(e)}") from e
+            logger.error("Invalid JSON format in %s: %s", full_path, e)
+            raise FileReadError(path, f"Invalid JSON format: {e}") from e
         except (IOError, OSError) as e:
-            raise FileReadError(path, f"IO error: {str(e)}") from e
+            logger.error("Failed to read JSON file %s: %s", full_path, e)
+            raise FileReadError(path, f"IO error: {e}") from e
 
-    def write_json(self, path: Union[str, Path], data: Dict[str, Any], make_backup: bool = False) -> None:
+    def write_json(self, path: Union[str, Path],
+                   data: Dict[str, Any],
+                   make_backup: bool = False,
+                   indent: int = 4,
+                   ensure_ascii: bool = False) -> None:
         """
         Write JSON data to a file.
 
@@ -62,6 +76,8 @@ class JsonFileManager(FileManager):
             path: Path to write the JSON file
             data: Data to write to the file
             make_backup: Whether to create a backup of existing file
+            indent: Number of spaces for indentation (pretty-printing)
+            ensure_ascii: Whether to escape non-ASCII characters
 
         Raises:
             FileWriteError: If the file cannot be written
@@ -69,101 +85,102 @@ class JsonFileManager(FileManager):
         full_path = self.get_full_path(path)
 
         # Create directory if it doesn't exist
-        os.makedirs(os.path.dirname(os.path.abspath(full_path)), exist_ok=True)
+        self.ensure_directory_exists(path)
 
         # Create backup if requested
         if make_backup and os.path.exists(full_path):
-            backup_path = f"{full_path}.bak"
             try:
-                os.replace(full_path, backup_path)
+                backup_path = self.create_backup(path)
+                logger.debug("Created backup at %s", backup_path)
             except (IOError, OSError) as e:
+                logger.error("Failed to create backup of %s: %s", full_path, e)
                 raise FileWriteError(
                     path, f"Failed to create backup: {str(e)}") from e
 
         try:
             with open(full_path, 'w', encoding='utf-8') as file:
-                json.dump(data, file, indent=4)
+                json.dump(data, file, indent=indent, ensure_ascii=ensure_ascii)
+                logger.debug("Successfully wrote JSON to %s", full_path)
         except (IOError, OSError) as e:
+            logger.error("Failed to write JSON to %s: %s", full_path, e)
             raise FileWriteError(
                 path, f"Failed to write file: {str(e)}") from e
+        except (TypeError, ValueError) as e:
+            logger.error("JSON serialization error for %s: %s", full_path, e)
+            raise FileWriteError(
+                path, f"JSON serialization error: {str(e)}") from e
 
-    def validate_json(
-        self, path: Union[str, Path], schema: Dict[str, Any]
-    ) -> Tuple[bool, List[str]]:
+    def update_json(self, path: Union[str, Path],
+                    updates: Dict[str, Any],
+                    create_if_missing: bool = True,
+                    make_backup: bool = True) -> Dict[str, Any]:
         """
-        Validate a JSON file against a schema.
+        Update an existing JSON file with new data.
 
         Args:
-            path (Union[str, Path]): Path to the JSON file.
-            schema (Dict[str, Any]): Schema to validate against.
+            path: Path to the JSON file
+            updates: Dictionary of updates to apply
+            create_if_missing: Whether to create the file if it doesn't exist
+            make_backup: Whether to create a backup before updating
 
         Returns:
-            Tuple[bool, List[str]]: Validation result and list of issues.
+            Dict containing the updated JSON data
 
         Raises:
-            FileReadError: If the file cannot be read.
-            FileFormatError: If the file is not valid JSON.
-            ImportError: If jsonschema package is not available.
+            FileReadError: If the file cannot be read
+            FileWriteError: If the file cannot be written
         """
-        # Check if jsonschema is available
-        if not _HAS_JSONSCHEMA:
-            logger.error("jsonschema package is required for validation")
-            raise ImportError("jsonschema package is required for validation")
-
-        # Read the JSON file
-        data = self.read_json(path)
-
-        # Validate against schema
-        issues = []
+        # Read existing data
         try:
-            jsonschema.validate(instance=data, schema=schema)
-            return True, issues
-        except jsonschema.exceptions.ValidationError as e:
-            issues.append(f"Validation error: {e.message}")
-            logger.warning("JSON validation failed for %s: %s",
-                           path, e.message)
-        except jsonschema.exceptions.SchemaError as e:
-            issues.append(f"Schema error: {e.message}")
-            logger.error("Invalid schema: %s", e.message)
+            current_data = self.read_json(path, default={})
+        except FileReadError as e:
+            if create_if_missing:
+                current_data = {}
+            else:
+                raise
 
-        return False, issues
+        # Update the data
+        current_data.update(updates)
 
-    def merge_json(
-        self,
-        target_path: Union[str, Path],
-        source_path: Union[str, Path],
-        overwrite: bool = True,
-    ) -> Dict[str, Any]:
+        # Write back to file
+        self.write_json(path, current_data, make_backup=make_backup)
+
+        return current_data
+
+    def read_json_list(self, path: Union[str, Path], default: Optional[List[Any]] = None) -> List[Any]:
         """
-        Merge a source JSON file into a target JSON file.
+        Read a JSON file that contains a list.
 
         Args:
-            target_path (Union[str, Path]): Path to the target JSON file.
-            source_path (Union[str, Path]): Path to the source JSON file.
-            overwrite (bool): Whether to overwrite existing keys.
+            path: Path to the JSON file
+            default: Default value to return if file doesn't exist
 
         Returns:
-            Dict[str, Any]: The merged data.
+            List from the JSON file
 
         Raises:
-            FileReadError: If either file cannot be read.
-            FileFormatError: If either file is not valid JSON.
+            FileReadError: If the file cannot be read or does not contain a list
         """
-        # Read both files
-        target_data = self.read_json(target_path, default={})
-        source_data = self.read_json(source_path)
+        full_path = self.get_full_path(path)
 
-        # Merge the data
-        if overwrite:
-            target_data.update(source_data)
-        else:
-            # Only add keys that don't exist in the target
-            for key, value in source_data.items():
-                if key not in target_data:
-                    target_data[key] = value
+        if not os.path.exists(full_path):
+            return default if default is not None else []
 
-        # Write the merged data back to the target file
-        self.write_json(target_path, target_data, make_backup=True)
+        try:
+            with open(full_path, 'r', encoding='utf-8') as file:
+                data = json.load(file)
 
-        logger.debug("Merged %s into %s", source_path, target_path)
-        return target_data
+                if not isinstance(data, list):
+                    logger.error(
+                        "JSON file %s does not contain a list", full_path)
+                    raise FileReadError(
+                        path, "JSON file does not contain a list")
+
+                return data
+
+        except json.JSONDecodeError as e:
+            logger.error("Invalid JSON format in %s: %s", full_path, e)
+            raise FileReadError(path, f"Invalid JSON format: {e}") from e
+        except (IOError, OSError) as e:
+            logger.error("Failed to read JSON file %s: %s", full_path, e)
+            raise FileReadError(path, f"IO error: {e}") from e

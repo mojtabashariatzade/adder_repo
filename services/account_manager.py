@@ -70,53 +70,58 @@ class AccountManager:
                 cls._instance = super(AccountManager, cls).__new__(cls)
             return cls._instance
 
-    def __init__(self, app_context: Optional[AppContext] = None):
-        """
-        Initialize the AccountManager.
 
-        Args:
-            app_context (AppContext, optional): Application context for dependency injection.
-        """
-        # Skip initialization if already initialized (Singleton pattern)
-        with self._lock:
-            if self._initialized:
-                return
+"""
+این متد __init__ را در کلاس AccountManager جایگزین کنید
+"""
 
-            self.app_context = get_app_context()
-            self.config = self.app_context.get_service('config')
 
-            # Use file manager from context or create a new one
-            file_manager_service = self.app_context.get_service('file_manager')
-            if file_manager_service:
-                self.file_manager = file_manager_service
+def __init__(self, app_context: Optional[AppContext] = None):
+    """
+    Initialize the AccountManager.
 
-            else:
-                self.file_manager = JsonFileManager()
+    Args:
+        app_context (AppContext, optional): Application context for dependency injection.
+    """
+    # Skip initialization if already initialized (Singleton pattern)
+    with self._lock:
+        if self._initialized:
+            return
 
-            # Path to the accounts file
-            self.accounts_file = self.config.get(
-                'accounts_file', ACCOUNTS_FILE)
+        self.app_context = app_context or get_app_context()
+        self.config = self.app_context.get_service('config')
 
-            # Dictionary to store account data
-            # Key: phone number, Value: account data
-            self.accounts = {}
+        # Use file manager from context or create a new one
+        file_manager_service = self.app_context.get_service('file_manager')
+        if file_manager_service:
+            self.file_manager = file_manager_service
+        else:
+            self.file_manager = JsonFileManager()
 
-            # Load accounts if the file exists
-            try:
-                self._load_accounts()
-            except (FileReadError, FileWriteError) as err:
-                logger.error("Error loading accounts: %s", str(err))
-                # Create empty accounts file
-                self._save_accounts()
+        # Path to the accounts file
+        self.accounts_file = self.config.get(
+            'accounts_file', ACCOUNTS_FILE)
 
-            # Keep track of current account index for rotation
-            self.current_account_index = 0
+        # Dictionary to store account data
+        # Key: phone number, Value: account data
+        self.accounts = {}
 
-            # Setup scheduled task for daily limit reset
-            self._setup_daily_reset()
+        # Load accounts if the file exists
+        try:
+            self._load_accounts()
+        except (FileReadError, FileWriteError) as err:
+            logger.error("Error loading accounts: %s", str(err))
+            # Create empty accounts file
+            self._save_accounts()
 
-            self._initialized = True
-            logger.info("AccountManager initialized successfully.")
+        # Keep track of current account index for rotation
+        self.current_account_index = 0
+
+        # Setup scheduled task for daily limit reset
+        self._setup_daily_reset()
+
+        self._initialized = True
+        logger.info("AccountManager initialized successfully.")
 
     def _load_accounts(self):
         """
