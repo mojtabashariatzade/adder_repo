@@ -8,7 +8,7 @@
             "last_used": null,
             "status": "active",
             "daily_usage": {
-                "date": "2025-03-29",
+                "date": "2025-03-31",
                 "count": 0
             },
             "total_usage": 0,
@@ -23,7 +23,7 @@
             "last_used": null,
             "status": "active",
             "daily_usage": {
-                "date": "2025-03-29",
+                "date": "2025-03-31",
                 "count": 0
             },
             "total_usage": 0,
@@ -38,7 +38,7 @@
             "last_used": null,
             "status": "active",
             "daily_usage": {
-                "date": "2025-03-29",
+                "date": "2025-03-31",
                 "count": 0
             },
             "total_usage": 0,
@@ -46,5 +46,5 @@
             "cooldown_until": null
         }
     },
-    "last_updated": "2025-03-29T17:11:26.428582"
+    "last_updated": "2025-03-31T00:00:00.000653"
 }

@@ -33,7 +33,7 @@ try:
     from strategies.strategy_selector import StrategySelector
     from ui.colors import Colors
     from ui.display import Display, ProgressBar, StatusIndicator
-    from ui.menu_system import Menu, MenuItem, MenuSystem
+    from ui.menu_system import Menu, MenuItem, MenuSystem, create_action_item, create_submenu_item
     from logging_.logging_manager import get_logger
 except ImportError as e:
     print(f"Error importing dependencies: {e}")
@@ -283,36 +283,39 @@ class OperationMenu:
         """Create all menus related to operations."""
         # Main operation menu
         operation_menu = Menu("Member Transfer Operations")
-        operation_menu.add_item("Select Source Group",
-                                self.select_source_group)
-        operation_menu.add_item("Select Target Group",
-                                self.select_target_group)
-        operation_menu.add_item(
-            "Configure Operation Parameters", self.configure_parameters)
-        operation_menu.add_item(
-            "Select Transfer Strategy", self.select_strategy)
-        operation_menu.add_item("Select Accounts", self.select_accounts)
-        operation_menu.add_item("Start Operation", self.start_operation)
-        operation_menu.add_item(
-            "Resume Interrupted Operation", self.resume_operation)
-        operation_menu.add_item(
-            "View Last Operation Results", self.view_results)
-        operation_menu.add_item("Back to Main Menu", self.back_to_main_menu)
+        operation_menu.add_item(MenuItem("1", "Select Source Group",
+                                self.select_source_group))
+        operation_menu.add_item(MenuItem("2", "Select Target Group",
+                                self.select_target_group))
+        operation_menu.add_item(MenuItem("3", "Configure Operation Parameters",
+                                self.configure_parameters))
+        operation_menu.add_item(MenuItem("4", "Select Transfer Strategy",
+                                self.select_strategy))
+        operation_menu.add_item(MenuItem("5", "Select Accounts",
+                                self.select_accounts))
+        operation_menu.add_item(MenuItem("6", "Start Operation",
+                                self.start_operation))
+        operation_menu.add_item(MenuItem("7", "Resume Interrupted Operation",
+                                self.resume_operation))
+        operation_menu.add_item(MenuItem("8", "View Last Operation Results",
+                                self.view_results))
+        operation_menu.add_item(MenuItem("b", "Back to Main Menu",
+                                self.back_to_main_menu))
 
         # Strategy selection menu
         strategy_menu = Menu("Select Transfer Strategy")
-        strategy_menu.add_item(
-            "Sequential (One account at a time)", lambda: self._set_strategy("sequential"))
-        strategy_menu.add_item("Parallel Low (2-3 accounts)",
-                               lambda: self._set_strategy("parallel_low"))
-        strategy_menu.add_item(
-            "Parallel Medium (4-6 accounts)", lambda: self._set_strategy("parallel_medium"))
-        strategy_menu.add_item("Parallel High (7+ accounts)",
-                               lambda: self._set_strategy("parallel_high"))
-        strategy_menu.add_item(
-            "Distributed Cautious (24/7 Operation)", lambda: self._set_strategy("distributed_cautious"))
-        strategy_menu.add_item(
-            "Back to Operation Menu", lambda: self.menu_system.show_menu("operation_menu"))
+        strategy_menu.add_item(MenuItem("1", "Sequential (One account at a time)",
+                                        lambda: self._set_strategy("sequential")))
+        strategy_menu.add_item(MenuItem("2", "Parallel Low (2-3 accounts)",
+                                        lambda: self._set_strategy("parallel_low")))
+        strategy_menu.add_item(MenuItem("3", "Parallel Medium (4-6 accounts)",
+                                        lambda: self._set_strategy("parallel_medium")))
+        strategy_menu.add_item(MenuItem("4", "Parallel High (7+ accounts)",
+                                        lambda: self._set_strategy("parallel_high")))
+        strategy_menu.add_item(MenuItem("5", "Distributed Cautious (24/7 Operation)",
+                                        lambda: self._set_strategy("distributed_cautious")))
+        strategy_menu.add_item(MenuItem("b", "Back to Operation Menu",
+                                        lambda: self.menu_system.show_menu("operation_menu")))
 
         # Add menus to menu system
         self.menu_system.add_menu("operation_menu", operation_menu)
@@ -351,7 +354,7 @@ class OperationMenu:
         operation_menu.add_item(create_action_item(
             "8", "View Last Operation Results", self.view_results))
 
-    return operation_menu
+        return operation_menu
 
     async def select_source_group(self):
         """
