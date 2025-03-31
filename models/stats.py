@@ -26,26 +26,32 @@ import threading
 from collections import defaultdict, deque, Counter
 
 try:
-    from data.file_manager import FileManager, JsonFileManager
-    from logging_.logging_manager import get_logger
+    from data.base_file_manager import FileManager, FileReadError, FileWriteError
+    from data.json_file_manager import JsonFileManager
 except ImportError:
-    # Mock classes/functions for development
-    FileReadError = type('FileReadError', (Exception,), {})
-    FileWriteError = type('FileWriteError', (Exception,), {})
+    # For development, define placeholder classes if not available
+    class FileReadError(Exception):
+        """Raised when a file cannot be read."""
+        pass
 
-# pylint: disable=missing-class-docstring
+    class FileWriteError(Exception):
+        """Raised when a file cannot be written."""
+        pass
+
     class FileManager:
+        """Placeholder for FileManager."""
+
         def __init__(self, base_dir=None):
             self.base_dir = base_dir or os.getcwd()
 
     class JsonFileManager(FileManager):
-        # pylint: disable=missing-function-docstring
-        def read_json(self, default=None):
+        """Placeholder for JsonFileManager."""
+
+        def read_json(self, path, default=None):
             return default or {}
 
         def write_json(self, path, data, make_backup=False):
             pass
-# pylint: disable=missing-function-docstring
 
     def get_logger(name):
         return logging.getLogger(name)
