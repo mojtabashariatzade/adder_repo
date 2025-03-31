@@ -22,6 +22,7 @@ from datetime import datetime
 import time
 import threading
 import hashlib
+from data.base_file_manager import JsonFileManager
 
 # Import custom exceptions
 from core.exceptions import (

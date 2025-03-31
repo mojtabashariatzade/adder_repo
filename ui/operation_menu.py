@@ -304,7 +304,7 @@ def view_results(self):
 
     input("\nPress Enter to continue...")
 
-    def _create_menus(self):
+    def create_menus(self):
         """Create all menus related to operations."""
         # Main operation menu
         operation_menu = Menu("Member Transfer Operations")
