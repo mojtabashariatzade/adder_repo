@@ -90,6 +90,7 @@ except ImportError:
 
     class Session:
         """Mock Session class."""
+
         def update_state(self, *args, **kwargs):
             pass
 
@@ -124,7 +125,7 @@ class StrategyState(Enum):
     """
     CREATED = auto()      # Strategy has been created but not started
     VALIDATING = auto()   # Strategy is validating requirements
-    INITIALIZING = auto() # Strategy is initializing resources
+    INITIALIZING = auto()  # Strategy is initializing resources
     RUNNING = auto()      # Strategy is actively running
     PAUSING = auto()      # Strategy is in the process of pausing
     PAUSED = auto()       # Strategy execution is paused
@@ -289,7 +290,8 @@ class BaseStrategy(abc.ABC):
         }
 
         # Log initialization
-        logger.info(f"Strategy {self.strategy_type} initialized with ID: {self.strategy_id}")
+        logger.info(
+            f"Strategy {self.strategy_type} initialized with ID: {self.strategy_id}")
 
     def _initialize_session(self):
         """Initialize or connect to a session for persistence."""
@@ -301,9 +303,11 @@ class BaseStrategy(abc.ABC):
                     session_type=f"strategy_{self.strategy_type}",
                     session_id=f"strategy_{self.strategy_id}"
                 )
-                logger.debug(f"Created new session for strategy {self.strategy_id}")
+                logger.debug(
+                    f"Created new session for strategy {self.strategy_id}")
             except Exception as e:
-                logger.warning(f"Failed to create session for strategy {self.strategy_id}: {e}")
+                logger.warning(
+                    f"Failed to create session for strategy {self.strategy_id}: {e}")
                 self.session = None
 
         # Update session with initial state
@@ -338,7 +342,8 @@ class BaseStrategy(abc.ABC):
                     "timestamp": datetime.now().isoformat()
                 })
             except Exception as e:
-                logger.warning(f"Failed to update session for strategy {self.strategy_id}: {e}")
+                logger.warning(
+                    f"Failed to update session for strategy {self.strategy_id}: {e}")
 
     def _update_progress(self):
         """Update progress information and notify via callback."""
@@ -420,7 +425,8 @@ class BaseStrategy(abc.ABC):
             class_names = [
                 strategy_type,
                 strategy_type + "Strategy",
-                ''.join(word.capitalize() for word in strategy_type.split('_')) + "Strategy"
+                ''.join(word.capitalize()
+                        for word in strategy_type.split('_')) + "Strategy"
             ]
 
             for class_name in class_names:
@@ -428,7 +434,8 @@ class BaseStrategy(abc.ABC):
                     strategy_class = getattr(module, class_name)
                     break
             else:
-                raise StrategyNotFoundError(f"Strategy class for type '{strategy_type}' not found")
+                raise StrategyNotFoundError(
+                    f"Strategy class for type '{strategy_type}' not found")
 
             # Create an instance with basic parameters
             strategy = strategy_class(
@@ -439,8 +446,10 @@ class BaseStrategy(abc.ABC):
             )
 
             # Set additional parameters
-            strategy.max_retries = data.get("max_retries", strategy.max_retries)
-            strategy.delay_between_operations = data.get("delay_between_operations", strategy.delay_between_operations)
+            strategy.max_retries = data.get(
+                "max_retries", strategy.max_retries)
+            strategy.delay_between_operations = data.get(
+                "delay_between_operations", strategy.delay_between_operations)
             strategy.auto_retry = data.get("auto_retry", strategy.auto_retry)
 
             # Set state if it's a valid state string
@@ -452,7 +461,8 @@ class BaseStrategy(abc.ABC):
             strategy.start_time = data.get("start_time")
             strategy.end_time = data.get("end_time")
             strategy.pause_time = data.get("pause_time")
-            strategy.total_pause_duration = data.get("total_pause_duration", 0.0)
+            strategy.total_pause_duration = data.get(
+                "total_pause_duration", 0.0)
 
             # Set progress tracking
             strategy.total_items = data.get("total_items", 0)
@@ -469,7 +479,8 @@ class BaseStrategy(abc.ABC):
             return strategy
 
         except (ImportError, AttributeError) as e:
-            raise StrategyNotFoundError(f"Strategy type '{strategy_type}' not found: {e}")
+            raise StrategyNotFoundError(
+                f"Strategy type '{strategy_type}' not found: {e}")
 
     def __del__(self):
         """Clean up resources when the strategy is deleted."""
@@ -524,7 +535,8 @@ class StrategyFactory:
             # Build class name
             if '_' in strategy_type:
                 # Convert snake_case to CamelCase
-                class_name = ''.join(word.capitalize() for word in strategy_type.split('_'))
+                class_name = ''.join(word.capitalize()
+                                     for word in strategy_type.split('_'))
             else:
                 # Capitalize first letter
                 class_name = strategy_type.capitalize()
@@ -546,7 +558,8 @@ class StrategyFactory:
                         strategy_class = getattr(module, attr_name)
                         break
                 else:
-                    raise StrategyNotFoundError(f"Strategy class for type '{strategy_type}' not found in module {module_name}")
+                    raise StrategyNotFoundError(
+                        f"Strategy class for type '{strategy_type}' not found in module {module_name}")
 
             # Create and return the strategy instance
             return strategy_class(**kwargs)
@@ -556,7 +569,8 @@ class StrategyFactory:
             if strategy_type in strategy_classes and strategy_classes[strategy_type] is not None:
                 return strategy_classes[strategy_type](**kwargs)
 
-            raise StrategyNotFoundError(f"Strategy type '{strategy_type}' not found: {e}")
+            raise StrategyNotFoundError(
+                f"Strategy type '{strategy_type}' not found: {e}")
 
     @staticmethod
     def get_available_strategies() -> List[str]:
@@ -567,7 +581,8 @@ class StrategyFactory:
             List[str]: List of available strategy types.
         """
         # In a real application, this would dynamically discover available strategies
-        return ['sequential', 'parallel_low', 'parallel_medium', 'parallel_high']": self.get_elapsed_time(),
+        return ['sequential', 'parallel_low', 'parallel_medium', 'parallel_high']
+                    ": self.get_elapsed_time(),
                     "estimated_time": self.estimate_remaining_time(),
                     "last_error": str(self.last_error) if self.last_error else None
                 }
