@@ -37,6 +37,24 @@ logger = logging.getLogger(__name__)
 T = TypeVar("T")
 
 
+class FileReadError(Exception):
+    """Exception raised when a file cannot be read."""
+
+    def __init__(self, path: Union[str, Path], message: str = "File could not be read"):
+        self.path = path
+        self.message = message
+        super().__init__(f"{message}: {path}")
+
+
+class FileWriteError(Exception):
+    """Exception raised when a file cannot be written."""
+
+    def __init__(self, path: Union[str, Path], message: str = "File could not be written"):
+        self.path = path
+        self.message = message
+        super().__init__(f"{message}: {path}")
+
+
 class FileManager:
     """
     Base class for file management operations.

@@ -11,112 +11,81 @@ Features:
 - Error handling specific to JSON operations
 """
 
+import os
 import json
-import logging
+from typing import Dict, Any, Optional, Union
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union, Tuple
 
-# Import custom exceptions
-from core.exceptions import (
-    FileReadError,
-    FileFormatError,
-)
-
-# Import base file manager
-from base_file_manager import FileManager
-
-# Indicator if jsonschema is available
-_HAS_JSONSCHEMA = False
-try:
-    import jsonschema
-    _HAS_JSONSCHEMA = True
-except ImportError:
-    # jsonschema not available - validation will raise ImportError when used
-    pass
-
-# Setup logger
-logger = logging.getLogger(__name__)
+from .base_file_manager import FileManager, FileReadError, FileWriteError
 
 
 class JsonFileManager(FileManager):
     """
-    Manager for JSON file operations.
+    A file manager for handling JSON files.
 
-    Provides methods to read, write, and validate JSON files.
+    This class extends the base FileManager with specialized methods for
+    reading from and writing to JSON files.
     """
 
-    def __init__(self, base_dir: Optional[str] = None, indent: int = 4):
+    def read_json(self, path: Union[str, Path], default: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """
-        Initialize the JsonFileManager.
+        Read JSON data from a file.
 
         Args:
-            base_dir (str, optional): Base directory for relative paths.
-            indent (int): Indentation level for JSON output.
-        """
-        super().__init__(base_dir)
-        self.indent = indent
-
-    def read_json(
-        self, path: Union[str, Path], default: Optional[Dict[str, Any]] = None
-    ) -> Dict[str, Any]:
-        """
-        Read and parse a JSON file.
-
-        Args:
-            path (Union[str, Path]): Path to the JSON file.
-            default (Dict[str, Any], optional): Default value to return if the file doesn't exist.
+            path: Path to the JSON file
+            default: Default value to return if file doesn't exist
 
         Returns:
-            Dict[str, Any]: Parsed JSON data.
+            Dict containing the parsed JSON data
 
         Raises:
-            FileReadError: If the file cannot be read.
-            FileFormatError: If the file is not valid JSON.
+            FileReadError: If the file cannot be read or parsed
         """
-        file_path = self._resolve_path(path)
+        full_path = self.get_full_path(path)
 
-        if not file_path.exists():
-            if default is not None:
-                logger.debug(
-                    "JSON file not found, returning default: %s", file_path)
-                return default
-            logger.error("JSON file not found: %s", file_path)
-            raise FileReadError(str(file_path), "File not found")
+        if not os.path.exists(full_path):
+            return default if default is not None else {}
 
         try:
-            content = self.read_text(file_path)
-            return json.loads(content)
+            with open(full_path, 'r', encoding='utf-8') as file:
+                return json.load(file)
         except json.JSONDecodeError as e:
-            logger.error("Invalid JSON in %s: %s", file_path, e)
-            raise FileFormatError(str(file_path), f"Invalid JSON: {e}") from e
+            raise FileReadError(path, f"Invalid JSON format: {str(e)}") from e
+        except (IOError, OSError) as e:
+            raise FileReadError(path, f"IO error: {str(e)}") from e
 
-    def write_json(
-        self, path: Union[str, Path], data: Dict[str, Any], make_backup: bool = False
-    ) -> None:
+    def write_json(self, path: Union[str, Path], data: Dict[str, Any], make_backup: bool = False) -> None:
         """
-        Write data to a JSON file.
+        Write JSON data to a file.
 
         Args:
-            path (Union[str, Path]): Path to the JSON file.
-            data (Dict[str, Any]): Data to write.
-            make_backup (bool): Whether to make a backup of the existing file.
+            path: Path to write the JSON file
+            data: Data to write to the file
+            make_backup: Whether to create a backup of existing file
 
         Raises:
-            FileWriteError: If the file cannot be written.
-            TypeError: If the data is not JSON-serializable.
+            FileWriteError: If the file cannot be written
         """
-        file_path = self._resolve_path(path)
+        full_path = self.get_full_path(path)
+
+        # Create directory if it doesn't exist
+        os.makedirs(os.path.dirname(os.path.abspath(full_path)), exist_ok=True)
+
+        # Create backup if requested
+        if make_backup and os.path.exists(full_path):
+            backup_path = f"{full_path}.bak"
+            try:
+                os.replace(full_path, backup_path)
+            except (IOError, OSError) as e:
+                raise FileWriteError(
+                    path, f"Failed to create backup: {str(e)}") from e
 
         try:
-            # Convert to JSON string
-            json_content = json.dumps(
-                data, indent=self.indent, ensure_ascii=False)
-            # Write to file
-            self.write_text(file_path, json_content, make_backup=make_backup)
-            logger.debug("JSON written to %s", file_path)
-        except TypeError as e:
-            logger.error("Data is not JSON-serializable: %s", e)
-            raise TypeError(f"Data is not JSON-serializable: {e}") from e
+            with open(full_path, 'w', encoding='utf-8') as file:
+                json.dump(data, file, indent=4)
+        except (IOError, OSError) as e:
+            raise FileWriteError(
+                path, f"Failed to write file: {str(e)}") from e
 
     def validate_json(
         self, path: Union[str, Path], schema: Dict[str, Any]
