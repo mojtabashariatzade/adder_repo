@@ -44,6 +44,17 @@ import shutil
 import time
 from typing import List, Any, Optional, Tuple, Callable
 
+# Try to import logging system
+try:
+    from logging_.logging_manager import get_logger
+    logger = get_logger("Display")
+except ImportError:
+    # Fallback logger
+    import logging
+    logging.basicConfig(level=logging.INFO)
+
+    logger = logging.getLogger("Display")
+
 # Import colors module
 try:
     from ui.colors import (
@@ -52,6 +63,13 @@ try:
     )
 except ImportError:
     # Fallback if colors module is not available
+    def theme_styled(text, element: str) -> str:
+        return text
+
+    def print_progress(current: int, total: int, prefix: str = "Progress:",
+                       suffix: str = "", width: int = 40) -> None:
+        print(f"{prefix} {current}/{total} {suffix}")
+
     class Colors:
         """Fallback Colors class."""
         RESET = BLACK = RED = GREEN = YELLOW = BLUE = MAGENTA = CYAN = WHITE = ""

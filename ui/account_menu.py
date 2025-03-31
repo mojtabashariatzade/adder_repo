@@ -40,11 +40,32 @@ from ui.menu_system import (
     create_action_item, create_submenu_item
 )
 
+# Try to import json file manager
+try:
+    from data.json_file_manager import JsonFileManager
+except ImportError:
+    # For development or testing
+    class JsonFileManager:
+        """Mock JsonFileManager class."""
+
+        def __init__(self, base_dir=None):
+            self.base_dir = base_dir or os.getcwd()
+
+        def read_json(self, path, default=None):
+            return default or {}
+
+        def write_json(self, path, data, make_backup=False):
+            pass
+
 # Try to import display utilities
 try:
     from ui.display import clear_screen, print_heading, print_error, print_table
 except ImportError:
     # Fallback implementations if display module is not available
+    def clear_screen():
+        """Clear the console screen."""
+        os.system('cls' if os.name == 'nt' else 'clear')
+
     def clear_screen():
         """Clear the console screen."""
         os.system('cls' if os.name == 'nt' else 'clear')

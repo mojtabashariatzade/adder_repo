@@ -13,6 +13,7 @@ It integrates with the account_manager, session_manager, and various
 transfer strategies to provide a comprehensive interface for member management.
 """
 
+import os
 import time
 import logging
 import threading
@@ -20,21 +21,33 @@ from datetime import datetime
 from typing import Optional, Any
 from utils.app_context import get_app_context
 
-
-# Import internal modules
+# Try to import logging system
 try:
-    from core.config import Config
-    from core.constants import Constants
-    from core.exceptions import TelegramAdderError, OperationError
-    from data.session_manager import SessionManager, Session
-    from strategies.strategy_selector import StrategySelector
-    from ui.colors import Colors
-    from ui.display import Display, ProgressBar, StatusIndicator
-    from ui.menu_system import Menu, MenuItem, MenuSystem, create_action_item
     from logging_.logging_manager import get_logger
-except ImportError as e:
-    print(f"Error importing dependencies: {e}")
-    # For development, provide fallbacks or mock objects
+    logger = get_logger("OperationMenu")
+except ImportError:
+    # Fallback logger
+    import logging
+    logging.basicConfig(level=logging.INFO)
+
+    logger = logging.getLogger("OperationMenu")
+
+# Try to import json file manager
+try:
+    from data.json_file_manager import JsonFileManager
+except ImportError:
+    # For development or testing
+    class JsonFileManager:
+        """Mock JsonFileManager class."""
+
+        def __init__(self, base_dir=None):
+            self.base_dir = base_dir or os.getcwd()
+
+        def read_json(self, path, default=None):
+            return default or {}
+
+        def write_json(self, path, data, make_backup=False):
+            pass
 
     class Config:
         def __init__(self):
