@@ -1088,6 +1088,103 @@ class OperationMenu:
         input("\nPress Enter to continue...")
 
 
+def view_results(self):
+    """View the results of the last operation."""
+    clear_screen()
+    print_heading("Last Operation Results")
+
+    if not self.last_operation_results:
+        print("No operation results available.")
+        input("\nPress Enter to continue...")
+        return
+
+    # Format and display results
+    results = self.last_operation_results
+    print(f"Operation Status: {results.get('status', 'Unknown')}")
+    print(f"Processed Members: {results.get('processed', 0)}")
+    print(f"Successful: {results.get('success_count', 0)}")
+    print(f"Failed: {results.get('failure_count', 0)}")
+
+    completion_time = results.get('completion_time', 0)
+    print(f"Completion Time: {completion_time:.2f} seconds")
+
+    if 'error' in results:
+        print_error(f"Error: {results['error']}")
+
+    input("\nPress Enter to continue...")
+
+
+def back_to_main_menu(self):
+    """Return to the main menu."""
+    return "BACK"
+
+
+def _check_accounts_available(self):
+    """Check if accounts are available for operations."""
+    if not self.account_manager:
+        print_error("Account manager not available.")
+        input("\nPress Enter to continue...")
+        return False
+
+    accounts = self.account_manager.get_all_accounts()
+    if not accounts:
+        print_error("No accounts found. Please add accounts first.")
+        input("\nPress Enter to continue...")
+        return False
+
+    return True
+
+
+def _validate_operation_settings(self):
+    """
+    Validate operation settings.
+
+    Returns:
+        Tuple[bool, str]: Validation result and error message
+    """
+    if not self.source_group:
+        return False, "Source group not selected"
+
+    if not self.target_group:
+        return False, "Target group not selected"
+
+    if self.source_group == self.target_group:
+        return False, "Source and target groups cannot be the same"
+
+    if not self.member_limit or self.member_limit <= 0:
+        return False, "Invalid member limit"
+
+    if not self.selected_strategy:
+        return False, "Transfer strategy not selected"
+
+    return True, ""
+
+
+def _display_current_configuration(self):
+    """Display the current operation configuration."""
+    print_heading("\nCurrent Configuration")
+
+    source_title = "Not selected"
+    if self.source_group:
+        if isinstance(self.source_group, dict):
+            source_title = self.source_group.get("title", "Unknown")
+        else:
+            source_title = getattr(self.source_group, "title", "Unknown")
+
+    target_title = "Not selected"
+    if self.target_group:
+        if isinstance(self.target_group, dict):
+            target_title = self.target_group.get("title", "Unknown")
+        else:
+            target_title = getattr(self.target_group, "title", "Unknown")
+
+    print(f"Source Group: {source_title}")
+    print(f"Target Group: {target_title}")
+    print(f"Member Limit: {self.member_limit}")
+    print(f"Strategy: {self.selected_strategy}")
+    print(f"Selected Accounts: {len(self.selected_accounts)}")
+
+
 def create_operation_menu(parent_menu: Menu) -> Menu:
     """
     Create and return the operation menu.
@@ -1098,5 +1195,18 @@ def create_operation_menu(parent_menu: Menu) -> Menu:
     Returns:
         Menu: The operation menu.
     """
-    operation_menu_handler = OperationMenu()
+    # Get the app_context if needed
+    from utils.app_context import get_app_context
+    app_context = get_app_context()
+
+    # Get required services
+    account_manager = None
+    if app_context and app_context.has_service('account_manager'):
+        account_manager = app_context.get_service('account_manager')
+
+    # Create the menu handler with necessary dependencies
+    operation_menu_handler = OperationMenu(
+        menu_system=None, account_manager=account_manager)
+
+    # Create and return the menu
     return operation_menu_handler.create_menu(parent_menu)
