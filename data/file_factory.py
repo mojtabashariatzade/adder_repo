@@ -14,8 +14,8 @@ import logging
 from typing import Union
 
 # Import file managers
-from data.base_file_manager import FileManager
-from data.json_file_manager import JsonFileManager
+from .base_file_manager import FileManager
+from .json_file_manager import JsonFileManager
 from .encrypted_file_manager import EncryptedFileManager
 
 # Setup logger

@@ -67,7 +67,8 @@ import re
 
 # Try to import from local modules, with fallbacks for development
 try:
-    from data.file_manager import JsonFileManager, FileReadError, FileWriteError
+    from data.json_file_manager import JsonFileManager
+    from data.base_file_manager import FileReadError, FileWriteError
 except ImportError:
     # For development use before the modules are fully implemented
     # pylint: disable=missing-class-docstring

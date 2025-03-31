@@ -17,7 +17,6 @@ import json
 import time
 import logging
 import threading
-from data.file_factory import FileManager
 from datetime import datetime, timedelta
 from utils.app_context import get_app_context
 from typing import Dict, List, Optional, Tuple, Any, Union
@@ -39,7 +38,7 @@ from core.exceptions import (
     FileWriteError
 )
 
-from data.base_file_manager import FileManager
+from data.json_file_manager import JsonFileManager
 from utils.app_context import AppContext, get_app_context
 
 # Setup logger
@@ -87,7 +86,12 @@ class AccountManager:
             self.config = self.app_context.get_service('config')
 
             # Use file manager from context or create a new one
-            self.file_manager = self.app_context.get_service('file_manager')
+            file_manager_service = self.app_context.get_service('file_manager')
+            if file_manager_service:
+                self.file_manager = file_manager_service
+
+            else:
+                self.file_manager = JsonFileManager()
 
             # Path to the accounts file
             self.accounts_file = self.config.get(

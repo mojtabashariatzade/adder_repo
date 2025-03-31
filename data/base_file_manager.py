@@ -57,6 +57,12 @@ class FileManager:
         logger.debug(
             "FileManager initialized with base directory: %s", self.base_dir)
 
+        def get_full_path(self, path):
+            """Get the absolute path by joining with base_dir if needed."""
+            if os.path.isabs(path):
+                return path
+            return os.path.join(self.base_dir, path)
+
     def _resolve_path(self, path: Union[str, Path]) -> Path:
         """
         Resolve a path to an absolute path.

@@ -14,10 +14,10 @@ The file management modules provide functionality for handling different types o
 # the same API as before to avoid breaking changes
 
 # Import File Managers
-from .base_file_manager import FileManager, SafeFileWriter
+from .base_file_manager import FileManager, FileReadError, FileWriteError
 from .json_file_manager import JsonFileManager
 from .encrypted_file_manager import EncryptedFileManager
-from .file_factory import get_file_manager
+from .file_factory import FileManagerFactory
 
 # Import other data modules if they are available
 try:
