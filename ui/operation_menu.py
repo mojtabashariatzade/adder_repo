@@ -18,10 +18,13 @@ import sys
 import time
 import logging
 import asyncio
-from datetime import datetime
-from typing import Dict, List, Optional, Tuple, Any, Union, Callable
 import threading
+from datetime import datetime
+from data.json_file_manager import JsonFileManager
+from typing import Dict, List, Optional, Tuple, Any, Union, Callable
 from concurrent.futures import ThreadPoolExecutor
+from utils.app_context import get_app_context
+
 
 # Import internal modules
 try:
@@ -1088,32 +1091,6 @@ class OperationMenu:
         input("\nPress Enter to continue...")
 
 
-def view_results(self):
-    """View the results of the last operation."""
-    clear_screen()
-    print_heading("Last Operation Results")
-
-    if not self.last_operation_results:
-        print("No operation results available.")
-        input("\nPress Enter to continue...")
-        return
-
-    # Format and display results
-    results = self.last_operation_results
-    print(f"Operation Status: {results.get('status', 'Unknown')}")
-    print(f"Processed Members: {results.get('processed', 0)}")
-    print(f"Successful: {results.get('success_count', 0)}")
-    print(f"Failed: {results.get('failure_count', 0)}")
-
-    completion_time = results.get('completion_time', 0)
-    print(f"Completion Time: {completion_time:.2f} seconds")
-
-    if 'error' in results:
-        print_error(f"Error: {results['error']}")
-
-    input("\nPress Enter to continue...")
-
-
 def back_to_main_menu(self):
     """Return to the main menu."""
     return "BACK"
@@ -1122,13 +1099,14 @@ def back_to_main_menu(self):
 def _check_accounts_available(self):
     """Check if accounts are available for operations."""
     if not self.account_manager:
-        print_error("Account manager not available.")
+        self.display.print_error("Account manager not available.")
         input("\nPress Enter to continue...")
         return False
 
     accounts = self.account_manager.get_all_accounts()
     if not accounts:
-        print_error("No accounts found. Please add accounts first.")
+        self.display.print_error(
+            "No accounts found. Please add accounts first.")
         input("\nPress Enter to continue...")
         return False
 
@@ -1162,7 +1140,7 @@ def _validate_operation_settings(self):
 
 def _display_current_configuration(self):
     """Display the current operation configuration."""
-    print_heading("\nCurrent Configuration")
+    self.display.print_header("\nCurrent Configuration")
 
     source_title = "Not selected"
     if self.source_group:
@@ -1178,11 +1156,40 @@ def _display_current_configuration(self):
         else:
             target_title = getattr(self.target_group, "title", "Unknown")
 
-    print(f"Source Group: {source_title}")
-    print(f"Target Group: {target_title}")
-    print(f"Member Limit: {self.member_limit}")
-    print(f"Strategy: {self.selected_strategy}")
-    print(f"Selected Accounts: {len(self.selected_accounts)}")
+    self.display.print_info(f"Source Group: {source_title}")
+    self.display.print_info(f"Target Group: {target_title}")
+    self.display.print_info(f"Member Limit: {self.member_limit}")
+    self.display.print_info(f"Strategy: {self.selected_strategy}")
+    self.display.print_info(
+        f"Selected Accounts: {len(self.selected_accounts)}")
+
+
+def view_results(self):
+    """View the results of the last operation."""
+    self.display.clear_screen()
+    self.display.print_header("Last Operation Results")
+
+    if not self.last_operation_results:
+        self.display.print_info("No operation results available.")
+        input("\nPress Enter to continue...")
+        return
+
+    # Format and display results
+    results = self.last_operation_results
+    self.display.print_info(
+        f"Operation Status: {results.get('status', 'Unknown')}")
+    self.display.print_info(
+        f"Processed Members: {results.get('processed', 0)}")
+    self.display.print_info(f"Successful: {results.get('success_count', 0)}")
+    self.display.print_info(f"Failed: {results.get('failure_count', 0)}")
+
+    completion_time = results.get('completion_time', 0)
+    self.display.print_info(f"Completion Time: {completion_time:.2f} seconds")
+
+    if 'error' in results:
+        self.display.print_error(f"Error: {results['error']}")
+
+    input("\nPress Enter to continue...")
 
 
 def create_operation_menu(parent_menu: Menu) -> Menu:
@@ -1196,7 +1203,6 @@ def create_operation_menu(parent_menu: Menu) -> Menu:
         Menu: The operation menu.
     """
     # Get the app_context if needed
-    from utils.app_context import get_app_context
     app_context = get_app_context()
 
     # Get required services
