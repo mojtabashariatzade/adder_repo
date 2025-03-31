@@ -13,16 +13,11 @@ It integrates with the account_manager, session_manager, and various
 transfer strategies to provide a comprehensive interface for member management.
 """
 
-import os
-import sys
 import time
 import logging
-import asyncio
 import threading
 from datetime import datetime
-from data.json_file_manager import JsonFileManager
-from typing import Dict, List, Optional, Tuple, Any, Union, Callable
-from concurrent.futures import ThreadPoolExecutor
+from typing import Optional, Any
 from utils.app_context import get_app_context
 
 
@@ -30,13 +25,12 @@ from utils.app_context import get_app_context
 try:
     from core.config import Config
     from core.constants import Constants
-    from core.exceptions import TelegramAdderError, OperationError, GroupNotFoundError
-    from data.session_manager import SessionManager, Session, SessionStatus
-    from services.account_manager import AccountManager
+    from core.exceptions import TelegramAdderError, OperationError
+    from data.session_manager import SessionManager, Session
     from strategies.strategy_selector import StrategySelector
     from ui.colors import Colors
     from ui.display import Display, ProgressBar, StatusIndicator
-    from ui.menu_system import Menu, MenuItem, MenuSystem, create_action_item, create_submenu_item
+    from ui.menu_system import Menu, MenuItem, MenuSystem, create_action_item
     from logging_.logging_manager import get_logger
 except ImportError as e:
     print(f"Error importing dependencies: {e}")
@@ -277,10 +271,38 @@ class OperationMenu:
         self.last_operation_results = None
 
         # Create operation menu
-        self._create_menus()
+        self.create_menus()
 
         # Logger for this class
         self.logger = logger
+
+
+def view_results(self):
+    """View the results of the last operation."""
+    self.display.clear_screen()
+    self.display.print_header("Last Operation Results")
+
+    if not self.last_operation_results:
+        self.display.print_info("No operation results available.")
+        input("\nPress Enter to continue...")
+        return
+
+    # Format and display results
+    results = self.last_operation_results
+    self.display.print_info(
+        f"Operation Status: {results.get('status', 'Unknown')}")
+    self.display.print_info(
+        f"Processed Members: {results.get('processed', 0)}")
+    self.display.print_info(f"Successful: {results.get('success_count', 0)}")
+    self.display.print_info(f"Failed: {results.get('failure_count', 0)}")
+
+    completion_time = results.get('completion_time', 0)
+    self.display.print_info(f"Completion Time: {completion_time:.2f} seconds")
+
+    if 'error' in results:
+        self.display.print_error(f"Error: {results['error']}")
+
+    input("\nPress Enter to continue...")
 
     def _create_menus(self):
         """Create all menus related to operations."""
@@ -355,7 +377,7 @@ class OperationMenu:
         operation_menu.add_item(create_action_item(
             "7", "Resume Interrupted Operation", self.resume_operation))
         operation_menu.add_item(create_action_item(
-            "8", "View Last Operation Results", self.view_results))
+            "8", "View Last Operation Results", lambda: self.view_results()))
 
         return operation_menu
 
@@ -1162,34 +1184,6 @@ def _display_current_configuration(self):
     self.display.print_info(f"Strategy: {self.selected_strategy}")
     self.display.print_info(
         f"Selected Accounts: {len(self.selected_accounts)}")
-
-
-def view_results(self):
-    """View the results of the last operation."""
-    self.display.clear_screen()
-    self.display.print_header("Last Operation Results")
-
-    if not self.last_operation_results:
-        self.display.print_info("No operation results available.")
-        input("\nPress Enter to continue...")
-        return
-
-    # Format and display results
-    results = self.last_operation_results
-    self.display.print_info(
-        f"Operation Status: {results.get('status', 'Unknown')}")
-    self.display.print_info(
-        f"Processed Members: {results.get('processed', 0)}")
-    self.display.print_info(f"Successful: {results.get('success_count', 0)}")
-    self.display.print_info(f"Failed: {results.get('failure_count', 0)}")
-
-    completion_time = results.get('completion_time', 0)
-    self.display.print_info(f"Completion Time: {completion_time:.2f} seconds")
-
-    if 'error' in results:
-        self.display.print_error(f"Error: {results['error']}")
-
-    input("\nPress Enter to continue...")
 
 
 def create_operation_menu(parent_menu: Menu) -> Menu:
