@@ -1088,4 +1088,218 @@ class StrategyFactory:
 
             # Additional stats
             "progress": self.get_progress(),
-            "elapsed_time
+            "elapsed_time": self.get_elapsed_time(),
+            "estimated_remaining_time": self.estimate_remaining_time()
+        }
+
+        # Add custom properties from subclasses
+        strategy_dict.update(self._get_additional_properties())
+
+        return strategy_dict
+
+    def _get_additional_properties(self) -> Dict[str, Any]:
+        """
+        Get additional properties specific to subclasses.
+
+        This method can be overridden by subclasses to add additional properties
+        to the dictionary representation.
+
+        Returns:
+            Dict[str, Any]: Dictionary with additional properties.
+        """
+        return {}
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> 'BaseStrategy':
+        """
+        Create a strategy instance from a dictionary.
+
+        This is a factory method that creates a strategy instance
+        based on the strategy_type in the dictionary.
+
+        Args:
+            data (Dict[str, Any]): Dictionary with strategy data.
+
+        Returns:
+            BaseStrategy: A strategy instance.
+
+        Raises:
+            StrategyNotFoundError: If the strategy type is not recognized.
+        """
+        # This should be implemented by a strategy factory
+        # Here we'll just provide a base implementation that will be
+        # usually overridden by a more sophisticated factory
+
+        strategy_type = data.get("strategy_type")
+        if not strategy_type:
+            raise StrategyNotFoundError("Strategy type not specified in data")
+
+        # Try to find the strategy class by name (this is a simple implementation)
+        # In a real application, you'd have a registry of strategies
+        from importlib import import_module
+        try:
+            # Try to import the module and get the class
+            module_name = "strategies"
+            module = import_module(module_name)
+
+            # Try different naming conventions
+            class_names = [
+                strategy_type,
+                strategy_type + "Strategy",
+                ''.join(word.capitalize()
+                        for word in strategy_type.split('_')) + "Strategy"
+            ]
+
+            for class_name in class_names:
+                if hasattr(module, class_name):
+                    strategy_class = getattr(module, class_name)
+                    break
+            else:
+                raise StrategyNotFoundError(
+                    f"Strategy class for type '{strategy_type}' not found")
+
+            # Create an instance with basic parameters
+            strategy = strategy_class(
+                strategy_id=data.get("strategy_id"),
+                source_group=data.get("source_group"),
+                target_group=data.get("target_group"),
+                member_limit=data.get("member_limit", 20)
+            )
+
+            # Set additional parameters
+            strategy.max_retries = data.get(
+                "max_retries", strategy.max_retries)
+            strategy.delay_between_operations = data.get(
+                "delay_between_operations", strategy.delay_between_operations)
+            strategy.auto_retry = data.get("auto_retry", strategy.auto_retry)
+
+            # Set state if it's a valid state string
+            state_str = data.get("state")
+            if state_str:
+                strategy.state = StrategyState.from_str(state_str)
+
+            # Set timestamps
+            strategy.start_time = data.get("start_time")
+            strategy.end_time = data.get("end_time")
+            strategy.pause_time = data.get("pause_time")
+            strategy.total_pause_duration = data.get(
+                "total_pause_duration", 0.0)
+
+            # Set progress tracking
+            strategy.total_items = data.get("total_items", 0)
+            strategy.processed_items = data.get("processed_items", 0)
+            strategy.successful_items = data.get("successful_items", 0)
+            strategy.failed_items = data.get("failed_items", 0)
+            strategy.retried_items = data.get("retried_items", 0)
+            strategy.current_item = data.get("current_item")
+
+            # Set errors
+            strategy.errors = data.get("errors", [])
+            strategy.last_error = data.get("last_error")
+
+            return strategy
+
+        except (ImportError, AttributeError) as e:
+            raise StrategyNotFoundError(
+                f"Strategy type '{strategy_type}' not found: {e}")
+
+    def __del__(self):
+        """Clean up resources when the strategy is deleted."""
+        # Make sure we stop any running execution
+        if self._execution_thread and self._execution_thread.is_alive():
+            self._stop_event.set()
+            self._pause_event.clear()
+
+            # Don't join the thread here as it might deadlock
+
+
+class StrategyFactory:
+    """
+    Factory class for creating strategy instances.
+
+    This class provides methods for creating and retrieving strategy instances
+    based on their type.
+    """
+
+    @staticmethod
+    def create_strategy(strategy_type: str, **kwargs) -> BaseStrategy:
+        """
+        Create a strategy instance of the specified type.
+
+        Args:
+            strategy_type (str): Type of strategy to create.
+            **kwargs: Additional arguments to pass to the strategy constructor.
+
+        Returns:
+            BaseStrategy: A strategy instance.
+
+        Raises:
+            StrategyNotFoundError: If the strategy type is not recognized.
+        """
+        # Normalize strategy type
+        strategy_type = strategy_type.lower()
+
+        # Define mapping of strategy types to classes
+        # This should be dynamically built in a real application
+        strategy_classes = {
+            # These will be provided by other modules
+            'sequential': None,
+            'parallel_low': None,
+            'parallel_medium': None,
+            'parallel_high': None
+        }
+
+        # Try to import the specified strategy class
+        from importlib import import_module
+
+        try:
+            # Build class name
+            if '_' in strategy_type:
+                # Convert snake_case to CamelCase
+                class_name = ''.join(word.capitalize()
+                                     for word in strategy_type.split('_'))
+            else:
+                # Capitalize first letter
+                class_name = strategy_type.capitalize()
+
+            # Add "Strategy" suffix if not present
+            if not class_name.endswith('Strategy'):
+                class_name += 'Strategy'
+
+            # Try to import the module and get the class
+            module_name = f"strategies.{strategy_type}_strategy"
+            module = import_module(module_name)
+
+            if hasattr(module, class_name):
+                strategy_class = getattr(module, class_name)
+            else:
+                # Fallback to other naming conventions
+                for attr_name in dir(module):
+                    if attr_name.lower().endswith('strategy'):
+                        strategy_class = getattr(module, attr_name)
+                        break
+                else:
+                    raise StrategyNotFoundError(
+                        f"Strategy class for type '{strategy_type}' not found in module {module_name}")
+
+            # Create and return the strategy instance
+            return strategy_class(**kwargs)
+
+        except (ImportError, AttributeError) as e:
+            # If direct import fails, try the built-in mapping
+            if strategy_type in strategy_classes and strategy_classes[strategy_type] is not None:
+                return strategy_classes[strategy_type](**kwargs)
+
+            raise StrategyNotFoundError(
+                f"Strategy type '{strategy_type}' not found: {e}")
+
+    @staticmethod
+    def get_available_strategies() -> List[str]:
+        """
+        Get a list of available strategy types.
+
+        Returns:
+            List[str]: List of available strategy types.
+        """
+        # In a real application, this would dynamically discover available strategies
+        return ['sequential', 'parallel_low', 'parallel_medium', 'parallel_high']
