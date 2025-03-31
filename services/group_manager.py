@@ -13,6 +13,7 @@ import json
 import logging
 import time
 import asyncio
+from data.file_factory import FileManager
 from typing import Dict, List, Optional, Any, Tuple
 
 # Import telethon modules

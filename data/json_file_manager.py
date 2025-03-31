@@ -23,7 +23,7 @@ from core.exceptions import (
 )
 
 # Import base file manager
-from .base_file_manager import FileManager
+from base_file_manager import FileManager
 
 # Indicator if jsonschema is available
 _HAS_JSONSCHEMA = False
