@@ -1,9 +1,10 @@
 """
-Distributed Cautious Strategy Module
+Distributed Cautious Strategy Module with Multi-Group Support
 
 This module implements a distributed cautious strategy for adding members to Telegram groups.
 It's designed to work 24/7 and distribute the load across multiple accounts while maintaining
-a cautious approach to avoid account restrictions.
+a cautious approach to avoid account restrictions. The strategy supports multiple source and
+target groups for more efficient member transfers.
 
 Features:
 - Distributes operations evenly across the available time period
@@ -12,6 +13,7 @@ Features:
 - Automatically switches to other accounts if one encounters issues
 - Adapts operation speed based on success/failure rates
 - Supports 24/7 operation with intelligent scheduling
+- Handles multiple source and target groups for optimal distribution
 """
 
 import asyncio
@@ -19,10 +21,12 @@ import logging
 import random
 import time
 from datetime import datetime, timedelta
-from typing import Dict, List, Any, Optional, Callable, Tuple, Union
+from typing import Dict, List, Any, Optional, Callable, Tuple, Union, Set
 import threading
+import itertools
 
 from strategies.base_strategy import BaseStrategy
+from strategies.parallel_strategies import ParallelLowStrategy
 from core.exceptions import (
     AccountNotFoundError,
     AccountLimitReachedError,
@@ -39,7 +43,7 @@ from services.account_manager import AccountManager
 from logging_.logging_manager import get_logger
 
 # Setup logger
-logger = get_logger("DistributedCautiousStrategy")
+logger = get_logger("MultiGroupStrategy")
 
 
 class AccountGroup:
@@ -178,18 +182,190 @@ class AccountGroup:
         return f"AccountGroup(id={self.group_id}, accounts={len(self.accounts)}, active={active_count})"
 
 
-class DistributedCautiousStrategy(BaseStrategy):
+class GroupPair:
     """
-    A distributed cautious strategy for adding members to Telegram groups.
+    Represents a source-target group pair for member transfer operations.
+
+    This class tracks the status and progress of member transfers between a specific
+    source group and target group.
+    """
+
+    def __init__(self, source_group: Any, target_group: Any, priority: int = 0):
+        """
+        Initialize a group pair.
+
+        Args:
+            source_group: The source group (for member extraction)
+            target_group: The target group (for member addition)
+            priority: Priority level for this pair (higher numbers = higher priority)
+        """
+        self.source_group = source_group
+        self.target_group = target_group
+        self.priority = priority
+        self.processed_members = 0
+        self.successful_operations = 0
+        self.failed_operations = 0
+        self.members_cache = []
+        self.last_operation_time = None
+        self.is_active = True
+        self.source_exhausted = False
+        self.target_full = False
+        self.error_count = 0
+        self.consecutive_failures = 0
+        self.extracted_member_count = 0
+
+    def record_operation(self, success: bool) -> None:
+        """
+        Record an operation result for this group pair.
+
+        Args:
+            success: Whether the operation was successful
+        """
+        self.processed_members += 1
+        self.last_operation_time = datetime.now()
+
+        if success:
+            self.successful_operations += 1
+            self.consecutive_failures = 0
+        else:
+            self.failed_operations += 1
+            self.consecutive_failures += 1
+
+            # If too many consecutive failures, mark as inactive temporarily
+            if self.consecutive_failures >= 5:
+                self.is_active = False
+                logger.warning(
+                    f"Group pair {self.get_pair_id()} temporarily deactivated due to consecutive failures")
+
+    def get_pair_id(self) -> str:
+        """
+        Get a unique identifier for this group pair.
+
+        Returns:
+            String identifier for the group pair
+        """
+        source_id = getattr(self.source_group, 'id', str(self.source_group))
+        target_id = getattr(self.target_group, 'id', str(self.target_group))
+        return f"{source_id}->{target_id}"
+
+    def get_success_rate(self) -> float:
+        """
+        Get the success rate for operations in this group pair.
+
+        Returns:
+            Success rate as a percentage or 100 if no operations
+        """
+        if self.processed_members == 0:
+            return 100.0
+
+        return (self.successful_operations / self.processed_members) * 100
+
+    def needs_members_extraction(self) -> bool:
+        """
+        Check if this pair needs to extract more members from the source group.
+
+        Returns:
+            True if members cache is empty and source is not exhausted
+        """
+        return len(self.members_cache) == 0 and not self.source_exhausted
+
+    def add_members_to_cache(self, members: List[Any]) -> int:
+        """
+        Add extracted members to the cache.
+
+        Args:
+            members: List of members to add to cache
+
+        Returns:
+            Number of members added to cache
+        """
+        # Add only members that aren't already in the cache
+        new_count = 0
+        for member in members:
+            if member not in self.members_cache:
+                self.members_cache.append(member)
+                new_count += 1
+
+        self.extracted_member_count += new_count
+
+        # If no new members were found, source might be exhausted
+        if new_count == 0 and len(members) > 0:
+            self.source_exhausted = True
+            logger.info(
+                f"Source group in pair {self.get_pair_id()} appears to be exhausted")
+
+        return new_count
+
+    def get_next_member(self) -> Optional[Any]:
+        """
+        Get the next member from the cache for processing.
+
+        Returns:
+            Next member or None if cache is empty
+        """
+        if self.members_cache:
+            return self.members_cache.pop(0)
+        return None
+
+    def reactivate(self) -> None:
+        """Reactivate this group pair after it was deactivated due to errors."""
+        self.is_active = True
+        self.consecutive_failures = 0
+        logger.info(f"Group pair {self.get_pair_id()} has been reactivated")
+
+    def to_dict(self) -> Dict[str, Any]:
+        """
+        Convert the group pair to a dictionary for serialization.
+
+        Returns:
+            Dictionary representation of the group pair
+        """
+        return {
+            "source_group": self._group_to_dict(self.source_group),
+            "target_group": self._group_to_dict(self.target_group),
+            "priority": self.priority,
+            "processed_members": self.processed_members,
+            "successful_operations": self.successful_operations,
+            "failed_operations": self.failed_operations,
+            "last_operation_time": self.last_operation_time.isoformat() if self.last_operation_time else None,
+            "is_active": self.is_active,
+            "source_exhausted": self.source_exhausted,
+            "target_full": self.target_full,
+            "error_count": self.error_count,
+            "extracted_member_count": self.extracted_member_count
+        }
+
+    @staticmethod
+    def _group_to_dict(group: Any) -> Dict[str, Any]:
+        """Convert a group object to a dictionary."""
+        if hasattr(group, 'to_dict') and callable(getattr(group, 'to_dict')):
+            return group.to_dict()
+
+        # Try to extract common properties
+        result = {}
+        for attr in ['id', 'title', 'username', 'is_group', 'is_channel']:
+            if hasattr(group, attr):
+                result[attr] = getattr(group, attr)
+
+        # If we couldn't extract any properties, just use string representation
+        if not result:
+            result = {"id": str(group)}
+
+        return result
+
+
+class MultiGroupDistributedStrategy(BaseStrategy):
+    """
+    A distributed cautious strategy that supports multiple source and target groups.
 
     This strategy distributes the member addition operations over time using multiple
-    account groups, with careful management of operation timing and account rotation
-    to minimize the risk of account restrictions.
+    account groups and multiple source/target group pairs, with careful management
+    of operation timing and account rotation to minimize the risk of account restrictions.
     """
 
     def __init__(self, **kwargs):
         """
-        Initialize the distributed cautious strategy.
+        Initialize the multi-group distributed cautious strategy.
 
         Args:
             **kwargs: Additional parameters for strategy configuration
@@ -206,11 +382,19 @@ class DistributedCautiousStrategy(BaseStrategy):
         self.operation_hours = kwargs.get(
             "operation_hours", 24)  # 24/7 operation
         self.adaptive_delays = kwargs.get("adaptive_delays", True)
+        self.max_extraction_batch = kwargs.get("max_extraction_batch", 100)
+        self.group_rotation_interval = kwargs.get(
+            "group_rotation_interval", 10)  # minutes
+        self.max_consecutive_failures = kwargs.get(
+            "max_consecutive_failures", 5)
+        self.reactivation_timeout = kwargs.get(
+            "reactivation_timeout", 30)  # minutes
 
         # Runtime state
         self.account_groups = []
         self.active_groups = []
         self.current_accounts = []
+        self.group_pairs = []
         self.processed_members = 0
         self.successful_operations = 0
         self.failed_operations = 0
@@ -218,19 +402,30 @@ class DistributedCautiousStrategy(BaseStrategy):
         self._stop_event = threading.Event()
         self._activity_thread = None
 
+        # Group rotation state
+        self.current_group_pair_index = 0
+        self.last_group_rotation = datetime.now()
+        self.extracted_members_count = 0
+        self.member_cache = {}  # Maps user_id to user object
+        self.processed_user_ids = set()  # Track users already processed
+
+        # For backward compatibility, store single source/target as well
+        self.source_group = None
+        self.target_group = None
+
         # Get account manager from kwargs or create a new one
         self.account_manager = kwargs.get("account_manager", AccountManager())
 
         # Set up schedule for 24/7 operation
         self.time_slots = self._create_time_slots()
 
-    async def execute(self, source_group, target_group, member_limit, progress_callback=None, **kwargs):
+    async def execute(self, source_groups=None, target_groups=None, member_limit=None, progress_callback=None, **kwargs):
         """
         Execute the member transfer operation using the distributed cautious strategy.
 
         Args:
-            source_group: Group to extract members from
-            target_group: Group to add members to
+            source_groups: Group(s) to extract members from (single group or list)
+            target_groups: Group(s) to add members to (single group or list)
             member_limit: Maximum number of members to transfer
             progress_callback: Function to call with progress updates
             **kwargs: Additional parameters
@@ -238,8 +433,53 @@ class DistributedCautiousStrategy(BaseStrategy):
         Returns:
             Dict with operation results
         """
-        self.source_group = source_group
-        self.target_group = target_group
+        # For backward compatibility, support both single group and multiple group parameters
+        # Handle the case when execute is called with source_group and target_group (old style)
+        if source_groups is None and kwargs.get("source_group") is not None:
+            source_groups = kwargs.get("source_group")
+
+        if target_groups is None and kwargs.get("target_group") is not None:
+            target_groups = kwargs.get("target_group")
+
+        if member_limit is None:
+            # Default to 100 if not specified
+            member_limit = kwargs.get("member_limit", 100)
+
+        # Handle single group or list
+        if not isinstance(source_groups, (list, tuple)):
+            source_groups = [source_groups]
+
+        if not isinstance(target_groups, (list, tuple)):
+            target_groups = [target_groups]
+
+        # Store the groups for backward compatibility
+        if source_groups and len(source_groups) > 0:
+            self.source_group = source_groups[0]
+
+        if target_groups and len(target_groups) > 0:
+            self.target_group = target_groups[0]
+
+        # Reset any existing group pairs
+        self.group_pairs = []
+
+        # Create group pairs from all combinations of source and target groups
+        for source in source_groups:
+            for target in target_groups:
+                # Skip if source and target are the same group
+                if self._groups_are_same(source, target):
+                    logger.warning(
+                        f"Skipping group pair with identical source and target: {source}")
+                    continue
+
+                self.group_pairs.append(GroupPair(source, target))
+
+        if not self.group_pairs:
+            raise OperationError(
+                "No valid group pairs created. Please provide different source and target groups.")
+
+        logger.info(
+            f"Created {len(self.group_pairs)} group pairs for member transfer")
+
         self.member_limit = member_limit
         self.progress_callback = progress_callback
 
@@ -251,6 +491,7 @@ class DistributedCautiousStrategy(BaseStrategy):
         self.processed_members = 0
         self.successful_operations = 0
         self.failed_operations = 0
+        self.processed_user_ids = set()
 
         # Create and start monitoring thread
         self._activity_thread = threading.Thread(
@@ -266,33 +507,49 @@ class DistributedCautiousStrategy(BaseStrategy):
             "success_count": 0,
             "failure_count": 0,
             "completion_time": 0,
-            "status": "running"
+            "status": "running",
+            "group_pair_stats": []
         }
 
         try:
-            # Extract members from source group
-            members = await self._extract_members(self.source_group, self.member_limit)
-
-            if not members:
-                logger.error("Failed to extract members from source group")
-                raise OperationError(
-                    "Failed to extract members from source group")
-
-            total_members = len(members)
-            logger.info(f"Extracted {total_members} members from source group")
-
             # Start processing members
             start_time = time.time()
 
-            # Process members until limit is reached or all are processed
-            for i, member in enumerate(members):
-                if self.processed_members >= self.member_limit:
-                    logger.info(f"Reached member limit of {self.member_limit}")
-                    break
+            # Process until limit is reached or all groups are exhausted
+            while (self.processed_members < self.member_limit and
+                   self.operation_active and
+                   self._has_active_group_pairs()):
 
-                if not self.operation_active:
-                    logger.info("Operation stopped")
-                    break
+                # Select the next group pair to work with using round-robin with priority weighting
+                group_pair = self._get_next_group_pair()
+
+                if group_pair is None:
+                    # If no active group pairs available, wait a bit and try again
+                    await asyncio.sleep(10)
+                    continue
+
+                # Check if we need to extract members for this group pair
+                if group_pair.needs_members_extraction():
+                    await self._extract_members_for_pair(group_pair)
+
+                # Process a member from this group pair
+                if group_pair.members_cache:
+                    member = group_pair.get_next_member()
+                    if member:
+                        success = await self._process_member(member, group_pair)
+
+                        # Record the result
+                        if success:
+                            self.successful_operations += 1
+                        else:
+                            self.failed_operations += 1
+
+                        self.processed_members += 1
+
+                        # Add to processed set to avoid duplicates
+                        user_id = self._get_user_id(member)
+                        if user_id:
+                            self.processed_user_ids.add(user_id)
 
                 # Update progress
                 if progress_callback:
@@ -300,25 +557,18 @@ class DistributedCautiousStrategy(BaseStrategy):
                         "processed": self.processed_members,
                         "success_count": self.successful_operations,
                         "failure_count": self.failed_operations,
-                        "current_member": i,
-                        "total_members": total_members
+                        "group_pairs": len(self.group_pairs),
+                        "active_pairs": sum(1 for p in self.group_pairs if p.is_active),
+                        "current_pair": group_pair.get_pair_id()
                     })
-
-                # Process this member
-                success = await self._process_member(member)
-
-                # Record the result
-                if success:
-                    self.successful_operations += 1
-                else:
-                    self.failed_operations += 1
-
-                self.processed_members += 1
 
                 # Update result dict
                 result["processed"] = self.processed_members
                 result["success_count"] = self.successful_operations
                 result["failure_count"] = self.failed_operations
+
+                # Check if we need to rotate group pairs
+                self._check_group_rotation()
 
                 # Check if we should stop
                 if self._stop_event.is_set():
@@ -329,6 +579,19 @@ class DistributedCautiousStrategy(BaseStrategy):
             end_time = time.time()
             result["completion_time"] = end_time - start_time
             result["status"] = "completed"
+
+            # Add stats for each group pair
+            for pair in self.group_pairs:
+                result["group_pair_stats"].append({
+                    "pair_id": pair.get_pair_id(),
+                    "processed": pair.processed_members,
+                    "successful": pair.successful_operations,
+                    "failed": pair.failed_operations,
+                    "success_rate": pair.get_success_rate(),
+                    "is_active": pair.is_active,
+                    "source_exhausted": pair.source_exhausted,
+                    "extracted_members": pair.extracted_member_count
+                })
 
             # Clean up
             self.operation_active = False
@@ -342,7 +605,7 @@ class DistributedCautiousStrategy(BaseStrategy):
             return result
 
         except Exception as e:
-            logger.error(f"Error in distribute cautious strategy: {e}")
+            logger.error(f"Error in multi-group distributed strategy: {e}")
             self.operation_active = False
             if self._activity_thread and self._activity_thread.is_alive():
                 self._stop_event.set()
@@ -372,45 +635,61 @@ class DistributedCautiousStrategy(BaseStrategy):
         self.failed_operations = state.get("failure_count", 0)
 
         # Get source and target groups from session
-        source_group_data = session.get_custom_data("source_group", {})
-        target_group_data = session.get_custom_data("target_group", {})
+        source_groups_data = session.get_custom_data("source_groups", [])
+        target_groups_data = session.get_custom_data("target_groups", [])
+
+        # For backward compatibility, also check for single source/target
+        if not source_groups_data:
+            source_group_data = session.get_custom_data("source_group", {})
+            if source_group_data:
+                source_groups_data = [source_group_data]
+
+        if not target_groups_data:
+            target_group_data = session.get_custom_data("target_group", {})
+            if target_group_data:
+                target_groups_data = [target_group_data]
 
         # Check if we have the necessary data
-        if not source_group_data or not target_group_data:
+        if not source_groups_data or not target_groups_data:
             raise OperationError(
                 "Missing source or target group data in session")
 
         # Get member limit from session
         member_limit = state.get("total", 1000)
 
+        # Get processed user IDs to avoid duplicates
+        processed_ids = session.get_custom_data("processed_user_ids", [])
+        self.processed_user_ids = set(processed_ids)
+
         # Execute the operation
         return await self.execute(
-            source_group=source_group_data,
-            target_group=target_group_data,
+            source_groups=source_groups_data,
+            target_groups=target_groups_data,
             member_limit=member_limit,
             progress_callback=progress_callback,
             resumed=True,
             session=session
         )
 
-    async def _extract_members(self, source_group, limit):
+    async def _extract_members_for_pair(self, group_pair: GroupPair) -> int:
         """
-        Extract members from the source group.
+        Extract members from the source group of a group pair.
 
         Args:
-            source_group: Group to extract members from
-            limit: Maximum number of members to extract
+            group_pair: The group pair to extract members for
 
         Returns:
-            List of members
+            Number of members extracted
         """
-        logger.info(f"Extracting up to {limit} members from source group")
+        logger.info(
+            f"Extracting members for group pair {group_pair.get_pair_id()}")
 
         # Get active accounts for extraction
         active_accounts = self._get_active_accounts(2)
         if not active_accounts:
-            raise OperationError(
+            logger.warning(
                 "No active accounts available for member extraction")
+            return 0
 
         # Use the first available account to extract members
         account = active_accounts[0]
@@ -419,33 +698,52 @@ class DistributedCautiousStrategy(BaseStrategy):
             # Initialize the client and connect
             client = await self._get_client(account)
 
-            # Get members
-            participants = await client.get_participants(source_group, limit=limit)
+            # Get members with batch size limit
+            participants = await client.get_participants(
+                group_pair.source_group,
+                limit=self.max_extraction_batch
+            )
 
             # Filter out bots, empty users, etc.
             valid_members = [
                 member for member in participants
                 if not member.bot and not member.deleted and not member.fake
+                and self._get_user_id(member) not in self.processed_user_ids
             ]
 
+            # Add to the group pair's cache
+            added_count = group_pair.add_members_to_cache(valid_members)
+
             logger.info(
-                f"Extracted {len(valid_members)} valid members from source group")
+                f"Extracted {len(valid_members)} valid members from source group, "
+                f"added {added_count} new members to cache"
+            )
 
             # Disconnect client
             await client.disconnect()
 
-            return valid_members
+            return added_count
 
         except Exception as e:
-            logger.error(f"Error extracting members: {e}")
-            raise OperationError(f"Failed to extract members: {e}")
+            logger.error(
+                f"Error extracting members for group pair {group_pair.get_pair_id()}: {e}")
+            group_pair.error_count += 1
 
-    async def _process_member(self, member):
+            # If too many errors, mark the source as exhausted
+            if group_pair.error_count >= 3:
+                group_pair.source_exhausted = True
+                logger.warning(
+                    f"Marking source group in pair {group_pair.get_pair_id()} as exhausted due to errors")
+
+            return 0
+
+    async def _process_member(self, member, group_pair: GroupPair) -> bool:
         """
         Process a single member (add to target group).
 
         Args:
             member: Member to add to target group
+            group_pair: The group pair to process the member for
 
         Returns:
             bool: True if successful, False otherwise
@@ -464,7 +762,7 @@ class DistributedCautiousStrategy(BaseStrategy):
             client = await self._get_client(account)
 
             # Try to add member to target group
-            result = await client.add_contact(member)
+            result = await client.add_contact(member, group_pair.target_group)
 
             # Disconnect client
             await client.disconnect()
@@ -479,6 +777,9 @@ class DistributedCautiousStrategy(BaseStrategy):
             for group in self.account_groups:
                 if account in group.accounts:
                     group.record_operation(True)
+
+            # Record successful operation for this group pair
+            group_pair.record_operation(True)
 
             return True
 
@@ -498,6 +799,9 @@ class DistributedCautiousStrategy(BaseStrategy):
                 if account in group.accounts:
                     group.record_operation(False)
 
+            # Record failed operation for this group pair
+            group_pair.record_operation(False)
+
             return False
 
         except TelegramAdderError as e:
@@ -514,6 +818,9 @@ class DistributedCautiousStrategy(BaseStrategy):
             for group in self.account_groups:
                 if account in group.accounts:
                     group.record_operation(False)
+
+            # Record failed operation for this group pair
+            group_pair.record_operation(False)
 
             return False
 
@@ -693,6 +1000,133 @@ class DistributedCautiousStrategy(BaseStrategy):
 
         return final_delay
 
+    def _get_next_group_pair(self):
+        """
+        Get the next active group pair to process using round-robin with prioritization.
+
+        Returns:
+            GroupPair or None if no active pairs
+        """
+        if not self.group_pairs:
+            return None
+
+        # Filter active group pairs
+        active_pairs = [pair for pair in self.group_pairs if pair.is_active]
+        if not active_pairs:
+            # Check if we should reactivate any pairs
+            self._reactivate_group_pairs()
+            active_pairs = [
+                pair for pair in self.group_pairs if pair.is_active]
+            if not active_pairs:
+                return None
+
+        # Sort by priority (higher priority first)
+        active_pairs.sort(key=lambda p: (-p.priority, p.processed_members))
+
+        # Start from the current index
+        index = self.current_group_pair_index % len(active_pairs)
+        pair = active_pairs[index]
+
+        # Update index for next time
+        self.current_group_pair_index = (
+            self.current_group_pair_index + 1) % len(active_pairs)
+
+        return pair
+
+    def _check_group_rotation(self):
+        """Check if it's time to rotate to the next group pair."""
+        now = datetime.now()
+        time_since_rotation = (
+            now - self.last_group_rotation).total_seconds() / 60  # minutes
+
+        if time_since_rotation >= self.group_rotation_interval:
+            self.last_group_rotation = now
+            # No need to do anything else since _get_next_group_pair handles rotation
+            logger.debug("Group rotation time checkpoint reached")
+
+    def _reactivate_group_pairs(self):
+        """Reactivate group pairs that were deactivated due to errors."""
+        now = datetime.now()
+        reactivated = 0
+
+        for pair in self.group_pairs:
+            if not pair.is_active and not pair.source_exhausted and not pair.target_full:
+                # Check if it's been long enough since deactivation
+                if pair.last_operation_time:
+                    minutes_since_operation = (
+                        now - pair.last_operation_time).total_seconds() / 60
+                    if minutes_since_operation >= self.reactivation_timeout:
+                        pair.reactivate()
+                        reactivated += 1
+                else:
+                    # If no last operation time, just reactivate
+                    pair.reactivate()
+                    reactivated += 1
+
+        if reactivated > 0:
+            logger.info(f"Reactivated {reactivated} group pairs")
+
+    def _has_active_group_pairs(self):
+        """Check if there are any active group pairs."""
+        # First check if any pairs are currently active
+        if any(pair.is_active for pair in self.group_pairs):
+            return True
+
+        # If not, check if any can be reactivated
+        self._reactivate_group_pairs()
+        return any(pair.is_active for pair in self.group_pairs)
+
+    def _get_user_id(self, user):
+        """Get a unique identifier for a user."""
+        if hasattr(user, 'id'):
+            return user.id
+        if isinstance(user, dict) and 'id' in user:
+            return user['id']
+        return str(user)
+
+    def _groups_are_same(self, group1, group2):
+        """Check if two groups are the same."""
+        if group1 is group2:
+            return True
+
+        # Try to get IDs
+        id1 = getattr(group1, 'id', str(group1))
+        id2 = getattr(group2, 'id', str(group2))
+
+        return id1 == id2
+
+    def _save_operation_state(self, session):
+        """Save the current operation state to a session."""
+        if not session:
+            return
+
+        # Basic operation state
+        session.update_state({
+            "processed": self.processed_members,
+            "success_count": self.successful_operations,
+            "failure_count": self.failed_operations,
+            "total": self.member_limit,
+            "status": "running" if self.operation_active else "paused",
+            "last_updated": datetime.now().isoformat()
+        })
+
+        # Save group pairs state
+        group_pairs_state = [pair.to_dict() for pair in self.group_pairs]
+        session.set_custom_data("group_pairs", group_pairs_state)
+
+        # Save source and target groups
+        source_groups = list(
+            set(pair.source_group for pair in self.group_pairs))
+        target_groups = list(
+            set(pair.target_group for pair in self.group_pairs))
+
+        session.set_custom_data("source_groups", source_groups)
+        session.set_custom_data("target_groups", target_groups)
+
+        # Save processed user IDs to avoid duplicates on resume
+        session.set_custom_data("processed_user_ids",
+                                list(self.processed_user_ids))
+
     async def _get_client(self, account):
         """
         Initialize and connect a client for the given account.
@@ -745,15 +1179,17 @@ class DistributedCautiousStrategy(BaseStrategy):
                 # Log current status
                 active_group_count = len(self.active_groups)
                 account_count = len(self.current_accounts)
+                active_pairs = sum(1 for p in self.group_pairs if p.is_active)
 
                 logger.debug(
-                    f"Activity monitor: {active_group_count} active groups, "
+                    f"Activity monitor: {active_group_count} active account groups, "
                     f"{account_count} available accounts, "
+                    f"{active_pairs}/{len(self.group_pairs)} active group pairs, "
                     f"processed {self.processed_members}/{self.member_limit} members"
                 )
 
-                # Adjust parameters dynamically if needed
-                # (This could be expanded with more sophisticated logic)
+                # Check if any inactive group pairs can be reactivated
+                self._reactivate_group_pairs()
 
             except Exception as e:
                 logger.error(f"Error in activity monitor: {e}")
