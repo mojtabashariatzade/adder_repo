@@ -622,8 +622,3 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         print("\nProgram terminated by user.")
         sys.exit(0)
-    try:
-        menu_system.run()
-    except KeyboardInterrupt:
-        print("\nProgram terminated by user.")
-        sys.exit(0)
