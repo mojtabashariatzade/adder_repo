@@ -1,0 +1,93 @@
+Constants Module
+│
+├── File Paths
+│ ├── CONFIG_FILE: ".env.encrypted"
+│ ├── SALT_FILE: ".env.salt"
+│ ├── ENCRYPTION_KEY_FILE: "encryption.key"
+│ ├── ACCOUNTS_FILE: "telegram_accounts.json"
+│ ├── REQUEST_LOG_FILE: "request_log.json"
+│ ├── AI_DATA_FILE: "ai_training_data.json"
+│ └── LOG_FILE: "telegram_adder.log"
+│
+├── Time-related Constants (in seconds)
+│ ├── DEFAULT_DELAY: 20
+│ │ - Default delay between requests
+│ ├── MAX_DELAY: 300
+│ │ - Maximum delay between requests
+│ └── ACCOUNT_CHANGE_DELAY: 60
+│ - Delay between switching accounts
+│
+├── Limits
+│ ├── MAX_RETRY_COUNT: 5
+│ │ - Maximum number of retry attempts
+│ ├── MAX_MEMORY_RECORDS: 1000
+│ │ - Maximum number of records to keep in memory
+│ ├── MAX_FAILURES_BEFORE_BLOCK: 3
+│ │ - Number of consecutive failures before considering account blocked
+│ └── MAX_MEMBERS_PER_DAY: 20
+│ - Maximum number of members to extract or add per account per day
+│
+├── Account Statuses
+│ ├── Enum: AccountStatus
+│ │ │
+│ │ ├── ACTIVE
+│ │ │ - Indicates an active account
+│ │ ├── COOLDOWN
+│ │ │ - Indicates an account in cooldown mode
+│ │ ├── BLOCKED
+│ │ │ - Indicates a blocked account
+│ │ ├── UNVERIFIED
+│ │ │ - Indicates an unverified account
+│ │ └── DAILY_LIMIT_REACHED
+│ │ - Indicates the daily limit for the account has been reached
+│ │
+│ ├── Methods:
+│ │ ├── to_str(cls, status) -> str
+│ │ │ - Converts an enum value to its string representation
+│ │ │ - Example: AccountStatus.ACTIVE -> "active"
+│ │ └── from_str(cls, status_str) -> AccountStatus
+│ │ - Converts a string to its corresponding enum value
+│ │ - Example: "blocked" -> AccountStatus.BLOCKED
+│
+└── Class: Constants (Container Class)
+│
+├── Attributes:
+│ ├── Files
+│ │ ├── CONFIG: ".env.encrypted"
+│ │ ├── SALT: ".env.salt"
+│ │ ├── ENCRYPTION_KEY: "encryption.key"
+│ │ ├── ACCOUNTS: "telegram_accounts.json"
+│ │ ├── REQUEST_LOG: "request_log.json"
+│ │ ├── AI_DATA: "ai_training_data.json"
+│ │ └── LOG_FILE: "telegram_adder.log"
+│ │
+│ ├── TimeDelays
+│ │ ├── DEFAULT: 20
+│ │ │ - Default delay between requests
+│ │ ├── MAXIMUM: 300
+│ │ │ - Maximum delay between requests
+│ │ └── ACCOUNT_CHANGE: 60
+│ │ - Delay between switching accounts
+│ │
+│ ├── Limits
+│ │ ├── MAX_RETRY: 5
+│ │ │ - Maximum number of retry attempts
+│ │ ├── MAX_MEMORY_RECORDS: 1000
+│ │ │ - Maximum number of records to keep in memory
+│ │ ├── MAX_FAILURES: 3
+│ │ │ - Number of consecutive failures before considering account blocked
+│ │ └── MAX_MEMBERS_PER_DAY: 20
+│ │ - Maximum number of members to extract or add per account per day
+│ │
+│ ├── ProxyDefaults
+│ │ ├── TYPE: "socks5"
+│ │ │ - Default proxy type
+│ │ ├── PORT: 1080
+│ │ │ - Default proxy port
+│ │ └── TIMEOUT: 30
+│ │ - Default proxy timeout
+│ │
+│ └── AccountStatus
+│ - Enum for account status values
+│
+└── Description:

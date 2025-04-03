@@ -1,0 +1,109 @@
+Config Module
+│
+├── Class: Config (Singleton)
+│   │
+│   ├── Attributes:
+│   │   ├── _instance: Singleton instance of Config
+│   │   ├── _config_data: Dictionary containing all configuration settings
+│   │   ├── _config_file: Path to the configuration file
+│   │   ├── _salt_file: Path to the salt file
+│   │   ├── _encryption_key_file: Path to the encryption key file
+│   │   └── _initialized: Boolean flag to prevent re-initialization
+│   │
+│   ├── Methods:
+│   │   ├── Initialization and Singleton Pattern
+│   │   │   ├── __new__(cls) -> Config
+│   │   │   │       - Creates a new instance if one doesn't exist (Singleton pattern)
+│   │   │   └── __init__(self)
+│   │   │           - Initializes the Config object and sets default values
+│   │   │           - Tries to load existing configuration from file
+│   │   │
+│   │   ├── Default Configuration
+│   │   │   └── _set_defaults(self)
+│   │   │           - Sets default configuration values for first-time setup
+│   │   │           - Includes application settings, delay settings, limits, proxy settings, etc.
+│   │   │
+│   │   ├── Accessing Configuration Values
+│   │   │   ├── get(self, key: str, default: Any = None) -> Any
+│   │   │   │       - Retrieves a configuration value by key
+│   │   │   │       - Returns default value if key doesn't exist
+│   │   │   ├── set(self, key: str, value: Any) -> None
+│   │   │   │       - Sets a configuration value for a given key
+│   │   │   │       - Logs the change with previous and new values
+│   │   │   ├── update(self, config_dict: Dict[str, Any
+]) -> None
+│   │   │   │       - Updates multiple configuration values at once
+│   │   │   │       - Logs detailed changes
+│   │   │   ├── get_all(self) -> Dict[str, Any
+]
+│   │   │   │       - Returns a copy of all configuration key-value pairs
+│   │   │   └── reset_defaults(self) -> None
+│   │   │           - Resets all configuration values to their defaults
+│   │   │
+│   │   ├── File Operations
+│   │   │   ├── load(self, config_file: Optional[str
+] = None) -> bool
+│   │   │   │       - Loads configuration from a file
+│   │   │   │       - Handles FileNotFoundError, JSONDecodeError, and IOError
+│   │   │   └── save(self, config_file: Optional[str
+] = None) -> bool
+│   │   │           - Saves configuration to a file
+│   │   │           - Creates directory if it doesn't exist
+│   │   │
+│   │   ├── File Path Handling
+│   │   │   ├── get_file_path(self, key: str) -> Optional[str
+]
+│   │   │   │       - Returns the absolute file path for a file path configuration value
+│   │   │   ├── set_config_file(self, config_file: str) -> None
+│   │   │   │       - Sets the path to the configuration file
+│   │   │   ├── set_encryption_key_file(self, encryption_key_file: str) -> None
+│   │   │   │       - Sets the path to the encryption key file
+│   │   │   ├── set_salt_file(self, salt_file: str) -> None
+│   │   │   │       - Sets the path to the salt file
+│   │   │   ├── get_config_file(self) -> str
+│   │   │   │       - Returns the path to the configuration file
+│   │   │   ├── get_encryption_key_file(self) -> str
+│   │   │   │       - Returns the path to the encryption key file
+│   │   │   └── get_salt_file(self) -> str
+│   │   │           - Returns the path to the salt file
+│   │   │
+│   │   ├── Validation
+│   │   │   ├── validate(self) -> Tuple[bool, List[str
+    ]
+]
+│   │   │   │       - Validates the current configuration
+│   │   │   │       - Checks required settings, data types, and value ranges
+│   │   │   │       - Verifies encryption files if encryption is enabled
+│   │   │   │       - Checks proxy configuration if enabled
+│   │   │   └── _verify_encryption_files(self) -> bool
+│   │   │           - Verifies that encryption-related files exist and are valid
+│   │   │
+│   │   └── Proxy Configuration
+│   │       ├── set_proxy_config(self, proxy_name: str, proxy_config: Dict[str, Any
+]) -> None
+│   │       │       - Configures a proxy for the application
+│   │       │       - Adds or updates proxy configuration
+│   │       ├── remove_proxy_config(self, proxy_name: str) -> bool
+│   │       │       - Removes a proxy configuration
+│   │       │       - Disables proxy usage if no proxies remain
+│   │       ├── get_proxy_config(self, proxy_name: str = 'default') -> Optional[Dict[str, Any
+    ]
+]
+│   │       │       - Retrieves a proxy configuration by name
+│   │       └── list_proxies(self) -> Dict[str, Dict[str, Any
+    ]
+]
+│   │               - Returns all configured proxies as a dictionary
+│   │
+└── Error Handling:
+    ├── FileNotFoundError
+    │   - Handled in load() method when configuration file is not found
+    │
+    ├── json.JSONDecodeError
+    │   - Handled in load() method when JSON decoding fails
+    │
+    ├── PermissionError
+    │   - Handled in load() and save() methods when file access is denied
+    │
+    └── IOError
+        - Handled in load() and save() methods for general I/O errors

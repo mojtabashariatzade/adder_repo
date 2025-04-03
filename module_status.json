@@ -1,0 +1,335 @@
+{
+    "project_root": "F:/ADDER_REPO",
+    "modules": [
+        {
+            "name": "core/config.py",
+            "status": {
+                "completion": "completed",
+                "testing": "tested"
+            },
+            "test_file": "tests/test_core/test_config.py",
+            "description": "Central configuration system for loading and saving settings.",
+            "issues": []
+        },
+        {
+            "name": "core/constants.py",
+            "status": {
+                "completion": "completed",
+                "testing": "tested"
+            },
+            "test_file": "tests/test_core/test_constants.py",
+            "description": "Defines all global constants used in the application.",
+            "issues": []
+        },
+        {
+            "name": "core/exceptions.py",
+            "status": {
+                "completion": "completed",
+                "testing": "tested"
+            },
+            "test_file": "tests/test_core/test_exceptions.py",
+            "description": "Custom exceptions for handling specific error scenarios.",
+            "issues": []
+        },
+        {
+            "name": "data/encryption.py",
+            "status": {
+                "completion": "completed",
+                "testing": "tested"
+            },
+            "test_file": "tests/test_data/test_encryption.py",
+            "description": "Encryption utilities for securing sensitive data.",
+            "issues": []
+        },
+        {
+            "name": "data/file_manager.py",
+            "status": {
+                "completion": "completed",
+                "testing": "tested"
+            },
+            "test_file": "tests/test_data/test_file_manager.py",
+            "description": "File management utilities for reading/writing configuration and data files.",
+            "issues": []
+        },
+        {
+            "name": "data/session_manager.py",
+            "status": {
+                "completion": "completed",
+                "testing": "tested"
+            },
+            "test_file": "tests/test_data/test_session_manager.py",
+            "description": "Session management utilities for maintaining Telegram account states.",
+            "issues": []
+        },
+        {
+            "name": "error_handling/error_handlers.py",
+            "status": {
+                "completion": "completed",
+                "testing": "tested"
+            },
+            "test_file": "tests/test_error_handling/test_error_handlers.py",
+            "description": "Custom error handlers for managing different types of errors.",
+            "issues": []
+        },
+        {
+            "name": "error_handling/error_manager.py",
+            "status": {
+                "completion": "completed",
+                "testing": "tested"
+            },
+            "test_file": "tests/test_error_handling/test_error_manager.py",
+            "description": "Centralized error management system for logging and tracking errors.",
+            "issues": []
+        },
+        {
+            "name": "error_handling/fallback.py",
+            "status": {
+                "completion": "completed",
+                "testing": "tested"
+            },
+            "test_file": "tests/test_error_handling/test_fallback.py",
+            "description": "Fallback mechanisms for recovering from errors.",
+            "issues": []
+        },
+        {
+            "name": "logging_/formatters.py",
+            "status": {
+                "completion": "completed",
+                "testing": "tested"
+            },
+            "test_file": "tests/test_logging_/test_formatters.py",
+            "description": "Log formatters for supporting different log formats.",
+            "issues": []
+        },
+        {
+            "name": "logging_/handlers.py",
+            "status": {
+                "completion": "completed",
+                "testing": "tested"
+            },
+            "test_file": "tests/test_logging_/test_handlers.py",
+            "description": "Log handlers for directing logs to different outputs (file, console, etc.).",
+            "issues": []
+        },
+        {
+            "name": "logging_/logging_manager.py",
+            "status": {
+                "completion": "completed",
+                "testing": "tested"
+            },
+            "test_file": "tests/test_logging_/test_logging_manager.py",
+            "description": "Centralized logging management for configuring and managing loggers.",
+            "issues": []
+        },
+        {
+            "name": "models/account.py",
+            "status": {
+                "completion": "completed",
+                "testing": "tested"
+            },
+            "test_file": "tests/test_models/test_account.py",
+            "description": "Models for representing Telegram accounts and their usage statistics.",
+            "issues": []
+        },
+        {
+            "name": "models/stats.py",
+            "status": {
+                "completion": "completed",
+                "testing": "not_tested"
+            },
+            "test_file": "tests/test_models/test_stats.py",
+            "description": "Models for tracking performance metrics and statistics.",
+            "issues": []
+        },
+        {
+            "name": "models/user.py",
+            "status": {
+                "completion": "completed",
+                "testing": "not_tested"
+            },
+            "test_file": "tests/test_models/test_user.py",
+            "description": "Models for representing Telegram users and their details.",
+            "issues": []
+        },
+        {
+            "name": "services/account_manager.py",
+            "status": {
+                "completion": "completed",
+                "testing": "not_tested"
+            },
+            "test_file": "tests/test_services/test_account_manager.py",
+            "description": "Account management service for adding, removing, and checking account statuses.",
+            "issues": []
+        },
+        {
+            "name": "services/analytics.py",
+            "status": {
+                "completion": "completed",
+                "testing": "not_tested"
+            },
+            "test_file": "tests/test_services/test_analytics.py",
+            "description": "Analytics service for collecting and analyzing performance data.",
+            "issues": []
+        },
+        {
+            "name": "services/group_manager.py",
+            "status": {
+                "completion": "completed",
+                "testing": "not_tested"
+            },
+            "test_file": "tests/test_services/test_group_manager.py",
+            "description": "Group management service for handling group-related operations.",
+            "issues": []
+        },
+        {
+            "name": "services/proxy_manager.py",
+            "status": {
+                "completion": "completed",
+                "testing": "not_tested"
+            },
+            "test_file": "tests/test_services/test_proxy_manager.py",
+            "description": "Proxy management service for adding, testing, and rotating proxies.",
+            "issues": []
+        },
+        {
+            "name": "strategies/base_strategy.py",
+            "status": {
+                "completion": "completed",
+                "testing": "not_tested"
+            },
+            "test_file": "tests/test_strategies/test_base_strategy.py",
+            "description": "Base class for defining common methods for operation strategies.",
+            "issues": []
+        },
+        {
+            "name": "strategies/parallel_strategies.py",
+            "status": {
+                "completion": "completed",
+                "testing": "not_tested"
+            },
+            "test_file": "tests/test_strategies/test_parallel_strategies.py",
+            "description": "Parallel execution strategies for using multiple accounts simultaneously.",
+            "issues": []
+        },
+        {
+            "name": "strategies/sequential_strategy.py",
+            "status": {
+                "completion": "completed",
+                "testing": "not_tested"
+            },
+            "test_file": "tests/test_strategies/test_sequential_strategy.py",
+            "description": "Sequential execution strategy for using one account at a time.",
+            "issues": []
+        },
+        {
+            "name": "strategies/strategy_selector.py",
+            "status": {
+                "completion": "completed",
+                "testing": "not_tested"
+            },
+            "test_file": "tests/test_strategies/test_strategy_selector.py",
+            "description": "Logic for selecting appropriate strategies based on conditions.",
+            "issues": []
+        },
+        {
+            "name": "ui/account_menu.py",
+            "status": {
+                "completion": "completed",
+                "testing": "not_tested"
+            },
+            "test_file": "tests/test_ui/test_account_menu.py",
+            "description": "User interface for managing Telegram accounts.",
+            "issues": []
+        },
+        {
+            "name": "ui/colors.py",
+            "status": {
+                "completion": "completed",
+                "testing": "not_tested"
+            },
+            "test_file": "tests/test_ui/test_colors.py",
+            "description": "Utilities for managing console colors and styles.",
+            "issues": []
+        },
+        {
+            "name": "ui/display.py",
+            "status": {
+                "completion": "completed",
+                "testing": "not_tested"
+            },
+            "test_file": "tests/test_ui/test_display.py",
+            "description": "Display utilities for rendering menus and information.",
+            "issues": []
+        },
+        {
+            "name": "ui/menu_system.py",
+            "status": {
+                "completion": "completed",
+                "testing": "not_tested"
+            },
+            "test_file": "tests/test_ui/test_menu_system.py",
+            "description": "Main menu system for navigating through application features.",
+            "issues": []
+        },
+        {
+            "name": "ui/operation_menu.py",
+            "status": {
+                "completion": "completed",
+                "testing": "not_tested"
+            },
+            "test_file": "tests/test_ui/test_operation_menu.py",
+            "description": "Menu for configuring and executing member transfer operations.",
+            "issues": []
+        },
+        {
+            "name": "ui/settings_menu.py",
+            "status": {
+                "completion": "completed",
+                "testing": "not_tested"
+            },
+            "test_file": "tests/test_ui/test_settings_menu.py",
+            "description": "Menu for managing application settings.",
+            "issues": []
+        },
+        {
+            "name": "utils/app_context.py",
+            "status": {
+                "completion": "completed",
+                "testing": "not_tested"
+            },
+            "test_file": "tests/test_utils/test_app_context.py",
+            "description": "Application context management for dependency injection and singleton patterns.",
+            "issues": []
+        },
+        {
+            "name": "utils/helpers.py",
+            "status": {
+                "completion": "completed",
+                "testing": "not_tested"
+            },
+            "test_file": "tests/test_utils/test_helpers.py",
+            "description": "Miscellaneous helper functions for data conversion, formatting, and calculations.",
+            "issues": []
+        },
+        {
+            "name": "utils/validators.py",
+            "status": {
+                "completion": "completed",
+                "testing": "not_tested"
+            },
+            "test_file": "tests/test_utils/test_validators.py",
+            "description": "Input validation utilities for ensuring data integrity.",
+            "issues": []
+        },
+        {
+            "name": "main.py",
+            "status": {
+                "completion": "completed",
+                "testing": "not_tested"
+            },
+            "test_file": null,
+            "description": "Main entry point of the application for initializing and managing the lifecycle.",
+            "issues": []
+        }
+    ]
+}

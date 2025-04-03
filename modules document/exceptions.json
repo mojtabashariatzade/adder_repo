@@ -1,0 +1,47 @@
+├── TelegramAdderError
+│   ├── AccountError
+│   │   ├── AccountNotFoundError
+│   │   ├── AccountLimitReachedError
+│   │   ├── AccountBlockedError
+│   │   ├── AccountInCooldownError
+│   │   └── AccountVerificationError
+│   ├── APIError
+│   │   ├── FloodWaitError
+│   │   ├── PeerFloodError
+│   │   ├── UserPrivacyRestrictedError
+│   │   ├── PhoneNumberBannedError
+│   │   ├── ApiIdInvalidError
+│   │   └── ApiHashInvalidError
+│   ├── ConfigError
+│   │   ├── ConfigFileNotFoundError
+│   │   ├── ConfigValidationError
+│   │   └── ConfigEncryptionError
+│   ├── FileError
+│   │   ├── FileReadError
+│   │   ├── FileWriteError
+│   │   └── FileFormatError
+│   ├── NetworkError
+│   │   ├── ConnectionErrors
+│   │   ├── ProxyError
+│   │   └── TimeoutErrors
+│   ├── OperationError
+│   │   ├── GroupNotFoundError
+│   │   ├── NotGroupAdminError
+│   │   ├── NoActiveAccountsError
+│   │   ├── SessionExpiredError
+│   │   ├── MemberExtractionError
+│   │   └── MemberAdditionError
+│   ├── AuthenticationError
+│   │   ├── LoginFailedError
+│   │   ├── CodeRequestFailedError
+│   │   ├── CodeInvalidError
+│   │   ├── TwoFactorRequiredError
+│   │   └── TwoFactorInvalidError
+│   ├── StrategyError
+│   │   ├── StrategyNotFoundError
+│   │   └── StrategyExecutionError
+│   └── UtilsError
+│       ├── ValidationError
+│       ├── EncryptionError
+│       └── DecryptionError
+└── map_telethon_exception
